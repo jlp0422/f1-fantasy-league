@@ -1,0 +1,11 @@
+{
+  "name": "f1-fantasy-2022",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "<jeremyphilipson@gmail.com>",
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {
+    "node-fetch": "2.6.7"
+  }
+}
