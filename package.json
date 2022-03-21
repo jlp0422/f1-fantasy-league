@@ -6,6 +6,8 @@
   "license": "MIT",
   "type": "module",
   "dependencies": {
+    "@google-cloud/local-auth": "^1.0.1",
+    "googleapis": "^97.0.0",
     "node-fetch": "2.6.7"
   }
 }
