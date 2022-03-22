@@ -38,28 +38,39 @@ google.options({ auth })
 const apiKey = '1275df2d6f75b092d17e3de25bfbdc05'
 const googleApiKey = 'AIzaSyB-c6U9_85vitO46wOMPvz3WjXxthXaR70'
 const spreadsheetId = '1iZxeBzQ4tfAnhKghfBg-IsZLAWaeVODO3HLrJcxvKag'
+const standingsSheetId = 240490020
 
 const bahrainUrl = getUpdateSheetUrl(spreadsheetId, 'RACE RESULTS', 'D2:D21')
 
 const lastCompletedRace = getLatestCompletedRace(races)
 
-// const raceFinish = await fetch(getRaceUrl(lastCompletedRace.id), {
-//   headers: {
-//     'x-rapidapi-key': apiKey,
-//     'x-rapidapi-host': 'v1.formula-1.api-sports.io',
-//   },
-// })
-//   .then((res) => res.json())
-//   .then((race) => race.response)
-//   .then(getFinishByRacer)
+const raceFinish = await fetch(getRaceUrl(lastCompletedRace.id), {
+  headers: {
+    'x-rapidapi-key': apiKey,
+    'x-rapidapi-host': 'v1.formula-1.api-sports.io',
+  },
+})
+  .then((res) => res.json())
+  .then((race) => race.response)
+  .then(getFinishByRacer)
 
-// const driverRows = Object.keys(raceFinish).reduce((memo, driver) => {
-//   return Object.assign({}, memo, {
-//     [driver]: DRIVER_TO_ROW[driver],
-//   })
-// }, {})
+const raceFinishAndRows = Object.keys(raceFinish)
+  .map((driver) => ({
+    driver,
+    finish: raceFinish[driver],
+    row: DRIVER_TO_ROW[driver],
+  }))
+  .filter(({ row }) => row > 0)
 
-// console.log({ driverRows, raceFinish })
+const sortedFinishByRow = [...raceFinishAndRows].sort((a, b) => a.row - b.row)
+const sheetFormattedArray = sortedFinishByRow.map(({ finish }) => ({
+  values: [
+    {
+      userEnteredValue:
+        finish === 'DNF' ? { stringValue: finish } : { numberValue: finish },
+    },
+  ],
+}))
 
 const res = await sheets.spreadsheets.batchUpdate({
   spreadsheetId,
@@ -67,18 +78,18 @@ const res = await sheets.spreadsheets.batchUpdate({
     requests: [
       {
         updateCells: {
-          rows: [
-            {
-              values: [{ userEnteredValue: { stringValue: 'TESTING' } }],
-            },
-          ],
+          // goes in order of rows
+          // rows 2 - 21
+          // indices 1 - 20
+          // overrrides prev value
+          rows: sheetFormattedArray,
           fields: 'userEnteredValue',
           range: {
-            sheetId: 240490020,
-            startRowIndex: 0,
-            endRowIndex: 1,
-            startColumnIndex: 0,
-            endColumnIndex: 1,
+            sheetId: standingsSheetId,
+            startRowIndex: 1,
+            endRowIndex: 20,
+            startColumnIndex: 3,
+            endColumnIndex: 4,
           },
         },
       },
