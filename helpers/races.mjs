@@ -1,3 +1,5 @@
+export const isDNF = finish => finish === 'DNF'
+
 export const getRacersByFinish = (race) =>
   race.reduce((memo, finish) => {
     return Object.assign({}, memo, {
@@ -8,7 +10,7 @@ export const getRacersByFinish = (race) =>
 export const getFinishByRacer = (race) =>
   race.reduce((memo, finish) => {
     const position =
-      !finish.time || finish.time === 'DNF' ? 'DNF' : finish.position
+      !finish.time || isDNF(finish.time) ? 'DNF' : finish.position
     return Object.assign({}, memo, {
       [finish.driver.name]: position,
     })

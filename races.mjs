@@ -115,3 +115,28 @@ export const races = [
     date_ms: 1668949200000,
   },
 ]
+
+export const COLUMN_BY_RACE_ID = {
+  1488: { name: 'Bahrain Grand Prix', columnIndex: 3 },
+  1493: { name: 'Saudi Arabia Grand Prix', columnIndex: 4 },
+  1498: { name: 'Australia Grand Prix', columnIndex: 5 },
+  1503: { name: 'Emilia Romagna Grand Prix', columnIndex: 6 },
+  1508: { name: 'Miami Grand Prix', columnIndex: 7 },
+  1513: { name: 'Spain Grand Prix', columnIndex: 8 },
+  1518: { name: 'Monaco Grand Prix', columnIndex: 9 },
+  1523: { name: 'Azerbaijan Grand Prix', columnIndex: 10 },
+  1528: { name: 'Canada Grand Prix', columnIndex: 11 },
+  1533: { name: 'Great Britain Grand Prix', columnIndex: 12 },
+  1538: { name: 'Austria Grand Prix', columnIndex: 13 },
+  1543: { name: 'France Grand Prix', columnIndex: 14 },
+  1548: { name: 'Hungary Grand Prix', columnIndex: 15 },
+  1553: { name: 'Belgium Grand Prix', columnIndex: 16 },
+  1558: { name: 'Netherlands Grand Prix', columnIndex: 17 },
+  1563: { name: 'Italy Grand Prix', columnIndex: 18 },
+  1573: { name: 'Singapore Grand Prix', columnIndex: 19 },
+  1578: { name: 'Japan Grand Prix', columnIndex: 20 },
+  1583: { name: 'USA Grand Prix', columnIndex: 21 },
+  1588: { name: 'Mexico Grand Prix', columnIndex: 22 },
+  1593: { name: 'Brazil Grand Prix', columnIndex: 23 },
+  1598: { name: 'Abu Dhabi Grand Prix', columnIndex: 24 },
+}

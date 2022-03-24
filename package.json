@@ -5,8 +5,12 @@
   "author": "<jeremyphilipson@gmail.com>",
   "license": "MIT",
   "type": "module",
+  "scripts": {
+    "update-standings": "node --require dotenv/config index.js"
+  },
   "dependencies": {
     "@google-cloud/local-auth": "^1.0.1",
+    "dotenv": "^16.0.0",
     "googleapis": "^97.0.0",
     "node-fetch": "^3.2.3"
   }
