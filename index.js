@@ -47,7 +47,7 @@ const raceFinishAndRows = Object.keys(raceFinish)
   }))
   .filter(({ row }) => row > 0)
 
-if (raceFinishAndRows.length < 10) {
+if (raceFinishAndRows.length !== 20) {
   console.log('\n')
   console.log('Mismatch driver length, manual update required :/')
   console.log(raceFinishAndRows)
