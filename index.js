@@ -87,7 +87,7 @@ if (raceFinishAndRows.length < 10) {
   })
 
   if (res.status === 200 && res.statusText === 'OK') {
-    console.log('Update successful!')
+    console.log('Update successful! 🏎💨')
   } else {
     console.log(
       `Something went wrong: ${res.statusText} with error: ${res.data?.error?.message}`
