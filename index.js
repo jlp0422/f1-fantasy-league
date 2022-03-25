@@ -9,6 +9,11 @@ import {
 } from './helpers/races.mjs'
 import { getRaceUrl } from './helpers/url.mjs'
 import { COLUMN_BY_RACE_ID, races } from './races.mjs'
+// import nodemailer from "nodemailer"
+// import mg from "nodemailer-mailgun-transport"
+// import mailgun from 'mailgun-js'
+import formData from 'form-data'
+import Mailgun from 'mailgun.js'
 
 const sheets = google.sheets('v4')
 
@@ -17,6 +22,10 @@ const key = JSON.parse(
     new URL('./f1-fantasy-2022-acf2e02d0d77.json', import.meta.url)
   )
 )
+
+const mailgun = new Mailgun(formData)
+const mg = mailgun.client({ username: 'api', key: process.env.MAILGUN_API_KEY })
+
 const auth = new google.auth.JWT({
   email: key.client_email,
   keyFile: 'f1-fantasy-2022-acf2e02d0d77.json',
@@ -47,11 +56,21 @@ const raceFinishAndRows = Object.keys(raceFinish)
   }))
   .filter(({ row }) => row > 0)
 
-if (raceFinishAndRows.length !== 20) {
+if (raceFinishAndRows.length < 10) {
   console.log('\n')
   console.log('Mismatch driver length, manual update required :/')
   console.log(raceFinishAndRows)
   console.log('\n')
+  const data = {
+    from: `F1 FANTASY 2022 <mailgun@${process.env.MAILGUN_DOMAIN}>`,
+    to: 'jeremyphilipson@gmail.com',
+    subject: 'F1 Standings Update',
+    text: 'Mismatch driver lenght, manual update required!',
+  }
+  mg.messages
+    .create(process.env.MAILGUN_DOMAIN, data)
+    .then((msg) => console.log(msg)) // logs response data
+    .catch((err) => console.log(err)) // logs any error
 } else {
   const sortedFinishByRow = [...raceFinishAndRows].sort((a, b) => a.row - b.row)
   const sheetFormattedArray = sortedFinishByRow.map(({ finish }) => ({
@@ -88,6 +107,16 @@ if (raceFinishAndRows.length !== 20) {
 
   if (res.status === 200 && res.statusText === 'OK') {
     console.log('Update successful! 🏎💨')
+    const data = {
+      from: `F1 FANTASY 2022 <mailgun@${process.env.MAILGUN_DOMAIN}>`,
+      to: 'jeremyphilipson@gmail.com',
+      subject: 'F1 Standings Update',
+      text: 'Update successful! 🏎💨',
+    }
+    mg.messages
+      .create(process.env.MAILGUN_DOMAIN, data)
+      .then((msg) => console.log(msg)) // logs response data
+      .catch((err) => console.log(err)) // logs any error
   } else {
     console.log(
       `Something went wrong: ${res.statusText} with error: ${res.data?.error?.message}`
