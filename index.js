@@ -1,5 +1,7 @@
+import formData from 'form-data'
 import { readFile } from 'fs/promises'
 import { google } from 'googleapis'
+import Mailgun from 'mailgun.js'
 import fetch from 'node-fetch'
 import { DRIVER_TO_ROW } from './helpers/drivers.mjs'
 import {
@@ -9,11 +11,6 @@ import {
 } from './helpers/races.mjs'
 import { getRaceUrl } from './helpers/url.mjs'
 import { COLUMN_BY_RACE_ID, races } from './races.mjs'
-// import nodemailer from "nodemailer"
-// import mg from "nodemailer-mailgun-transport"
-// import mailgun from 'mailgun-js'
-import formData from 'form-data'
-import Mailgun from 'mailgun.js'
 
 const sheets = google.sheets('v4')
 
@@ -56,16 +53,15 @@ const raceFinishAndRows = Object.keys(raceFinish)
   }))
   .filter(({ row }) => row > 0)
 
-if (raceFinishAndRows.length < 10) {
-  console.log('\n')
+if (raceFinishAndRows.length < 20) {
   console.log('Mismatch driver length, manual update required :/')
-  console.log(raceFinishAndRows)
   console.log('\n')
+  console.log(raceFinishAndRows)
   const data = {
     from: `F1 FANTASY 2022 <mailgun@${process.env.MAILGUN_DOMAIN}>`,
     to: 'jeremyphilipson@gmail.com',
     subject: 'F1 Standings Update',
-    text: 'Mismatch driver lenght, manual update required!',
+    text: 'Mismatch driver length, manual update required!',
   }
   mg.messages
     .create(process.env.MAILGUN_DOMAIN, data)
