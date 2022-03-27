@@ -22,6 +22,11 @@ const key = JSON.parse(
 
 const mailgun = new Mailgun(formData)
 const mg = mailgun.client({ username: 'api', key: process.env.MAILGUN_API_KEY })
+const MAIL_DATA = {
+  from: `F1 Fantasy 2022 <f1fantasy2022@${process.env.MAILGUN_DOMAIN}>`,
+  to: ['jeremyphilipson@gmail.com'],
+  subject: 'F1 Standings Update',
+}
 
 const auth = new google.auth.JWT({
   email: key.client_email,
@@ -58,15 +63,13 @@ if (raceFinishAndRows.length < 20) {
   console.log('\n')
   console.log(raceFinishAndRows)
   const data = {
-    from: `F1 FANTASY 2022 <mailgun@${process.env.MAILGUN_DOMAIN}>`,
-    to: 'jeremyphilipson@gmail.com',
-    subject: 'F1 Standings Update',
+    ...MAIL_DATA,
     text: 'Mismatch driver length, manual update required!',
   }
   mg.messages
     .create(process.env.MAILGUN_DOMAIN, data)
-    .then((msg) => console.log(msg)) // logs response data
-    .catch((err) => console.log(err)) // logs any error
+    .then((msg) => console.log(msg))
+    .catch((err) => console.log(err))
 } else {
   const sortedFinishByRow = [...raceFinishAndRows].sort((a, b) => a.row - b.row)
   const sheetFormattedArray = sortedFinishByRow.map(({ finish }) => ({
@@ -104,15 +107,13 @@ if (raceFinishAndRows.length < 20) {
   if (res.status === 200 && res.statusText === 'OK') {
     console.log('Update successful! 🏎💨')
     const data = {
-      from: `F1 FANTASY 2022 <mailgun@${process.env.MAILGUN_DOMAIN}>`,
-      to: 'jeremyphilipson@gmail.com',
-      subject: 'F1 Standings Update',
+      ...MAIL_DATA,
       text: 'Update successful! 🏎💨',
     }
     mg.messages
       .create(process.env.MAILGUN_DOMAIN, data)
-      .then((msg) => console.log(msg)) // logs response data
-      .catch((err) => console.log(err)) // logs any error
+      .then((msg) => console.log(msg))
+      .catch((err) => console.log(err))
   } else {
     console.log(
       `Something went wrong: ${res.statusText} with error: ${res.data?.error?.message}`
