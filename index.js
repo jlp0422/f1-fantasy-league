@@ -2,6 +2,7 @@ import formData from 'form-data'
 import { readFile } from 'fs/promises'
 import { google } from 'googleapis'
 import Mailgun from 'mailgun.js'
+import ms from 'ms'
 import fetch from 'node-fetch'
 import { DRIVER_TO_ROW } from './helpers/drivers.mjs'
 import {
@@ -37,86 +38,112 @@ const auth = new google.auth.JWT({
 
 google.options({ auth })
 
-const lastCompletedRace = getLatestCompletedRace(races)
-const columnToUpdate = COLUMN_BY_RACE_ID[lastCompletedRace.id]
+const THREE_DAYS = ms('3d')
 
-const raceFinish = await fetch(getRaceUrl(lastCompletedRace.id), {
-  headers: {
-    'x-rapidapi-key': process.env.RAPID_API_KEY,
-    'x-rapidapi-host': 'v1.formula-1.api-sports.io',
-  },
-})
-  .then((res) => res.json())
-  .then((race) => race.response)
-  .then(getFinishByRacer)
+async function main() {
+  const lastCompletedRace = getLatestCompletedRace(races)
+  const columnToUpdate = COLUMN_BY_RACE_ID[lastCompletedRace.id]
 
-const raceFinishAndRows = Object.keys(raceFinish)
-  .map((driver) => ({
-    driver,
-    finish: raceFinish[driver],
-    row: DRIVER_TO_ROW[driver],
-  }))
-  .filter(({ row }) => row > 0)
+  const nowMs = new Date().getTime()
+  const isRaceOlderThanThreeDays =
+    nowMs - lastCompletedRace.date_ms > THREE_DAYS
 
-if (raceFinishAndRows.length < 20) {
-  console.log('Mismatch driver length, manual update required :/')
-  console.log('\n')
-  console.log(raceFinishAndRows)
-  const data = {
-    ...MAIL_DATA,
-    text: 'Mismatch driver length, manual update required!',
-  }
-  mg.messages
-    .create(process.env.MAILGUN_DOMAIN, data)
-    .then((msg) => console.log(msg))
-    .catch((err) => console.log(err))
-} else {
-  const sortedFinishByRow = [...raceFinishAndRows].sort((a, b) => a.row - b.row)
-  const sheetFormattedArray = sortedFinishByRow.map(({ finish }) => ({
-    values: [
-      {
-        userEnteredValue: isDNF(finish)
-          ? { stringValue: finish }
-          : { numberValue: finish },
-      },
-    ],
-  }))
-
-  const res = await sheets.spreadsheets.batchUpdate({
-    spreadsheetId: process.env.SPREADSHEET_ID,
-    requestBody: {
-      requests: [
-        {
-          updateCells: {
-            rows: sheetFormattedArray,
-            fields: 'userEnteredValue',
-            range: {
-              // process.env.RACE_RESULTS_SHEET_ID
-              sheetId: process.env.TEST_SHEET_ID,
-              startRowIndex: 1,
-              endRowIndex: 20,
-              startColumnIndex: columnToUpdate.columnIndex,
-              endColumnIndex: columnToUpdate.columnIndex + 1,
-            },
-          },
-        },
-      ],
-    },
-  })
-
-  if (res.status === 200 && res.statusText === 'OK') {
-    console.log('Update successful! 🏎💨')
+  if (isRaceOlderThanThreeDays) {
+    console.log('Race happened more than three days ago, no update required')
     const data = {
       ...MAIL_DATA,
-      text: 'Update successful! 🏎💨',
+      text: 'Race happened more than three days ago, no update required',
+    }
+    mg.messages
+      .create(process.env.MAILGUN_DOMAIN, data)
+      .then((msg) => console.log(msg))
+      .catch((err) => console.log(err))
+
+    return
+  }
+
+  const raceFinish = await fetch(getRaceUrl(lastCompletedRace.id), {
+    headers: {
+      'x-rapidapi-key': process.env.RAPID_API_KEY,
+      'x-rapidapi-host': 'v1.formula-1.api-sports.io',
+    },
+  })
+    .then((res) => res.json())
+    .then((race) => race.response)
+    .then(getFinishByRacer)
+
+  const raceFinishAndRows = Object.keys(raceFinish)
+    .map((driver) => ({
+      driver,
+      finish: raceFinish[driver],
+      row: DRIVER_TO_ROW[driver],
+    }))
+    .filter(({ row }) => row > 0)
+
+  if (raceFinishAndRows.length < 20) {
+    console.log('Mismatch driver length, manual update required :/')
+    console.log('\n')
+    console.log(raceFinishAndRows)
+    const data = {
+      ...MAIL_DATA,
+      text: 'Mismatch driver length, manual update required!',
     }
     mg.messages
       .create(process.env.MAILGUN_DOMAIN, data)
       .then((msg) => console.log(msg))
       .catch((err) => console.log(err))
   } else {
-    console.log(
-      `Something went wrong: ${res.statusText} with error: ${res.data?.error?.message}`
+    const sortedFinishByRow = [...raceFinishAndRows].sort(
+      (a, b) => a.row - b.row
     )
+    const sheetFormattedArray = sortedFinishByRow.map(({ finish }) => ({
+      values: [
+        {
+          userEnteredValue: isDNF(finish)
+            ? { stringValue: finish }
+            : { numberValue: finish },
+        },
+      ],
+    }))
+
+    const res = await sheets.spreadsheets.batchUpdate({
+      spreadsheetId: process.env.SPREADSHEET_ID,
+      requestBody: {
+        requests: [
+          {
+            updateCells: {
+              rows: sheetFormattedArray,
+              fields: 'userEnteredValue',
+              range: {
+                // process.env.RACE_RESULTS_SHEET_ID
+                sheetId: process.env.TEST_SHEET_ID,
+                startRowIndex: 1,
+                endRowIndex: 20,
+                startColumnIndex: columnToUpdate.columnIndex,
+                endColumnIndex: columnToUpdate.columnIndex + 1,
+              },
+            },
+          },
+        ],
+      },
+    })
+
+    if (res.status === 200 && res.statusText === 'OK') {
+      console.log('Update successful! 🏎💨')
+      const data = {
+        ...MAIL_DATA,
+        text: 'Update successful! 🏎💨',
+      }
+      mg.messages
+        .create(process.env.MAILGUN_DOMAIN, data)
+        .then((msg) => console.log(msg))
+        .catch((err) => console.log(err))
+    } else {
+      console.log(
+        `Something went wrong: ${res.statusText} with error: ${res.data?.error?.message}`
+      )
+    }
   }
 }
+
+main()
