@@ -16,7 +16,7 @@ const sheets = google.sheets('v4')
 
 const key = JSON.parse(
   await readFile(
-    new URL('./f1-fantasy-2022-acf2e02d0d77.json', import.meta.url)
+    new URL('./f1-fantasy-2022-da81751f791f.json', import.meta.url)
   )
 )
 
@@ -30,7 +30,7 @@ const MAIL_DATA = {
 
 const auth = new google.auth.JWT({
   email: key.client_email,
-  keyFile: 'f1-fantasy-2022-acf2e02d0d77.json',
+  keyFile: 'f1-fantasy-2022-da81751f791f.json',
   key: key.private_key,
   scopes: ['https://www.googleapis.com/auth/spreadsheets'],
 })
