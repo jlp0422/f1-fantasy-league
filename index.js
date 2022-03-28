@@ -49,10 +49,11 @@ async function main() {
     nowMs - lastCompletedRace.date_ms > THREE_DAYS
 
   if (isRaceOlderThanThreeDays) {
-    console.log('Race happened more than three days ago, no update required')
+    const message = 'Race happened more than three days ago, no update required'
+    console.log(message)
     const data = {
       ...MAIL_DATA,
-      text: 'Race happened more than three days ago, no update required',
+      text: message,
     }
     mg.messages
       .create(process.env.MAILGUN_DOMAIN, data)
@@ -81,12 +82,13 @@ async function main() {
     .filter(({ row }) => row > 0)
 
   if (raceFinishAndRows.length < 20) {
-    console.log('Mismatch driver length, manual update required :/')
+    const message = 'Mismatch driver length, manual update required!'
+    console.log(message)
     console.log('\n')
     console.log(raceFinishAndRows)
     const data = {
       ...MAIL_DATA,
-      text: 'Mismatch driver length, manual update required!',
+      text: message,
     }
     mg.messages
       .create(process.env.MAILGUN_DOMAIN, data)
@@ -129,10 +131,11 @@ async function main() {
     })
 
     if (res.status === 200 && res.statusText === 'OK') {
-      console.log('Update successful! 🏎💨')
+      const message = 'Update successful! 🏎💨'
+      console.log(message)
       const data = {
         ...MAIL_DATA,
-        text: 'Update successful! 🏎💨',
+        text: message,
       }
       mg.messages
         .create(process.env.MAILGUN_DOMAIN, data)
