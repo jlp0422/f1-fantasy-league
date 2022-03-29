@@ -81,7 +81,7 @@ async function main() {
     }))
     .filter(({ row }) => row > 0)
 
-  if (raceFinishAndRows.length < 20) {
+  if (raceFinishAndRows.length < 10) {
     const message = 'Mismatch driver length, manual update required!'
     console.log(message)
     console.log('\n')
@@ -107,6 +107,26 @@ async function main() {
         },
       ],
     }))
+
+    const existingRowData = await sheets.spreadsheets.get({
+      ranges: [
+        `'RACE RESULTS'!${columnToUpdate.columnLetter}2:${columnToUpdate.columnLetter}21`,
+      ],
+      spreadsheetId: process.env.SPREADSHEET_ID,
+      includeGridData: true,
+    })
+
+    const existingFinishForRace =
+      existingRowData.data.sheets[0].data[0].rowData.map(
+        (row) => row.values[0].formattedValue
+      )
+    const hasRaceData = existingFinishForRace.filter(Boolean).length === 20
+
+    if (hasRaceData) {
+      console.log('Race has already been updated, exiting...')
+      return
+    }
+    console.log('No race data, updating...')
 
     const res = await sheets.spreadsheets.batchUpdate({
       spreadsheetId: process.env.SPREADSHEET_ID,
