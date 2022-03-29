@@ -3,6 +3,7 @@ import { readFile } from 'fs/promises'
 import { google } from 'googleapis'
 import Mailgun from 'mailgun.js'
 import ms from 'ms'
+import cron from 'node-cron'
 import fetch from 'node-fetch'
 import { DRIVER_TO_ROW } from './helpers/drivers.mjs'
 import {
@@ -41,6 +42,10 @@ google.options({ auth })
 const THREE_DAYS = ms('3d')
 
 async function main() {
+  const NOW_DATE = new Date().toUTCString()
+  const LOGGER = (log) => {
+    console.log(NOW_DATE, '::', log)
+  }
   const lastCompletedRace = getLatestCompletedRace(races)
   const columnToUpdate = COLUMN_BY_RACE_ID[lastCompletedRace.id]
 
@@ -50,15 +55,15 @@ async function main() {
 
   if (isRaceOlderThanThreeDays) {
     const message = 'Race happened more than three days ago, no update required'
-    console.log(message)
+    LOGGER(message)
     const data = {
       ...MAIL_DATA,
       text: message,
     }
     mg.messages
       .create(process.env.MAILGUN_DOMAIN, data)
-      .then((msg) => console.log(msg))
-      .catch((err) => console.log(err))
+      .then(LOGGER)
+      .catch(LOGGER)
 
     return
   }
@@ -81,19 +86,19 @@ async function main() {
     }))
     .filter(({ row }) => row > 0)
 
-  if (raceFinishAndRows.length < 10) {
+  if (raceFinishAndRows.length < 20) {
     const message = 'Mismatch driver length, manual update required!'
-    console.log(message)
+    LOGGER(message)
     console.log('\n')
-    console.log(raceFinishAndRows)
+    LOGGER(raceFinishAndRows)
     const data = {
       ...MAIL_DATA,
       text: message,
     }
     mg.messages
       .create(process.env.MAILGUN_DOMAIN, data)
-      .then((msg) => console.log(msg))
-      .catch((err) => console.log(err))
+      .then(LOGGER)
+      .catch(LOGGER)
   } else {
     const sortedFinishByRow = [...raceFinishAndRows].sort(
       (a, b) => a.row - b.row
@@ -123,10 +128,10 @@ async function main() {
     const hasRaceData = existingFinishForRace.filter(Boolean).length === 20
 
     if (hasRaceData) {
-      console.log('Race has already been updated, exiting...')
+      LOGGER('Race has already been updated, exiting...')
       return
     }
-    console.log('No race data, updating...')
+    LOGGER('No race data, updating...')
 
     const res = await sheets.spreadsheets.batchUpdate({
       spreadsheetId: process.env.SPREADSHEET_ID,
@@ -152,21 +157,24 @@ async function main() {
 
     if (res.status === 200 && res.statusText === 'OK') {
       const message = 'Update successful! 🏎💨'
-      console.log(message)
+      LOGGER(message)
       const data = {
         ...MAIL_DATA,
         text: message,
       }
       mg.messages
         .create(process.env.MAILGUN_DOMAIN, data)
-        .then((msg) => console.log(msg))
-        .catch((err) => console.log(err))
+        .then(LOGGER)
+        .catch(LOGGER)
     } else {
-      console.log(
+      LOGGER(
         `Something went wrong: ${res.statusText} with error: ${res.data?.error?.message}`
       )
     }
   }
 }
 
-main()
+// run process from 12pm - 10pm on Sunday only
+cron.schedule('0 12-22 * * SUN', () => {
+  main()
+})
