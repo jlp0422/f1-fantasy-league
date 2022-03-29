@@ -11,8 +11,11 @@ import {
   getLatestCompletedRace,
   isDNF,
 } from './helpers/races.mjs'
+import { getColumnValues } from './helpers/spreadsheet.mjs'
 import { getRaceUrl } from './helpers/url.mjs'
 import { COLUMN_BY_RACE_ID, races } from './races.mjs'
+
+const NUM_DRIVERS = 20
 
 const sheets = google.sheets('v4')
 
@@ -86,7 +89,7 @@ async function main() {
     }))
     .filter(({ row }) => row > 0)
 
-  if (raceFinishAndRows.length < 20) {
+  if (raceFinishAndRows.length < NUM_DRIVERS) {
     const message = 'Mismatch driver length, manual update required!'
     LOGGER(message)
     console.log('\n')
@@ -113,19 +116,17 @@ async function main() {
       ],
     }))
 
-    const existingRowData = await sheets.spreadsheets.get({
+    const existingColumnData = await sheets.spreadsheets.get({
       ranges: [
-        `'RACE RESULTS'!${columnToUpdate.columnLetter}2:${columnToUpdate.columnLetter}21`,
+        // change to 'RACE RESULTS' when going live
+        `'TEST SHEET'!${columnToUpdate.columnLetter}2:${columnToUpdate.columnLetter}21`,
       ],
       spreadsheetId: process.env.SPREADSHEET_ID,
       includeGridData: true,
     })
 
-    const existingFinishForRace =
-      existingRowData.data.sheets[0].data[0].rowData.map(
-        (row) => row.values[0].formattedValue
-      )
-    const hasRaceData = existingFinishForRace.filter(Boolean).length === 20
+    const existingFinishForRace = getColumnValues(existingColumnData)
+    const hasRaceData = existingFinishForRace.filter(Boolean).length === NUM_DRIVERS
 
     if (hasRaceData) {
       LOGGER('Race has already been updated, exiting...')
@@ -175,6 +176,13 @@ async function main() {
 }
 
 // run process from 12pm - 10pm on Sunday only
-cron.schedule('0 12-22 * * SUN', () => {
-  main()
-})
+// cron.schedule('0 12-22 * * SUN', () => {
+cron.schedule(
+  '* * * * *',
+  () => {
+    main()
+  },
+  {
+    timezone: 'America/New_York',
+  }
+)
