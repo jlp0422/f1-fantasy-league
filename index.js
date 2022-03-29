@@ -126,7 +126,8 @@ async function main() {
     })
 
     const existingFinishForRace = getColumnValues(existingColumnData)
-    const hasRaceData = existingFinishForRace.filter(Boolean).length === NUM_DRIVERS
+    const hasRaceData =
+      existingFinishForRace.filter(Boolean).length === NUM_DRIVERS
 
     if (hasRaceData) {
       LOGGER('Race has already been updated, exiting...')
@@ -176,10 +177,12 @@ async function main() {
 }
 
 // run process from 12pm - 10pm on Sunday only
-// cron.schedule('0 12-22 * * SUN', () => {
 cron.schedule(
-  '* * * * *',
+  '0 12-22 * * SUN',
   () => {
+// cron.schedule(
+//   '* * * * *',
+//   () => {
     main()
   },
   {
