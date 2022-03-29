@@ -51,6 +51,7 @@ async function main() {
   }
   const lastCompletedRace = getLatestCompletedRace(races)
   const columnToUpdate = COLUMN_BY_RACE_ID[lastCompletedRace.id]
+  const { columnLetter, columnIndex } = columnToUpdate
 
   const nowMs = new Date().getTime()
   const isRaceOlderThanThreeDays =
@@ -119,7 +120,7 @@ async function main() {
     const existingColumnData = await sheets.spreadsheets.get({
       ranges: [
         // change to 'RACE RESULTS' when going live
-        `'TEST SHEET'!${columnToUpdate.columnLetter}2:${columnToUpdate.columnLetter}21`,
+        `'TEST SHEET'!${columnLetter}2:${columnLetter}21`,
       ],
       spreadsheetId: process.env.SPREADSHEET_ID,
       includeGridData: true,
@@ -148,8 +149,8 @@ async function main() {
                 sheetId: process.env.TEST_SHEET_ID,
                 startRowIndex: 1,
                 endRowIndex: 20,
-                startColumnIndex: columnToUpdate.columnIndex,
-                endColumnIndex: columnToUpdate.columnIndex + 1,
+                startColumnIndex: columnIndex,
+                endColumnIndex: columnIndex + 1,
               },
             },
           },
@@ -180,9 +181,9 @@ async function main() {
 cron.schedule(
   '0 12-22 * * SUN',
   () => {
-// cron.schedule(
-//   '* * * * *',
-//   () => {
+    // cron.schedule(
+    //   '* * * * *',
+    //   () => {
     main()
   },
   {
