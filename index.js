@@ -68,7 +68,7 @@ async function main() {
       ...MAIL_DATA,
       text: message,
     }
-    sgMail.send(data).catch(LOG_ERROR)
+    sgMail.send(data).then(LOG_INFO).catch(LOG_ERROR)
 
     return
   }
@@ -101,7 +101,7 @@ async function main() {
       ...MAIL_DATA,
       text: message,
     }
-    sgMail.send(data).catch(LOG_ERROR)
+    sgMail.send(data).then(LOG_INFO).catch(LOG_ERROR)
   } else {
     const sortedFinishByRow = [...raceFinishAndRows].sort(
       (a, b) => a.row - b.row
@@ -165,7 +165,7 @@ async function main() {
         ...MAIL_DATA,
         text: message,
       }
-      sgMail.send(data).catch(LOG_ERROR)
+      sgMail.send(data).then(LOG_INFO).catch(LOG_ERROR)
     } else {
       LOG_INFO(
         `Something went wrong: ${res.statusText} with error: ${res.data?.error?.message}`
@@ -174,26 +174,28 @@ async function main() {
   }
 }
 
-// run process from 12pm - 10pm on Sunday only
-// production cron schedule
-cron.schedule(
-  '0 12-22 * * SUN',
-  () => {
-    main()
-  },
-  {
-    timezone: 'America/New_York',
-  }
-)
+const cronOptions = {
+  timezone: 'America/New_York',
+}
 
-// every minute
-// development cron schedule
-// cron.schedule(
-//   '* * * * *',
-//   () => {
-//     main()
-//   },
-//   {
-//     timezone: 'America/New_York',
-//   }
-// )
+if (process.env.NODE_ENV === 'production') {
+  // run process from 12pm - 10pm on Sunday only
+  cron.schedule(
+    '0 12-22 * * SUN',
+    () => {
+      main()
+    },
+    cronOptions
+  )
+}
+
+if (process.env.NODE_ENV === 'development') {
+  // every minute
+  cron.schedule(
+    '* * * * *',
+    () => {
+      main()
+    },
+    cronOptions
+  )
+}
