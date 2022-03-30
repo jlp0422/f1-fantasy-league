@@ -29,7 +29,7 @@ sgMail.setApiKey(process.env.SENDGRID_API_KEY)
 const MAIL_DATA = {
   from: 'F1 Fantasy 2022 <f1fantasy2022@em5638.m.jeremyphilipson.com>',
   to: ['jeremyphilipson@gmail.com'],
-  replyTo: 'jeremy@jeremyphilipson.com',
+  replyTo: 'jeremyphilipson@gmail.com',
   subject: 'F1 Standings Update',
 }
 
