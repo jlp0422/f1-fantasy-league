@@ -1,7 +1,6 @@
-import formData from 'form-data'
+import sgMail from '@sendgrid/mail'
 import { readFile } from 'fs/promises'
 import { google } from 'googleapis'
-import Mailgun from 'mailgun.js'
 import ms from 'ms'
 import cron from 'node-cron'
 import fetch from 'node-fetch'
@@ -25,11 +24,12 @@ const key = JSON.parse(
   )
 )
 
-const mailgun = new Mailgun(formData)
-const mg = mailgun.client({ username: 'api', key: process.env.MAILGUN_API_KEY })
+sgMail.setApiKey(process.env.SENDGRID_API_KEY)
+
 const MAIL_DATA = {
-  from: `F1 Fantasy 2022 <f1fantasy2022@${process.env.MAILGUN_DOMAIN}>`,
+  from: 'F1 Fantasy 2022 <f1fantasy2022@em5638.m.jeremyphilipson.com>',
   to: ['jeremyphilipson@gmail.com'],
+  replyTo: 'jeremyphilipson@gmail.com',
   subject: 'F1 Standings Update',
 }
 
@@ -46,9 +46,12 @@ const THREE_DAYS = ms('3d')
 
 async function main() {
   const NOW_DATE = new Date().toUTCString()
-  const LOGGER = (log) => {
-    console.log(NOW_DATE, '::', log)
+  const log = (level) => (log) => {
+    console[level](NOW_DATE, '::', log)
   }
+  const LOG_INFO = log('log')
+  const LOG_ERROR = log('error')
+
   const lastCompletedRace = getLatestCompletedRace(races)
   const columnToUpdate = COLUMN_BY_RACE_ID[lastCompletedRace.id]
   const { columnLetter, columnIndex } = columnToUpdate
@@ -59,15 +62,13 @@ async function main() {
 
   if (isRaceOlderThanThreeDays) {
     const message = 'Race happened more than three days ago, no update required'
-    LOGGER(message)
+    LOG_INFO(message)
+
     const data = {
       ...MAIL_DATA,
       text: message,
     }
-    mg.messages
-      .create(process.env.MAILGUN_DOMAIN, data)
-      .then(LOGGER)
-      .catch(LOGGER)
+    sgMail.send(data).catch(LOG_ERROR)
 
     return
   }
@@ -92,17 +93,15 @@ async function main() {
 
   if (raceFinishAndRows.length < NUM_DRIVERS) {
     const message = 'Mismatch driver length, manual update required!'
-    LOGGER(message)
+    LOG_INFO(message)
     console.log('\n')
-    LOGGER(raceFinishAndRows)
+    LOG_INFO(raceFinishAndRows)
+
     const data = {
       ...MAIL_DATA,
       text: message,
     }
-    mg.messages
-      .create(process.env.MAILGUN_DOMAIN, data)
-      .then(LOGGER)
-      .catch(LOGGER)
+    sgMail.send(data).catch(LOG_ERROR)
   } else {
     const sortedFinishByRow = [...raceFinishAndRows].sort(
       (a, b) => a.row - b.row
@@ -131,10 +130,10 @@ async function main() {
       existingFinishForRace.filter(Boolean).length === NUM_DRIVERS
 
     if (hasRaceData) {
-      LOGGER('Race has already been updated, exiting...')
+      LOG_INFO('Race has already been updated, exiting...')
       return
     }
-    LOGGER('No race data, updating...')
+    LOG_INFO('No race data, updating...')
 
     const res = await sheets.spreadsheets.batchUpdate({
       spreadsheetId: process.env.SPREADSHEET_ID,
@@ -160,17 +159,15 @@ async function main() {
 
     if (res.status === 200 && res.statusText === 'OK') {
       const message = 'Update successful! 🏎💨'
-      LOGGER(message)
+      LOG_INFO(message)
+
       const data = {
         ...MAIL_DATA,
         text: message,
       }
-      mg.messages
-        .create(process.env.MAILGUN_DOMAIN, data)
-        .then(LOGGER)
-        .catch(LOGGER)
+      sgMail.send(data).catch(LOG_ERROR)
     } else {
-      LOGGER(
+      LOG_INFO(
         `Something went wrong: ${res.statusText} with error: ${res.data?.error?.message}`
       )
     }
@@ -178,15 +175,25 @@ async function main() {
 }
 
 // run process from 12pm - 10pm on Sunday only
+// production cron schedule
 cron.schedule(
   '0 12-22 * * SUN',
   () => {
-    // cron.schedule(
-    //   '* * * * *',
-    //   () => {
     main()
   },
   {
     timezone: 'America/New_York',
   }
 )
+
+// every minute
+// development cron schedule
+// cron.schedule(
+//   '* * * * *',
+//   () => {
+//     main()
+//   },
+//   {
+//     timezone: 'America/New_York',
+//   }
+// )
