@@ -1,3 +1,4 @@
+import sgMail from '@sendgrid/mail'
 import { readFile } from 'fs/promises'
 import { google } from 'googleapis'
 import ms from 'ms'
@@ -12,7 +13,6 @@ import {
 import { getColumnValues } from './helpers/spreadsheet.mjs'
 import { getRaceUrl } from './helpers/url.mjs'
 import { COLUMN_BY_RACE_ID, races } from './races.mjs'
-import sgMail from '@sendgrid/mail'
 
 const NUM_DRIVERS = 20
 
@@ -46,11 +46,11 @@ const THREE_DAYS = ms('3d')
 
 async function main() {
   const NOW_DATE = new Date().toUTCString()
-  const LOG = (level) => (log) => {
+  const log = (level) => (log) => {
     console[level](NOW_DATE, '::', log)
   }
-  const LOG_INFO = LOG('log')
-  const LOG_ERROR = LOG('error')
+  const LOG_INFO = log('log')
+  const LOG_ERROR = log('error')
 
   const lastCompletedRace = getLatestCompletedRace(races)
   const columnToUpdate = COLUMN_BY_RACE_ID[lastCompletedRace.id]
@@ -174,15 +174,23 @@ async function main() {
   }
 }
 
-main()
+// run process from 12pm - 10pm on Sunday only
+// production cron schedule
+cron.schedule(
+  '0 12-22 * * SUN',
+  () => {
+    main()
+  },
+  {
+    timezone: 'America/New_York',
+  }
+)
 
-// // run process from 12pm - 10pm on Sunday only
+// every minute
+// development cron schedule
 // cron.schedule(
-//   '0 12-22 * * SUN',
+//   '* * * * *',
 //   () => {
-//     // cron.schedule(
-//     //   '* * * * *',
-//     //   () => {
 //     main()
 //   },
 //   {
