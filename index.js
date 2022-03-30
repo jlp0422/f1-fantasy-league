@@ -94,7 +94,7 @@ async function main() {
   if (raceFinishAndRows.length < NUM_DRIVERS) {
     const message = 'Mismatch driver length, manual update required!'
     LOG_INFO(message)
-    console.log('\n')
+    LOG_INFO('\n')
     LOG_INFO(raceFinishAndRows)
 
     const data = {
