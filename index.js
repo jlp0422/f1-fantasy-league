@@ -147,7 +147,7 @@ async function main() {
                 // process.env.TEST_SHEET_ID
                 sheetId: process.env.RACE_RESULTS_SHEET_ID,
                 startRowIndex: 1,
-                endRowIndex: 20,
+                endRowIndex: 21,
                 startColumnIndex: columnIndex,
                 endColumnIndex: columnIndex + 1,
               },
@@ -174,28 +174,30 @@ async function main() {
   }
 }
 
-const cronOptions = {
-  timezone: 'America/New_York',
-}
+main()
 
-if (process.env.NODE_ENV === 'production') {
-  // run process from 12pm - 10pm on Sunday only
-  cron.schedule(
-    '0 12-22 * * SUN',
-    () => {
-      main()
-    },
-    cronOptions
-  )
-}
+// const cronOptions = {
+//   timezone: 'America/New_York',
+// }
 
-if (process.env.NODE_ENV === 'development') {
-  // every minute
-  cron.schedule(
-    '* * * * *',
-    () => {
-      main()
-    },
-    cronOptions
-  )
-}
+// if (process.env.NODE_ENV === 'production') {
+//   // run process from 12pm - 10pm on Sunday only
+//   cron.schedule(
+//     '0 12-22 * * SUN',
+//     () => {
+//       main()
+//     },
+//     cronOptions
+//   )
+// }
+
+// if (process.env.NODE_ENV === 'development') {
+//   // every minute
+//   cron.schedule(
+//     '* * * * *',
+//     () => {
+//       main()
+//     },
+//     cronOptions
+//   )
+// }
