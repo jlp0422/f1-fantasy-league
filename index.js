@@ -118,8 +118,8 @@ async function main() {
 
     const existingColumnData = await sheets.spreadsheets.get({
       ranges: [
-        // change to 'RACE RESULTS' when going live
-        `'TEST SHEET'!${columnLetter}2:${columnLetter}21`,
+        // 'TEST SHEET'
+        `'RACE RESULTS'!${columnLetter}2:${columnLetter}21`,
       ],
       spreadsheetId: process.env.SPREADSHEET_ID,
       includeGridData: true,
@@ -144,8 +144,8 @@ async function main() {
               rows: sheetFormattedArray,
               fields: 'userEnteredValue',
               range: {
-                // process.env.RACE_RESULTS_SHEET_ID
-                sheetId: process.env.TEST_SHEET_ID,
+                // process.env.TEST_SHEET_ID
+                sheetId: process.env.RACE_RESULTS_SHEET_ID,
                 startRowIndex: 1,
                 endRowIndex: 20,
                 startColumnIndex: columnIndex,
