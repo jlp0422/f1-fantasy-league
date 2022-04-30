@@ -1,9 +1,8 @@
 import { google } from 'googleapis'
+import Link from 'next/link'
+import Header from '../components/Header'
 import { googleAuth } from '../helpers/auth'
 import { toNum } from '../helpers/utils'
-import Link from 'next/link'
-
-import Header from '../components/Header'
 
 const sheets = google.sheets('v4')
 
@@ -22,38 +21,61 @@ function RacePoints({
   return (
     <div>
       <Header />
-      <h1>2022 Race Points</h1>
-      <table>
-        <thead>
-          <tr>
-            <th>Constructor</th>
-            {Object.values(raceColumnByIndex).map((race) => (
-              <th key={race}>{race}</th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {Object.entries(racePointsByConstructorByRace).map(
-            ([constructor, pointsByRace]) => (
-              <tr key={constructor}>
-                <td>
-                  <Link
-                    href={{
-                      pathname: '/constructors/[name]',
-                      query: { name: encodeURIComponent(constructor) },
-                    }}
+      {/* account for dark */}
+      <h1 className="my-2 mx-2 sm:mx-4 text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-900">
+        2022 Race Points
+      </h1>
+      <div className="relative overflow-x-auto shadow-md sm:rounded-lg my-4 mx-2">
+        <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400 dark:bg-gray-800">
+          <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+            <tr>
+              <th scope="col" className="px-6 py-3">
+                Constructor
+              </th>
+              {Object.values(raceColumnByIndex).map((race) => (
+                <th key={race} scope="col" className="px-6 py-3 text-center">
+                  {race}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {Object.entries(racePointsByConstructorByRace).map(
+              ([constructor, pointsByRace]) => (
+                <tr
+                  key={constructor}
+                  className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
+                >
+                  <th
+                    scope="row"
+                    className="px-6 py-4 font-medium text-gray-900 dark:text-white whitespace-nowrap"
                   >
-                    <a>{constructor}</a>
-                  </Link>
-                </td>
-                {pointsByRace.map((point, index) => (
-                  <td key={index}>{point}</td>
-                ))}
-              </tr>
-            )
-          )}
-        </tbody>
-      </table>
+                    <Link
+                      href={{
+                        pathname: '/constructors/[name]',
+                        query: { name: encodeURIComponent(constructor) },
+                      }}
+                    >
+                      <a>{constructor}</a>
+                    </Link>
+                  </th>
+                  <td className="px-6 py-4 text-center">
+                    {racePointsByConstructor[constructor].total}
+                  </td>
+                  {pointsByRace.map((pointValue, index) => (
+                    <td
+                      className="px-6 py-4 text-center"
+                      key={`${constructor}-${pointValue}-${index}`}
+                    >
+                      {pointValue}
+                    </td>
+                  ))}
+                </tr>
+              )
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   )
 }
