@@ -30,7 +30,7 @@ const Constructor = ({
         {drivers.map((driver) => {
           const { pointsByRace, total } = racePointsByDriver[driver]
           return (
-            <div style={{ display: 'flex', gap: '10px' }} key={driver}>
+            <div className="flex gap-3" key={driver}>
               <p>{driver}</p>
               <p>{total}</p>
               {pointsByRace.map((points, index) => (
