@@ -1,6 +1,8 @@
 import { google } from 'googleapis'
 import { googleAuth } from '../helpers/auth'
 import { toNum } from '../helpers/utils'
+import Link from 'next/link'
+
 import Header from '../components/Header'
 
 const sheets = google.sheets('v4')
@@ -11,6 +13,12 @@ function RacePoints({
   raceColumnByIndex,
   racePointsByConstructorByRace,
 }) {
+  console.log({
+    racePointTable,
+    racePointsByConstructor,
+    raceColumnByIndex,
+    racePointsByConstructorByRace,
+  })
   return (
     <div>
       <Header />
@@ -28,7 +36,16 @@ function RacePoints({
           {Object.entries(racePointsByConstructorByRace).map(
             ([constructor, pointsByRace]) => (
               <tr key={constructor}>
-                <td>{constructor}</td>
+                <td>
+                  <Link
+                    href={{
+                      pathname: '/constructors/[name]',
+                      query: { name: encodeURIComponent(constructor) },
+                    }}
+                  >
+                    <a>{constructor}</a>
+                  </Link>
+                </td>
                 {pointsByRace.map((point, index) => (
                   <td key={index}>{point}</td>
                 ))}
@@ -44,15 +61,14 @@ function RacePoints({
 export async function getServerSideProps(context) {
   google.options({ auth: googleAuth })
 
-  const existingColumnData = await sheets.spreadsheets.get({
-    ranges: ["'RACE POINTS'!A1:Z17"],
+  const racePointsData = await sheets.spreadsheets.get({
+    ranges: ["'RACE POINTS'!A1:AA17"],
     spreadsheetId: process.env.SPREADSHEET_ID,
     includeGridData: true,
   })
 
-  const racePoints = existingColumnData.data.sheets[0].data[0].rowData.map(
-    (row) =>
-      row.values.map((value) => value.formattedValue || null).filter(Boolean)
+  const racePoints = racePointsData.data.sheets[0].data[0].rowData.map((row) =>
+    row.values.map((value) => value.formattedValue || null).filter(Boolean)
   )
 
   const raceColumnByIndex = racePoints
@@ -67,7 +83,7 @@ export async function getServerSideProps(context) {
     )
 
   const racePointsByConstructor = racePoints.slice(1).reduce((memo, item) => {
-    const [constructor, driver, totalPoints, ...pointsByRace] = item
+    const [constructor, _principal, driver, totalPoints, ...pointsByRace] = item
     const driverTotalPoints = toNum(totalPoints)
     if (!memo[constructor]) {
       memo[constructor] = {}
