@@ -1,0 +1,20 @@
+{
+  "name": "f1-fantasy-2022-client",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "<jeremyphilipson@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "dotenv": "^16.0.0",
+    "googleapis": "^100.0.0",
+    "next": "^12.1.5",
+    "react": "^18.1.0",
+    "react-dom": "^18.1.0"
+  }
+}

@@ -4,14 +4,14 @@ import { google } from 'googleapis'
 import ms from 'ms'
 import cron from 'node-cron'
 import fetch from 'node-fetch'
-import { DRIVER_TO_ROW } from './helpers/drivers.mjs'
+import { DRIVER_TO_ROW } from './server/helpers/drivers.mjs'
 import {
   getFinishByRacer,
   getLatestCompletedRace,
   isDNF,
-} from './helpers/races.mjs'
-import { getColumnValues } from './helpers/spreadsheet.mjs'
-import { getRaceUrl } from './helpers/url.mjs'
+} from './server/helpers/races.mjs'
+import { getColumnValues } from './server/helpers/spreadsheet.mjs'
+import { getRaceUrl } from './server/helpers/url.mjs'
 import { COLUMN_BY_RACE_ID, races } from './races.mjs'
 
 const NUM_DRIVERS = 20
