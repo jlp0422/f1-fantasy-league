@@ -25,6 +25,21 @@ const Constructor = ({
       <h1>{constructorName}</h1>
       <h2>Team Principal: {teamPrincipal}</h2>
       <h2>Drivers: {drivers.join(', ')}</h2>
+      <h2>Total Points: {racePointsByDriver.total}</h2>
+      <div>
+        {drivers.map((driver) => {
+          const { pointsByRace , total } = racePointsByDriver[driver]
+          return (
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <p>{driver}</p>
+              <p>{total}</p>
+              {pointsByRace.map((points) => (
+                <p>{points}</p>
+              ))}
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }
