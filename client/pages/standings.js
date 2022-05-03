@@ -20,15 +20,15 @@ function Standings({ standings }) {
               key={constructor}
               className="w-full px-4 py-2.5 border-b border-gray-200 dark:border-gray-600 first-of-type:rounded-t-lg last-of-type:rounded-b-lg"
             >
-              <div class="flex items-center space-x-4">
-                <div class="flex-shrink-0">{index + 1}.</div>
-                <div class="flex items-center flex-1 min-w-0">
+              <div className="flex items-center space-x-4">
+                <div className="flex-shrink-0">{index + 1}.</div>
+                <div className="flex items-center flex-1 min-w-0">
                   <img
-                    class="w-12 h-12 rounded-full"
+                    className="w-12 h-12 rounded-full"
                     src="https://www.fillmurray.com/g/300/300"
                     alt={`${constructor} team car`}
                   />
-                  <p class="ml-2 text-lg font-medium text-gray-900 truncate dark:text-white">
+                  <p className="ml-2 text-lg font-medium text-gray-900 truncate dark:text-white">
                     <Link
                       href={{
                         pathname: '/constructors/[name]',
@@ -39,7 +39,7 @@ function Standings({ standings }) {
                     </Link>
                   </p>
                 </div>
-                <div class="inline-flex text-lg items-center font-semibold text-gray-900 dark:text-white">
+                <div className="inline-flex text-lg items-center font-semibold text-gray-900 dark:text-white">
                   {points}
                 </div>
               </div>
