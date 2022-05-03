@@ -41,37 +41,51 @@ function RacePoints({
           </thead>
           <tbody>
             {Object.entries(racePointsByConstructorByRace).map(
-              ([constructor, pointsByRace]) => (
-                <tr
-                  key={constructor}
-                  className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
-                >
-                  <th
-                    scope="row"
-                    className="px-6 py-4 font-medium text-gray-900 dark:text-white whitespace-nowrap"
+              ([constructor, pointsByRace]) => {
+                // minus 1 to account for total points column
+                const numExtraColumns =
+                  Object.keys(raceColumnByIndex).length -
+                  pointsByRace.length -
+                  1
+                const extraColumns = new Array(numExtraColumns).fill(0)
+                return (
+                  <tr
+                    key={constructor}
+                    className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
                   >
-                    <Link
-                      href={{
-                        pathname: '/constructors/[name]',
-                        query: { name: encodeURIComponent(constructor) },
-                      }}
+                    <th
+                      scope="row"
+                      className="px-6 py-4 font-medium text-gray-900 dark:text-white whitespace-nowrap"
                     >
-                      <a>{constructor}</a>
-                    </Link>
-                  </th>
-                  <td className="px-6 py-4 text-center">
-                    {racePointsByConstructor[constructor].total}
-                  </td>
-                  {pointsByRace.map((pointValue, index) => (
-                    <td
-                      className="px-6 py-4 text-center"
-                      key={`${constructor}-${pointValue}-${index}`}
-                    >
-                      {pointValue}
+                      <Link
+                        href={{
+                          pathname: '/constructors/[name]',
+                          query: { name: encodeURIComponent(constructor) },
+                        }}
+                      >
+                        <a>{constructor}</a>
+                      </Link>
+                    </th>
+                    <td className="px-6 py-4 text-center">
+                      {racePointsByConstructor[constructor].total}
                     </td>
-                  ))}
-                </tr>
-              )
+                    {pointsByRace.map((pointValue, index) => (
+                      <td
+                        className="px-6 py-4 text-center"
+                        key={`${constructor}-${pointValue}-${index}`}
+                      >
+                        {pointValue}
+                      </td>
+                    ))}
+                    {extraColumns.map((_, index) => (
+                      <td
+                        className="px-6 py-4 text-center"
+                        key={`empty-${constructor}-${index}`}
+                      />
+                    ))}
+                  </tr>
+                )
+              }
             )}
           </tbody>
         </table>
