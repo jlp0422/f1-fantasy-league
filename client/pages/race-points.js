@@ -12,12 +12,13 @@ function RacePoints({
   raceColumnByIndex,
   racePointsByConstructorByRace,
 }) {
-  console.log({
-    racePointTable,
-    racePointsByConstructor,
-    raceColumnByIndex,
-    racePointsByConstructorByRace,
-  })
+  // console.log({
+  //   racePointTable,
+  //   racePointsByConstructor,
+  //   raceColumnByIndex,
+  //   racePointsByConstructorByRace,
+  // })
+  // TODO: add sorting by column header
   return (
     <div>
       <Header />
@@ -62,8 +63,9 @@ function RacePoints({
                           pathname: '/constructors/[name]',
                           query: { name: encodeURIComponent(constructor) },
                         }}
+
                       >
-                        <a>{constructor}</a>
+                        <a className="dark:hover:text-gray-300">{constructor}</a>
                       </Link>
                     </th>
                     <td className="px-6 py-4 text-center">
