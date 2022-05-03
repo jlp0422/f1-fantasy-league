@@ -26,7 +26,7 @@ function RacePoints({
       <h1 className="my-2 mx-2 sm:mx-4 text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-900">
         2022 Race Points
       </h1>
-      <div className="relative overflow-x-auto shadow-md sm:rounded-lg my-4 mx-2">
+      <div className="relative overflow-x-auto shadow-md rounded-lg my-4 sm:mx-8 mx-4">
         <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400 dark:bg-gray-800">
           <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
             <tr>
