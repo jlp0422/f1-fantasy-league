@@ -4,7 +4,11 @@ module.exports = {
     "./components/**/*.{js,ts}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      backgroundImage: {
+        'winning-formula': "url('/cars/winning-formula.jpeg')",
+      }
+    },
   },
   plugins: [],
 }
