@@ -13,8 +13,8 @@ const Header = () => {
   ]
   const activeRouteClass = 'dark:text-white'
   return (
-    <nav className="px-2 py-4 bg-white border-gray-200 sm:px-4 dark:bg-gray-800">
-      <div className="container flex flex-wrap items-center justify-between mx-auto">
+    <nav className="px-4 py-4 bg-white border-gray-200 sm:px-8 dark:bg-gray-800">
+      <div className="flex flex-wrap items-center justify-between">
         {/* <a href="https://flowbite.com" className="flex items-center"> */}
         {/* <img
             src="/docs/images/logo.svg"

@@ -1,8 +1,14 @@
 import Header from '../components/Header'
+import Head from 'next/head'
 
 const Layout = ({ children, title }) => {
   return (
     <div>
+      <Head>
+        <title>{title}</title>
+        <meta name="viewport" content="initial-scale=1.0, width=device-width" />
+        <meta property="og:title" content={title} key="title" />
+      </Head>
       <Header />
       <main className="mx-4 mt-4 mb-12 sm:mx-8">
         {title ? (

@@ -59,7 +59,7 @@ function RacePoints({
                           query: { name: encodeURIComponent(constructor) },
                         }}
                       >
-                        <a className="dark:hover:text-gray-300">
+                        <a className="text-sm sm:text-base dark:hover:text-gray-300">
                           {constructor}
                         </a>
                       </Link>
