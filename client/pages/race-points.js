@@ -24,7 +24,7 @@ function RacePoints({
       <Header />
       {/* account for dark */}
       <h1 className="mx-2 my-2 text-3xl font-bold tracking-tight text-gray-900 sm:mx-4 dark:text-gray-900">
-        2022 Race Points
+        Points by Race
       </h1>
       <div className="relative mx-4 my-4 overflow-x-auto rounded-lg shadow-md sm:mx-8">
         <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400 dark:bg-gray-800">
@@ -52,7 +52,7 @@ function RacePoints({
                 return (
                   <tr
                     key={constructor}
-                    className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600  odd:bg-white even:bg-gray-50 odd:dark:bg-gray-800 even:dark:bg-gray-700"
+                    className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 odd:bg-white even:bg-gray-50 odd:dark:bg-gray-800 even:dark:bg-gray-700"
                   >
                     <th
                       scope="row"

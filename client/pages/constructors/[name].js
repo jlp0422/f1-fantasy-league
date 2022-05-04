@@ -70,11 +70,12 @@ const Constructor = ({
           </div>
         </div>
 
+         {/* mobile points table */}
         <div className="relative visible block my-4 overflow-x-auto rounded-lg shadow-md md:hidden md:invisible">
           <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400 dark:bg-gray-800">
             <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
               <tr>
-                <th scope="col" className="px-6 py-3">
+                <th scope="col" className="px-3 py-3">
                   &nbsp;
                 </th>
                 {drivers.map((driver) => (
@@ -95,7 +96,7 @@ const Constructor = ({
                     key={race}
                     className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 odd:bg-white even:bg-gray-50 odd:dark:bg-gray-800 even:dark:bg-gray-700"
                   >
-                    <th key={race} scope="col" className="px-6 py-3 text-left">
+                    <th key={race} scope="col" className="py-3 pl-6 pr-3 text-left">
                       {race}
                     </th>
                     <td className="px-6 py-4 text-center">
@@ -115,6 +116,7 @@ const Constructor = ({
           </table>
         </div>
 
+         {/* desktop points table */}
         <div className="relative invisible hidden my-4 overflow-x-auto rounded-lg shadow-md md:block md:visible">
           <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400 dark:bg-gray-800">
             <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
