@@ -1,11 +1,10 @@
-import Header from '../components/Header'
+import Layout from '../components/Layout'
 
 function HomePage() {
   return (
-    <div>
-      <Header />
+    <Layout title="Home">
       <h1>Welcome to Next.js!</h1>
-    </div>
+    </Layout>
   )
 }
 

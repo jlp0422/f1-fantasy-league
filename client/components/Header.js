@@ -8,6 +8,7 @@ const Header = () => {
   const [isOpen, setIsOpen] = useState(false)
   const { pathname } = useRouter()
   const routes = [
+    { href: '/', title: 'Home'},
     { href: '/standings', title: 'Standings' },
     { href: '/race-points', title: 'Points by Race' },
   ]
@@ -15,16 +16,18 @@ const Header = () => {
   return (
     <nav className="px-4 py-4 bg-white border-gray-200 sm:px-8 dark:bg-gray-800">
       <div className="flex flex-wrap items-center justify-between">
-        {/* <a href="https://flowbite.com" className="flex items-center"> */}
-        {/* <img
+        <Link href="/">
+          <a className="flex items-center">
+            {/* <img
             src="/docs/images/logo.svg"
             className="h-6 mr-3 sm:h-9"
             alt="Flowbite Logo"
           /> */}
-        <span className="self-center text-xl font-semibold whitespace-nowrap dark:text-white">
-          F1 Fantasy 2022
-        </span>
-        {/* </a> */}
+            <span className="self-center text-xl font-semibold whitespace-nowrap dark:text-white">
+              F1 Fantasy 2022
+            </span>
+          </a>
+        </Link>
         <button
           data-collapse-toggle="mobile-menu"
           type="button"
