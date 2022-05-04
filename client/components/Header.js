@@ -1,8 +1,8 @@
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useState } from 'react'
-import Dismiss from './icons/Dismiss'
-import Hamburger from './icons/Hamburger'
+import Dismiss from 'components/icons/Dismiss'
+import Hamburger from 'components/icons/Hamburger'
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false)
