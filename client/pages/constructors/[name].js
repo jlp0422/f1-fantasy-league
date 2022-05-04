@@ -24,10 +24,10 @@ const Constructor = ({
   return (
     <div>
       <Header />
-      {/* <div className="max-w-sm mx-auto bg-white rounded-lg border border-gray-200 shadow-md dark:bg-gray-800 dark:border-gray-700">
+      {/* <div className="max-w-sm mx-auto bg-white border border-gray-200 rounded-lg shadow-md dark:bg-gray-800 dark:border-gray-700">
         <a href="#">
           <img
-            className="rounded-t-lg mx-auto"
+            className="mx-auto rounded-t-lg"
             src="https://www.fillmurray.com/g/300/300"
             alt=""
           />
@@ -44,26 +44,23 @@ const Constructor = ({
           </p>
           <a
             href="#"
-            className="inline-flex items-center py-2 px-3 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+            className="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
           >
             Read more
           </a>
         </div>
       </div> */}
       <div className="">
-        <h1 className="my-2 mx-2 sm:mx-4 text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-900">
+        <h1 className="mx-2 my-2 text-3xl font-bold tracking-tight text-gray-900 sm:mx-4 dark:text-gray-900">
           {constructorName}
         </h1>
-        <h2 className="my-2 mx-2 sm:mx-4 text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-900">
+        <h2 className="mx-2 my-2 text-2xl font-bold tracking-tight text-gray-900 sm:mx-4 dark:text-gray-900">
           Team Principal: {teamPrincipal}
         </h2>
-        <h2 className="my-2 mx-2 sm:mx-4 text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-900">
+        <h2 className="mx-2 my-2 text-2xl font-bold tracking-tight text-gray-900 sm:mx-4 dark:text-gray-900">
           Total Points: {racePointsByDriver.total}
         </h2>
-        {/* <h2 className="my-2 mx-2 sm:mx-4 text-xl tracking-tight text-gray-900 dark:text-gray-900">
-          Drivers: {drivers.join(', ')}
-        </h2> */}
-        <div className="relative overflow-x-auto shadow-md rounded-lg my-4 sm:mx-8 mx-4">
+        <div className="relative mx-4 my-4 overflow-x-auto rounded-lg shadow-md sm:mx-8">
           <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400 dark:bg-gray-800">
             <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
               <tr>
