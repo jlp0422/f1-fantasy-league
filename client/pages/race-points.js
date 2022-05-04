@@ -1,6 +1,6 @@
 import { google } from 'googleapis'
 import Link from 'next/link'
-import Header from '../components/Header'
+import Layout from '../components/Layout'
 import { googleAuth } from '../helpers/auth'
 import { toNum } from '../helpers/utils'
 
@@ -20,13 +20,8 @@ function RacePoints({
   // })
   // TODO: add sorting by column header
   return (
-    <div>
-      <Header />
-      {/* account for dark */}
-      <h1 className="mx-2 my-2 text-3xl font-bold tracking-tight text-gray-900 sm:mx-4 dark:text-gray-900">
-        Points by Race
-      </h1>
-      <div className="relative mx-4 my-4 overflow-x-auto rounded-lg shadow-md sm:mx-8">
+    <Layout title="Points by Race">
+      <div className="relative my-4 overflow-x-auto rounded-lg shadow-md">
         <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400 dark:bg-gray-800">
           <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
             <tr>
@@ -63,9 +58,10 @@ function RacePoints({
                           pathname: '/constructors/[name]',
                           query: { name: encodeURIComponent(constructor) },
                         }}
-
                       >
-                        <a className="dark:hover:text-gray-300">{constructor}</a>
+                        <a className="dark:hover:text-gray-300">
+                          {constructor}
+                        </a>
                       </Link>
                     </th>
                     <td className="px-6 py-4 text-center">
@@ -92,7 +88,7 @@ function RacePoints({
           </tbody>
         </table>
       </div>
-    </div>
+    </Layout>
   )
 }
 
