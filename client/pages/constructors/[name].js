@@ -5,6 +5,9 @@ import { toNum } from '../../helpers/utils'
 
 const sheets = google.sheets('v4')
 
+const getCarUrl = (constructor) =>
+  constructor.toLowerCase().split(' ').join('-')
+
 const Constructor = ({
   constructorName,
   drivers,
@@ -21,46 +24,98 @@ const Constructor = ({
     totalPointsByRace,
     raceColumnByIndex,
   })
+  const constructorCarImageUrl = 'winning-formula' //getCarUrl(constructorName)
+  const data = [
+    {
+      value: constructorName,
+      label: 'Constructor',
+    },
+    {
+      value: teamPrincipal,
+      label: 'Team Principal',
+    },
+    {
+      value: racePointsByDriver.total,
+      label: 'Total Points',
+    },
+  ]
   return (
     <div>
       <Header />
-      {/* <div className="max-w-sm mx-auto bg-white border border-gray-200 rounded-lg shadow-md dark:bg-gray-800 dark:border-gray-700">
-        <a href="#">
+      <div className="mx-4 my-4 sm:mx-8">
+        <div className="flex flex-col items-center sm:flex-row">
           <img
-            className="mx-auto rounded-t-lg"
-            src="https://www.fillmurray.com/g/300/300"
-            alt=""
+            src={`/cars/${constructorCarImageUrl}.jpeg`}
+            className="rounded-lg shadow-lg w-72 h-72"
           />
-        </a>
-        <div className="p-5">
-          <a href="#">
-            <h5 className="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
-              Noteworthy technology acquisitions 2021
-            </h5>
-          </a>
-          <p className="mb-3 font-normal text-gray-700 dark:text-gray-400">
-            Here are the biggest enterprise technology acquisitions of 2021 so
-            far, in reverse chronological order.
-          </p>
-          <a
-            href="#"
-            className="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-          >
-            Read more
-          </a>
+          <div className="mx-4 my-2 text-center sm:mx-8 sm:text-left">
+            {data.map(({ value, label }, index) => {
+              const fontSizeClass =
+                index > 0
+                  ? 'text-3xl md:text-4xl lg:text-5xl'
+                  : 'text-4xl md:text-5xl lg:text-6xl'
+              return (
+                <div className="flex flex-col mt-4 lg:mt-2">
+                  <h2
+                    className={`font-bold tracking-tight text-gray-900 dark:text-gray-900 ${fontSizeClass}`}
+                  >
+                    {value}
+                  </h2>
+                  <p className="leading-none tracking-wide text-gray-600 text-md lg:text-lg dark:text-gray-600">
+                    {label}
+                  </p>
+                </div>
+              )
+            })}
+          </div>
         </div>
-      </div> */}
-      <div className="">
-        <h1 className="mx-2 my-2 text-3xl font-bold tracking-tight text-gray-900 sm:mx-4 dark:text-gray-900">
-          {constructorName}
-        </h1>
-        <h2 className="mx-2 my-2 text-2xl font-bold tracking-tight text-gray-900 sm:mx-4 dark:text-gray-900">
-          Team Principal: {teamPrincipal}
-        </h2>
-        <h2 className="mx-2 my-2 text-2xl font-bold tracking-tight text-gray-900 sm:mx-4 dark:text-gray-900">
-          Total Points: {racePointsByDriver.total}
-        </h2>
-        <div className="relative mx-4 my-4 overflow-x-auto rounded-lg shadow-md sm:mx-8">
+
+        <div className="relative visible block my-4 overflow-x-auto rounded-lg shadow-md md:hidden md:invisible">
+          <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400 dark:bg-gray-800">
+            <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+              <tr>
+                <th scope="col" className="px-6 py-3">
+                  &nbsp;
+                </th>
+                {drivers.map((driver) => (
+                  <th scope="col" className="px-6 py-3 text-center">
+                    {driver}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {Object.values(raceColumnByIndex).map((race, index) => {
+                const driverOne = drivers[0]
+                const driverTwo = drivers[1]
+                const driverOnePoints = racePointsByDriver[driverOne]
+                const driverTwoPoints = racePointsByDriver[driverTwo]
+                return (
+                  <tr
+                    key={race}
+                    className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 odd:bg-white even:bg-gray-50 odd:dark:bg-gray-800 even:dark:bg-gray-700"
+                  >
+                    <th key={race} scope="col" className="px-6 py-3 text-left">
+                      {race}
+                    </th>
+                    <td className="px-6 py-4 text-center">
+                      {index > 0
+                        ? driverOnePoints.pointsByRace[index - 1]
+                        : driverOnePoints.total}
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      {index > 0
+                        ? driverTwoPoints.pointsByRace[index - 1]
+                        : driverTwoPoints.total}
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="relative invisible hidden my-4 overflow-x-auto rounded-lg shadow-md md:block md:visible">
           <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400 dark:bg-gray-800">
             <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
               <tr>
@@ -86,7 +141,7 @@ const Constructor = ({
                 return (
                   <tr
                     key={driver}
-                    className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
+                    className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 odd:bg-white even:bg-gray-50 odd:dark:bg-gray-800 even:dark:bg-gray-700"
                   >
                     <th
                       scope="row"
