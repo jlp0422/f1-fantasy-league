@@ -6,7 +6,7 @@ import { googleAuth } from 'helpers/auth'
 const sheets = google.sheets('v4')
 
 const Standings = ({ standings }) => {
-  console.log({ standings })
+  // console.log({ standings })
   return (
     <Layout title="Standings">
       <ol className="w-auto my-4 text-lg font-medium text-gray-900 bg-white border border-gray-200 rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white">

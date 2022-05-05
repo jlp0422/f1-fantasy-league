@@ -16,14 +16,18 @@ const Constructor = ({
   teamPrincipal,
   raceColumnByIndex,
 }) => {
-  console.log({
-    constructorName,
-    teamPrincipal,
-    drivers,
-    racePointsByDriver,
-    totalPointsByRace,
-    raceColumnByIndex,
-  })
+  // console.log({
+  //   constructorName,
+  //   teamPrincipal,
+  //   drivers,
+  //   racePointsByDriver,
+  //   totalPointsByRace,
+  //   raceColumnByIndex,
+  // })
+  if (!constructorName) {
+    return null
+  }
+
   const constructorCarImageUrl = 'winning-formula' //getCarUrl(constructorName)
   const data = [
     {
