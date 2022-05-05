@@ -1,4 +1,4 @@
-import Header from '../components/Header'
+import Header from 'components/Header'
 import Head from 'next/head'
 
 const Layout = ({ children, title }) => {

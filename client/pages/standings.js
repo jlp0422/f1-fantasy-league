@@ -1,7 +1,7 @@
 import { google } from 'googleapis'
 import Link from 'next/link'
-import Layout from '../components/Layout'
-import { googleAuth } from '../helpers/auth'
+import Layout from 'components/Layout'
+import { googleAuth } from 'helpers/auth'
 
 const sheets = google.sheets('v4')
 
