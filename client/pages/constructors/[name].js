@@ -1,7 +1,9 @@
-import { google } from 'googleapis'
 import Layout from 'components/Layout'
+import { CONSTRUCTOR_NAMES } from 'constants/index'
+import { google } from 'googleapis'
 import { googleAuth } from 'helpers/auth'
 import { toNum } from 'helpers/utils'
+import { useRouter } from 'next/router'
 
 const sheets = google.sheets('v4')
 
@@ -16,14 +18,63 @@ const Constructor = ({
   teamPrincipal,
   raceColumnByIndex,
 }) => {
-  console.log({
-    constructorName,
-    teamPrincipal,
-    drivers,
-    racePointsByDriver,
-    totalPointsByRace,
-    raceColumnByIndex,
-  })
+  // console.log({
+  // constructorName,
+  // teamPrincipal,
+  // drivers,
+  // racePointsByDriver,
+  // totalPointsByRace,
+  // raceColumnByIndex,
+  // })
+  const router = useRouter()
+
+  if (router.isFallback) {
+    const fallbackData = [
+      {
+        value: '&nbsp',
+        label: 'Constructor',
+      },
+      {
+        value: '&nbsp;',
+        label: 'Team Principal',
+      },
+      {
+        value: '&nbsp;',
+        label: 'Total Points',
+      },
+    ]
+    return (
+      <Layout>
+        <div className="flex flex-col items-center sm:flex-row">
+          <img
+            src={`/cars/winning-formula.jpeg`}
+            className="rounded-lg shadow-lg w-72 h-72"
+          />
+          <div className="mx-4 my-2 text-center sm:mx-8 sm:text-left">
+            {fallbackData.map(({ value, label }, index) => {
+              const fontSizeClass =
+                index > 0
+                  ? 'text-3xl md:text-4xl lg:text-5xl'
+                  : 'text-4xl md:text-5xl lg:text-6xl'
+              return (
+                <div key={label} className="flex flex-col mt-4 lg:mt-2">
+                  <h2
+                    className={`font-bold tracking-tight text-gray-900 dark:text-gray-900 ${fontSizeClass}`}
+                    dangerouslySetInnerHTML={{ __html: value }}
+                  />
+
+                  <p className="leading-none tracking-wide text-gray-600 text-md lg:text-lg dark:text-gray-600">
+                    {label}
+                  </p>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      </Layout>
+    )
+  }
+
   const constructorCarImageUrl = 'winning-formula' //getCarUrl(constructorName)
   const data = [
     {
@@ -53,7 +104,7 @@ const Constructor = ({
                 ? 'text-3xl md:text-4xl lg:text-5xl'
                 : 'text-4xl md:text-5xl lg:text-6xl'
             return (
-              <div className="flex flex-col mt-4 lg:mt-2">
+              <div key={label} className="flex flex-col mt-4 lg:mt-2">
                 <h2
                   className={`font-bold tracking-tight text-gray-900 dark:text-gray-900 ${fontSizeClass}`}
                 >
@@ -77,7 +128,7 @@ const Constructor = ({
                 &nbsp;
               </th>
               {drivers.map((driver) => (
-                <th scope="col" className="px-6 py-3 text-center">
+                <th key={driver} scope="col" className="px-6 py-3 text-center">
                   {driver}
                 </th>
               ))}
@@ -176,7 +227,16 @@ const Constructor = ({
   )
 }
 
-export async function getServerSideProps({ params }) {
+export async function getStaticPaths() {
+  return {
+    paths: CONSTRUCTOR_NAMES.map((constructor) => ({
+      params: { name: encodeURIComponent(constructor) },
+    })),
+    fallback: true,
+  }
+}
+
+export async function getStaticProps({ params }) {
   const constructorName = decodeURIComponent(params.name)
   google.options({ auth: googleAuth })
 
