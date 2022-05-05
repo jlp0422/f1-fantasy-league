@@ -192,12 +192,13 @@ export async function getStaticPaths() {
     paths: constructors.map((constructor) => ({
       params: { name: encodeURIComponent(constructor) },
     })),
-    fallback: false,
+    fallback: true,
   }
 }
 
 export async function getStaticProps({ params }) {
   const constructorName = decodeURIComponent(params.name)
+  console.log({params, constructorName})
   google.options({ auth: googleAuth })
 
   const racePointsData = await sheets.spreadsheets.get({
