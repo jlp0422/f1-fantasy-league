@@ -2,6 +2,7 @@ import { google } from 'googleapis'
 import Layout from 'components/Layout'
 import { googleAuth } from 'helpers/auth'
 import { toNum } from 'helpers/utils'
+import { CONSTRUCTOR_NAMES } from 'constants/index'
 
 const sheets = google.sheets('v4')
 
@@ -16,14 +17,14 @@ const Constructor = ({
   teamPrincipal,
   raceColumnByIndex,
 }) => {
-  console.log({
-    constructorName,
-    // teamPrincipal,
-    // drivers,
-    // racePointsByDriver,
-    // totalPointsByRace,
-    // raceColumnByIndex,
-  })
+  // console.log({
+  // constructorName,
+  // teamPrincipal,
+  // drivers,
+  // racePointsByDriver,
+  // totalPointsByRace,
+  // raceColumnByIndex,
+  // })
   if (!constructorName) {
     return null
   }
@@ -180,20 +181,9 @@ const Constructor = ({
   )
 }
 
-const constructors = [
-  'Winning Formula',
-  "Guenther's Angels",
-  'Zak Brown Band',
-  'Turbo Team Racing',
-  'Once Campeonatos',
-  '#TeamNoSleep',
-  'Look at this Hornergraph',
-  'Team AuZhous',
-]
-
 export async function getStaticPaths() {
   return {
-    paths: constructors.map((constructor) => ({
+    paths: CONSTRUCTOR_NAMES.map((constructor) => ({
       params: { name: encodeURIComponent(constructor) },
     })),
     fallback: true,
@@ -202,7 +192,6 @@ export async function getStaticPaths() {
 
 export async function getStaticProps({ params }) {
   const constructorName = decodeURIComponent(params.name)
-  console.log({params, constructorName})
   google.options({ auth: googleAuth })
 
   const racePointsData = await sheets.spreadsheets.get({
