@@ -5,7 +5,7 @@ import { googleAuth } from 'helpers/auth'
 
 const sheets = google.sheets('v4')
 
-function Standings({ standings }) {
+const Standings = ({ standings }) => {
   console.log({ standings })
   return (
     <Layout title="Standings">
@@ -49,7 +49,7 @@ function Standings({ standings }) {
   )
 }
 
-export async function getServerSideProps(context) {
+export async function getStaticProps(context) {
   google.options({ auth: googleAuth })
 
   const existingColumnData = await sheets.spreadsheets.get({

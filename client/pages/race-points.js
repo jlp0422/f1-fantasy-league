@@ -6,12 +6,12 @@ import { toNum } from 'helpers/utils'
 
 const sheets = google.sheets('v4')
 
-function RacePoints({
+const RacePoints = ({
   racePointTable,
   racePointsByConstructor,
   raceColumnByIndex,
   racePointsByConstructorByRace,
-}) {
+}) => {
   // console.log({
   //   racePointTable,
   //   racePointsByConstructor,
@@ -92,7 +92,7 @@ function RacePoints({
   )
 }
 
-export async function getServerSideProps(context) {
+export async function getStaticProps(context) {
   google.options({ auth: googleAuth })
 
   const racePointsData = await sheets.spreadsheets.get({
