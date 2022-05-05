@@ -3,6 +3,8 @@ import Layout from 'components/Layout'
 import { googleAuth } from 'helpers/auth'
 import { toNum } from 'helpers/utils'
 import { CONSTRUCTOR_NAMES } from 'constants/index'
+import { useRouter } from 'next/router'
+
 
 const sheets = google.sheets('v4')
 
@@ -25,9 +27,19 @@ const Constructor = ({
   // totalPointsByRace,
   // raceColumnByIndex,
   // })
-  if (!constructorName) {
-    return null
+
+  const router = useRouter()
+
+  // If the page is not yet generated, this will be displayed
+  // initially until getStaticProps() finishes running
+  if (router.isFallback) {
+    console.log('** fallback ** ')
+    return <div>Loading...</div>
   }
+
+  // if (!constructorName) {
+  //   return null
+  // }
 
   const constructorCarImageUrl = 'winning-formula' //getCarUrl(constructorName)
   const data = [
