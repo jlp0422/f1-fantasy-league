@@ -176,7 +176,27 @@ const Constructor = ({
   )
 }
 
-export async function getServerSideProps({ params }) {
+const constructors = [
+  'Winning Formula',
+  "Guenther's Angels",
+  'Zak Brown Band',
+  'Turbo Team Racing',
+  'Once Campeonatos',
+  '#TeamNoSleep',
+  'Look at this Hornergraph',
+  'Team AuZhous',
+]
+
+export async function getStaticPaths() {
+  return {
+    paths: constructors.map((constructor) => ({
+      params: { name: encodeURIComponent(constructor) },
+    })),
+    fallback: false,
+  }
+}
+
+export async function getStaticProps({ params }) {
   const constructorName = decodeURIComponent(params.name)
   google.options({ auth: googleAuth })
 
