@@ -2,13 +2,11 @@ import Layout from 'components/Layout'
 import { CONSTRUCTOR_NAMES } from 'constants/index'
 import { google } from 'googleapis'
 import { googleAuth } from 'helpers/auth'
+import CarImage from 'components/CarImage'
 import { toNum } from 'helpers/utils'
 import { useRouter } from 'next/router'
 
 const sheets = google.sheets('v4')
-
-const getCarUrl = (constructor) =>
-  constructor.toLowerCase().split(' ').join('-')
 
 const Constructor = ({
   constructorName,
@@ -93,10 +91,7 @@ const Constructor = ({
   return (
     <Layout>
       <div className="flex flex-col items-center sm:flex-row">
-        <img
-          src={`/cars/${constructorCarImageUrl}.jpeg`}
-          className="rounded-lg shadow-lg w-72 h-72"
-        />
+        <CarImage constructor={constructorName} />
         <div className="mx-4 my-2 text-center sm:mx-8 sm:text-left">
           {data.map(({ value, label }, index) => {
             const fontSizeClass =
@@ -143,7 +138,7 @@ const Constructor = ({
               return (
                 <tr
                   key={race}
-                  className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 odd:bg-white even:bg-gray-50 odd:dark:bg-gray-800 even:dark:bg-gray-700"
+                  className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 odd:bg-white even:bg-gray-50 odd:dark:bg-gray-800 even:dark:bg-gray-700"
                 >
                   <th
                     key={race}
