@@ -1,6 +1,7 @@
 import { google } from 'googleapis'
 import Link from 'next/link'
 import Layout from 'components/Layout'
+import CarImage from 'components/CarImage'
 import { googleAuth } from 'helpers/auth'
 import { toNum } from 'helpers/utils'
 
@@ -20,7 +21,7 @@ const RacePoints = ({
   // })
   // TODO: add sorting by column header
   return (
-    <Layout title="Points by Race">
+    <Layout pageTitle="Points by Race" documentTitle="Points by Race">
       <div className="relative my-4 overflow-x-auto rounded-lg shadow-md">
         <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400 dark:bg-gray-800">
           <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
@@ -51,8 +52,10 @@ const RacePoints = ({
                   >
                     <th
                       scope="row"
-                      className="px-6 py-4 font-medium text-gray-900 dark:text-white whitespace-nowrap"
+                      className="flex items-center gap-3 px-6 py-4 font-medium text-gray-900 dark:text-white whitespace-nowrap w-max"
                     >
+                      {/* maybe replace with car number */}
+                      <CarImage constructor={constructor} size="xsmall" />
                       <Link
                         href={{
                           pathname: '/constructors/[name]',
