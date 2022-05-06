@@ -42,7 +42,7 @@ const Constructor = ({
       },
     ]
     return (
-      <Layout>
+      <Layout documentTitle="Loading constructor">
         <div className="flex flex-col items-center sm:flex-row">
           <img
             src={`/cars/winning-formula.jpeg`}
@@ -89,9 +89,9 @@ const Constructor = ({
     },
   ]
   return (
-    <Layout>
+    <Layout documentTitle={constructorName}>
       <div className="flex flex-col items-center sm:flex-row">
-        <CarImage constructor={constructorName} />
+        <CarImage constructor={constructorName} size="large" />
         <div className="mx-4 my-2 text-center sm:mx-8 sm:text-left">
           {data.map(({ value, label }, index) => {
             const fontSizeClass =
