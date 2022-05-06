@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import { getCarPath } from 'helpers/cars'
 
 const SIZES = {
@@ -24,7 +25,7 @@ const CarNumber = ({ constructor }) => {
   const constructorCarNumberUrl = 'winning-formula' //getCarPath(constructor)
   const widthHeight = getDimensions(size)
   return (
-    <img
+    <Image
       src={`/numbers/${constructorCarNumberUrl}.jpeg`}
       alt={`${constructor} Car Number`}
       width={widthHeight}
