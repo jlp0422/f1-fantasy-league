@@ -8,7 +8,7 @@ const Header = () => {
   const [isOpen, setIsOpen] = useState(false)
   const { pathname } = useRouter()
   const routes = [
-    { href: '/', title: 'Home'},
+    { href: '/', title: 'Home' },
     { href: '/standings', title: 'Standings' },
     { href: '/race-points', title: 'Points by Race' },
   ]
