@@ -18,11 +18,10 @@ const HomePage = ({ constructors }) => {
               query: { name: encodeURIComponent(constructor) },
             }}
           >
-            <a className="relative flex flex-col items-center justify-center">
+            <a className="relative flex flex-col items-center justify-center div-children:hover:shadow-inset-black-7">
               <div
-                className="bg-contain rounded-lg h-72 w-72"
+                className="bg-contain rounded-lg h-72 w-72 shadow-inset-black-6"
                 style={{
-                  boxShadow: 'inset 0 0 0 100vw rgba(0,0,0,0.6)',
                   backgroundImage: `url('/cars/${getCarPath(
                     constructor
                   )}.jpg')`,
