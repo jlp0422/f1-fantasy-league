@@ -1,9 +1,10 @@
+import CarImage from 'components/CarImage'
 import Layout from 'components/Layout'
 import { CONSTRUCTOR_NAMES } from 'constants/index'
 import { google } from 'googleapis'
 import { googleAuth } from 'helpers/auth'
-import CarImage from 'components/CarImage'
 import { toNum } from 'helpers/utils'
+import Image from 'next/image'
 import { useRouter } from 'next/router'
 
 const sheets = google.sheets('v4')
@@ -44,8 +45,10 @@ const Constructor = ({
     return (
       <Layout documentTitle="Loading constructor">
         <div className="flex flex-col items-center sm:flex-row">
-          <img
+          <Image
             src={`/cars/winning-formula.jpeg`}
+            width={288}
+            height={288}
             className="rounded-lg shadow-lg w-72 h-72"
           />
           <div className="mx-4 my-2 text-center sm:mx-8 sm:text-left">

@@ -1,7 +1,8 @@
-import { google } from 'googleapis'
-import Link from 'next/link'
 import Layout from 'components/Layout'
+import { google } from 'googleapis'
 import { googleAuth } from 'helpers/auth'
+import Image from 'next/image'
+import Link from 'next/link'
 
 const sheets = google.sheets('v4')
 
@@ -20,11 +21,15 @@ const Standings = ({ standings }) => {
                   {index + 1}.
                 </div>
                 <div className="flex items-center flex-1 min-w-0">
-                  <img
-                    className="w-8 h-8 rounded-full sm:w-12 sm:h-12"
-                    src="https://www.fillmurray.com/g/300/300"
-                    alt={`${constructor} team car`}
-                  />
+                  <div className="relative w-8 h-8 sm:w-12 sm:h-12">
+                  {/* replace with numbers */}
+                    <Image
+                      className="rounded-full"
+                      layout="fill"
+                      src={`/cars/winning-formula.jpeg`}
+                      alt={`${constructor} Car Livery`}
+                    />
+                  </div>
                   <p className="ml-2 text-base font-medium text-gray-900 truncate sm:text-lg dark:text-white">
                     <Link
                       href={{
