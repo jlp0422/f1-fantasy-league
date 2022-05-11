@@ -11,6 +11,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "colorthief": "^2.3.2",
     "dotenv": "^16.0.0",
     "googleapis": "^100.0.0",
     "next": "^12.1.5",
