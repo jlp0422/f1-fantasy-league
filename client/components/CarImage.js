@@ -9,14 +9,14 @@ const SIZES = {
 }
 
 const COLORS_BY_TEAM = {
-  'guenthers-angels': ['#983ee6', '#6e2ca8'],
-  'look-at-this-hornergraph': ['#80f4d3', '#67c7ac'],
-  'once-campeonatos': ['#e9ce45', '#b39e34'],
-  'team-auzhous': ['#b7f4f1', '#b7f4f1'],
-  teamnosleep: ['#fdf4c6', '#cfc7a1'],
-  'turbo-team-racing': ['#87a7ec', '#657fb5'],
-  'winning-formula': ['#69e1d9', '#4faba5'],
-  'zak-brown-band': ['#e7a5a1', '#b8807d'],
+  'guenthers-angels': ['#983ee6', '#e967c0'],
+  'look-at-this-hornergraph': ['#80f4d3', '#faf254'],
+  'once-campeonatos': ['#e9ce45', '#eb3524'],
+  'team-auzhous': ['#b7f4f1', '#dd3428'],
+  teamnosleep: ['#fdf4c6', '#c12a1f'],
+  'turbo-team-racing': ['#87a7ec', '#e94c2c'],
+  'winning-formula': ['#69e1d9', '#e58c36'],
+  'zak-brown-band': ['#e7a5a1', '#d340f4'],
 }
 
 const getDimensions = (size) => {
