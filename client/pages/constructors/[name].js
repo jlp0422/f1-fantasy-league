@@ -45,8 +45,9 @@ const Constructor = ({
     return (
       <Layout documentTitle="Loading constructor">
         <div className="flex flex-col items-center sm:flex-row">
+          {/* fix this at some point */}
           <Image
-            src={`/cars/winning-formula.jpeg`}
+            src={`/cars/winning-formula.jpg`}
             width={288}
             height={288}
             className="rounded-lg shadow-lg w-72 h-72"
@@ -76,7 +77,6 @@ const Constructor = ({
     )
   }
 
-  const constructorCarImageUrl = 'winning-formula' //getCarUrl(constructorName)
   const data = [
     {
       value: constructorName,

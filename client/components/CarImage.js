@@ -22,8 +22,7 @@ const getDimensions = (size) => {
 }
 
 const CarImage = ({ constructor, size }) => {
-  const constructorCarImageUrl = 'winning-formula' //getCarPath(constructor)
-  const widthHeight = getDimensions(size)
+  const constructorCarImageUrl = getCarPath(constructor)
   return (
     <Image
       src={`/cars/${constructorCarImageUrl}.jpeg`}
