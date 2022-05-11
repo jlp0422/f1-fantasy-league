@@ -28,14 +28,14 @@ const Constructor = ({
   raceColumnByIndex,
   pointsByDriverChartData,
 }) => {
-  console.log({
-    constructorName,
-    teamPrincipal,
-    drivers,
-    racePointsByDriver,
-    totalPointsByRace,
-    raceColumnByIndex,
-  })
+  // console.log({
+  //   constructorName,
+  //   teamPrincipal,
+  //   drivers,
+  //   racePointsByDriver,
+  //   totalPointsByRace,
+  //   raceColumnByIndex,
+  // })
   const router = useRouter()
 
   if (router.isFallback) {
