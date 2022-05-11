@@ -26,7 +26,7 @@ const CarImage = ({ constructor, size }) => {
   const widthHeight = getDimensions(size)
   return (
     <Image
-      src={`/cars/${constructorCarImageUrl}.jpeg`}
+      src={`/cars/${constructorCarImageUrl}.jpg`}
       alt={`${constructor} Car Livery`}
       width={widthHeight}
       height={widthHeight}
