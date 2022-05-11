@@ -23,6 +23,7 @@ const getDimensions = (size) => {
 
 const CarImage = ({ constructor, size }) => {
   const constructorCarImageUrl = getCarPath(constructor)
+  const widthHeight = getDimensions(size)
   return (
     <Image
       src={`/cars/${constructorCarImageUrl}.jpeg`}
