@@ -15,7 +15,7 @@ const HomePage = ({ constructors }) => {
             key={constructor}
             href={{
               pathname: '/constructors/[name]',
-              query: { name: encodeURIComponent(constructor) },
+              query: { name: encodeURIComponent(getCarPath(constructor)) },
             }}
           >
             <a className="relative flex flex-col items-center justify-center div-children:hover:shadow-inset-black-7">

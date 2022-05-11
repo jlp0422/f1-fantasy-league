@@ -1,5 +1,5 @@
-import Image from 'next/image'
 import { getCarPath } from 'helpers/cars'
+import Image from 'next/image'
 
 const SIZES = {
   xsmall: 'w-12 h-12',
@@ -9,7 +9,7 @@ const SIZES = {
 }
 
 const COLORS_BY_TEAM = {
-  'guenters-angels': ['#983ee6', '#6e2ca8'],
+  'guenthers-angels': ['#983ee6', '#6e2ca8'],
   'look-at-this-hornergraph': ['#80f4d3', '#67c7ac'],
   'once-campeonatos': ['#e9ce45', '#b39e34'],
   'team-auzhous': ['#b7f4f1', '#b7f4f1'],

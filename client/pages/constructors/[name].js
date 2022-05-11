@@ -3,6 +3,7 @@ import Layout from 'components/Layout'
 import { CONSTRUCTOR_NAMES } from 'constants/index'
 import { google } from 'googleapis'
 import { googleAuth } from 'helpers/auth'
+import { getCarPath } from 'helpers/cars'
 import { toNum } from 'helpers/utils'
 import Image from 'next/image'
 import { useRouter } from 'next/router'
@@ -14,7 +15,7 @@ import {
   ResponsiveContainer,
   Tooltip,
   XAxis,
-  YAxis,
+  YAxis
 } from 'recharts'
 
 const sheets = google.sheets('v4')
@@ -273,7 +274,7 @@ const Constructor = ({
 export async function getStaticPaths() {
   return {
     paths: CONSTRUCTOR_NAMES.map((constructor) => ({
-      params: { name: encodeURIComponent(constructor) },
+      params: { name: encodeURIComponent(getCarPath(constructor)) },
     })),
     fallback: true,
   }
@@ -305,9 +306,8 @@ export async function getStaticProps({ params }) {
     )
 
   const constructorRacePoints = racePoints.filter(
-    (row) => row[0] === constructorName
+    (row) => getCarPath(row[0]) === constructorName
   )
-
   const drivers = constructorRacePoints.map((row) => row[2])
 
   const racePointsByDriver = constructorRacePoints.reduce((memo, item) => {
@@ -362,7 +362,7 @@ export async function getStaticProps({ params }) {
 
   return {
     props: {
-      constructorName,
+      constructorName: constructorRacePoints[0][0],
       drivers,
       teamPrincipal: constructorRacePoints.map((row) => row[1])[0],
       racePointsByDriver,
