@@ -1,14 +1,14 @@
-import CarImage from 'components/CarImage'
 import Layout from 'components/Layout'
-import Link from 'next/link'
 import { google } from 'googleapis'
 import { googleAuth } from 'helpers/auth'
+import { getCarPath } from 'helpers/cars'
+import Link from 'next/link'
 
 const sheets = google.sheets('v4')
 
 const HomePage = ({ constructors }) => {
   return (
-    <Layout documentTitle="Home" >
+    <Layout documentTitle="Home">
       <div className="grid grid-cols-1 gap-y-8 gap-x-4 justify-items-center sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {constructors.map((constructor) => (
           <Link
@@ -20,10 +20,12 @@ const HomePage = ({ constructors }) => {
           >
             <a className="relative flex flex-col items-center justify-center">
               <div
-              // change bg-x to constructor once you have the car images
-                className="bg-contain rounded-lg bg-winning-formula h-72 w-72"
+                className="bg-contain rounded-lg h-72 w-72"
                 style={{
                   boxShadow: 'inset 0 0 0 100vw rgba(0,0,0,0.6)',
+                  backgroundImage: `url('/cars/${getCarPath(
+                    constructor
+                  )}.jpg')`,
                 }}
               />
               <h2 className="absolute px-4 text-3xl font-bold text-center uppercase dark:text-gray-100">
