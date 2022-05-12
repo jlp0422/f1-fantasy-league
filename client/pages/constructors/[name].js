@@ -28,6 +28,7 @@ const Constructor = ({
   teamPrincipal,
   raceColumnByIndex,
   pointsByDriverChartData,
+  chartsEnabled,
 }) => {
   // console.log({
   //   constructorName,
@@ -239,53 +240,55 @@ const Constructor = ({
       </div>
 
       {/* charts */}
-      <div className="invisible hidden sm:visible sm:block">
-        <h2 className="text-xl font-bold tracking-tight text-gray-900 dark:text-gray-900 md:text-2xl lg:text-3xl">
-          Driver Points by Race
-        </h2>
-        <div className="w-full mt-4 rounded-lg bg-slate-600 h-500">
-          <ResponsiveContainer>
-            <LineChart
-              data={pointsByDriverChartData}
-              margin={{ top: 30, right: 30, bottom: 30, left: 10 }}
-            >
-              <CartesianGrid stroke="#ccc" strokeDasharray="4 4" />
-              <XAxis
-                dataKey="race"
-                padding={{ left: 10, right: 0 }}
-                tick={<TickXAxis />}
-                axisLine={{ stroke: '#ccc' }}
-                tickLine={{ stroke: '#ccc' }}
-              />
-              <YAxis
-                domain={[-2, 22]}
-                tickCount={7}
-                tick={<TickYAxis />}
-                axisLine={{ stroke: '#ccc' }}
-                tickLine={{ stroke: '#ccc' }}
-              />
-              <Tooltip contentStyle={{ backgroundColor: '#ccc'}} />
-              <Legend
-                wrapperStyle={{
-                  paddingTop: '50px',
-                }}
-              />
-              <Line
-                type="monotone"
-                dataKey={drivers[0]}
-                stroke={colorOne}
-                strokeWidth={3}
-              />
-              <Line
-                type="monotone"
-                dataKey={drivers[1]}
-                stroke={colorTwo}
-                strokeWidth={3}
-              />
-            </LineChart>
-          </ResponsiveContainer>
+      {chartsEnabled && (
+        <div className="invisible hidden sm:visible sm:block">
+          <h2 className="text-xl font-bold tracking-tight text-gray-900 dark:text-gray-900 md:text-2xl lg:text-3xl">
+            Driver Points by Race
+          </h2>
+          <div className="w-full mt-4 rounded-lg bg-slate-600 h-500">
+            <ResponsiveContainer>
+              <LineChart
+                data={pointsByDriverChartData}
+                margin={{ top: 30, right: 30, bottom: 30, left: 10 }}
+              >
+                <CartesianGrid stroke="#ccc" strokeDasharray="4 4" />
+                <XAxis
+                  dataKey="race"
+                  padding={{ left: 10, right: 0 }}
+                  tick={<TickXAxis />}
+                  axisLine={{ stroke: '#ccc' }}
+                  tickLine={{ stroke: '#ccc' }}
+                />
+                <YAxis
+                  domain={[-2, 22]}
+                  tickCount={7}
+                  tick={<TickYAxis />}
+                  axisLine={{ stroke: '#ccc' }}
+                  tickLine={{ stroke: '#ccc' }}
+                />
+                <Tooltip contentStyle={{ backgroundColor: '#ccc' }} />
+                <Legend
+                  wrapperStyle={{
+                    paddingTop: '50px',
+                  }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey={drivers[0]}
+                  stroke={colorOne}
+                  strokeWidth={3}
+                />
+                <Line
+                  type="monotone"
+                  dataKey={drivers[1]}
+                  stroke={colorTwo}
+                  strokeWidth={3}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
         </div>
-      </div>
+      )}
     </Layout>
   )
 }
@@ -418,6 +421,7 @@ export async function getStaticProps({ params }) {
       totalPointsByRace,
       raceColumnByIndex,
       pointsByDriverChartData,
+      chartsEnabled: process.env.CHARTS_ENABLED === 'true',
     },
   }
 }
