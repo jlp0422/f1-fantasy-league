@@ -3,9 +3,20 @@ import Layout from 'components/Layout'
 import { CONSTRUCTOR_NAMES } from 'constants/index'
 import { google } from 'googleapis'
 import { googleAuth } from 'helpers/auth'
+import { COLORS_BY_CONSTRUCTOR, normalizeConstructorName } from 'helpers/cars'
 import { toNum } from 'helpers/utils'
 import Image from 'next/image'
 import { useRouter } from 'next/router'
+import {
+  CartesianGrid,
+  Legend,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts'
 
 const sheets = google.sheets('v4')
 
@@ -16,14 +27,16 @@ const Constructor = ({
   totalPointsByRace,
   teamPrincipal,
   raceColumnByIndex,
+  pointsByDriverChartData,
+  chartsEnabled,
 }) => {
   // console.log({
-  // constructorName,
-  // teamPrincipal,
-  // drivers,
-  // racePointsByDriver,
-  // totalPointsByRace,
-  // raceColumnByIndex,
+  //   constructorName,
+  //   teamPrincipal,
+  //   drivers,
+  //   racePointsByDriver,
+  //   totalPointsByRace,
+  //   raceColumnByIndex,
   // })
   const router = useRouter()
 
@@ -91,6 +104,10 @@ const Constructor = ({
       label: 'Total Points',
     },
   ]
+
+  const constructorCarImageUrl = normalizeConstructorName(constructorName)
+  const [colorOne, colorTwo] = COLORS_BY_CONSTRUCTOR[constructorCarImageUrl]
+
   return (
     <Layout documentTitle={constructorName}>
       <div className="flex flex-col items-center sm:flex-row">
@@ -221,14 +238,95 @@ const Constructor = ({
           </tbody>
         </table>
       </div>
+
+      {/* charts */}
+      {chartsEnabled && (
+        <div className="invisible hidden sm:visible sm:block">
+          <h2 className="text-xl font-bold tracking-tight text-gray-900 dark:text-gray-900 md:text-2xl lg:text-3xl">
+            Driver Points by Race
+          </h2>
+          <div className="w-full mt-4 rounded-lg bg-slate-600 h-500">
+            <ResponsiveContainer>
+              <LineChart
+                data={pointsByDriverChartData}
+                margin={{ top: 30, right: 30, bottom: 30, left: 10 }}
+              >
+                <CartesianGrid stroke="#ccc" strokeDasharray="4 4" />
+                <XAxis
+                  dataKey="race"
+                  padding={{ left: 10, right: 0 }}
+                  tick={<TickXAxis />}
+                  axisLine={{ stroke: '#ccc' }}
+                  tickLine={{ stroke: '#ccc' }}
+                />
+                <YAxis
+                  domain={[-2, 22]}
+                  tickCount={7}
+                  tick={<TickYAxis />}
+                  axisLine={{ stroke: '#ccc' }}
+                  tickLine={{ stroke: '#ccc' }}
+                />
+                <Tooltip contentStyle={{ backgroundColor: '#ccc' }} />
+                <Legend
+                  wrapperStyle={{
+                    paddingTop: '50px',
+                  }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey={drivers[0]}
+                  stroke={colorOne}
+                  strokeWidth={3}
+                />
+                <Line
+                  type="monotone"
+                  dataKey={drivers[1]}
+                  stroke={colorTwo}
+                  strokeWidth={3}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      )}
     </Layout>
+  )
+}
+
+const TickYAxis = ({ x, y, payload }) => {
+  return (
+    <g transform={`translate(${x},${y})`}>
+      <text x={0} y={0} dy={6} textAnchor="end" fill="#fff" className="text-sm">
+        {payload.value} pts
+      </text>
+    </g>
+  )
+}
+
+const TickXAxis = ({ x, y, payload }) => {
+  return (
+    <g transform={`translate(${x},${y})`}>
+      <text
+        x={0}
+        y={0}
+        dy={16}
+        textAnchor="end"
+        fill="#fff"
+        transform="rotate(-35)"
+        className="text-xs"
+      >
+        {payload.value}
+      </text>
+    </g>
   )
 }
 
 export async function getStaticPaths() {
   return {
     paths: CONSTRUCTOR_NAMES.map((constructor) => ({
-      params: { name: encodeURIComponent(constructor) },
+      params: {
+        name: encodeURIComponent(normalizeConstructorName(constructor)),
+      },
     })),
     fallback: true,
   }
@@ -260,8 +358,9 @@ export async function getStaticProps({ params }) {
     )
 
   const constructorRacePoints = racePoints.filter(
-    (row) => row[0] === constructorName
+    (row) => normalizeConstructorName(row[0]) === constructorName
   )
+  const drivers = constructorRacePoints.map((row) => row[2])
 
   const racePointsByDriver = constructorRacePoints.reduce((memo, item) => {
     const [_constructor, _principal, driver, totalPoints, ...pointsByRace] =
@@ -288,6 +387,25 @@ export async function getStaticProps({ params }) {
       )
     }, [])
 
+  const pointsByDriverChartData = Object.values(raceColumnByIndex)
+    .filter((_race, index) => index > 0)
+    .reduce((memo, race, index) => {
+      const [driverA, driverB] = drivers
+      const driverAPointsByRace =
+        racePointsByDriver[driverA].pointsByRace[index]
+      const driverBPointsByRace =
+        racePointsByDriver[driverB].pointsByRace[index]
+
+      if (driverAPointsByRace && driverBPointsByRace) {
+        memo.push({
+          race,
+          [driverA]: driverAPointsByRace,
+          [driverB]: driverBPointsByRace,
+        })
+      }
+      return memo
+    }, [])
+
   if (!constructorRacePoints.length) {
     return {
       notFound: true,
@@ -296,12 +414,14 @@ export async function getStaticProps({ params }) {
 
   return {
     props: {
-      constructorName,
-      drivers: constructorRacePoints.map((row) => row[2]),
+      constructorName: constructorRacePoints[0][0],
+      drivers,
       teamPrincipal: constructorRacePoints.map((row) => row[1])[0],
       racePointsByDriver,
       totalPointsByRace,
       raceColumnByIndex,
+      pointsByDriverChartData,
+      chartsEnabled: process.env.CHARTS_ENABLED === 'true',
     },
   }
 }

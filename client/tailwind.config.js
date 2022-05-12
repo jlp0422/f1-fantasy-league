@@ -9,6 +9,9 @@ module.exports = {
         'inset-black-6': 'inset 0 0 0 100vw rgba(0,0,0,0.6)',
         'inset-black-7': 'inset 0 0 0 100vw rgba(0,0,0,0.7)',
       },
+      height: {
+        '500': '500px'
+      }
     },
   },
   plugins: [

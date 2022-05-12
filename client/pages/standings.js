@@ -1,6 +1,7 @@
 import Layout from 'components/Layout'
 import { google } from 'googleapis'
 import { googleAuth } from 'helpers/auth'
+import { normalizeConstructorName } from 'helpers/cars'
 import Image from 'next/image'
 import Link from 'next/link'
 
@@ -34,7 +35,7 @@ const Standings = ({ standings }) => {
                     <Link
                       href={{
                         pathname: '/constructors/[name]',
-                        query: { name: encodeURIComponent(constructor) },
+                        query: { name: encodeURIComponent(normalizeConstructorName(constructor)) },
                       }}
                     >
                       <a className="dark:hover:text-gray-300">{constructor}</a>

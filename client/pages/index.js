@@ -1,7 +1,7 @@
 import Layout from 'components/Layout'
 import { google } from 'googleapis'
 import { googleAuth } from 'helpers/auth'
-import { getCarPath } from 'helpers/cars'
+import { normalizeConstructorName } from 'helpers/cars'
 import Link from 'next/link'
 
 const sheets = google.sheets('v4')
@@ -15,14 +15,14 @@ const HomePage = ({ constructors }) => {
             key={constructor}
             href={{
               pathname: '/constructors/[name]',
-              query: { name: encodeURIComponent(constructor) },
+              query: { name: encodeURIComponent(normalizeConstructorName(constructor)) },
             }}
           >
             <a className="relative flex flex-col items-center justify-center div-children:hover:shadow-inset-black-7">
               <div
                 className="bg-contain rounded-lg h-72 w-72 shadow-inset-black-6"
                 style={{
-                  backgroundImage: `url('/cars/${getCarPath(
+                  backgroundImage: `url('/cars/${normalizeConstructorName(
                     constructor
                   )}.jpg')`,
                 }}

@@ -1,9 +1,10 @@
-import { google } from 'googleapis'
-import Link from 'next/link'
-import Layout from 'components/Layout'
 import CarImage from 'components/CarImage'
+import Layout from 'components/Layout'
+import { google } from 'googleapis'
 import { googleAuth } from 'helpers/auth'
+import { normalizeConstructorName } from 'helpers/cars'
 import { toNum } from 'helpers/utils'
+import Link from 'next/link'
 
 const sheets = google.sheets('v4')
 
@@ -59,7 +60,7 @@ const RacePoints = ({
                       <Link
                         href={{
                           pathname: '/constructors/[name]',
-                          query: { name: encodeURIComponent(constructor) },
+                          query: { name: encodeURIComponent(normalizeConstructorName(constructor)) },
                         }}
                       >
                         <a className="text-sm sm:text-base dark:hover:text-gray-300">
