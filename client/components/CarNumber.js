@@ -1,5 +1,5 @@
 import Image from 'next/image'
-import { getCarPath } from 'helpers/cars'
+import { normalizeConstructorName } from 'helpers/cars'
 
 const SIZES = {
   xsmall: 'w-12 h-12',
@@ -22,7 +22,7 @@ const getDimensions = (size) => {
 }
 
 const CarNumber = ({ constructor }) => {
-  const constructorCarNumberUrl = 'winning-formula' //getCarPath(constructor)
+  const constructorCarNumberUrl = normalizeConstructorName(constructor)
   const widthHeight = getDimensions(size)
   return (
     <Image

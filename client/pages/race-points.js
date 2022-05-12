@@ -2,7 +2,7 @@ import CarImage from 'components/CarImage'
 import Layout from 'components/Layout'
 import { google } from 'googleapis'
 import { googleAuth } from 'helpers/auth'
-import { getCarPath } from 'helpers/cars'
+import { normalizeConstructorName } from 'helpers/cars'
 import { toNum } from 'helpers/utils'
 import Link from 'next/link'
 
@@ -60,7 +60,7 @@ const RacePoints = ({
                       <Link
                         href={{
                           pathname: '/constructors/[name]',
-                          query: { name: encodeURIComponent(getCarPath(constructor)) },
+                          query: { name: encodeURIComponent(normalizeConstructorName(constructor)) },
                         }}
                       >
                         <a className="text-sm sm:text-base dark:hover:text-gray-300">

@@ -1,4 +1,4 @@
-import { getCarPath } from 'helpers/cars'
+import { normalizeConstructorName, COLORS_BY_CONSTRUCTOR } from 'helpers/cars'
 import Image from 'next/image'
 
 const SIZES = {
@@ -6,17 +6,6 @@ const SIZES = {
   small: 'w-24 h-24',
   medium: 'w-48 h-48',
   large: 'w-72 h-72',
-}
-
-const COLORS_BY_TEAM = {
-  'guenthers-angels': ['#983ee6', '#e967c0'],
-  'look-at-this-hornergraph': ['#80f4d3', '#faf254'],
-  'once-campeonatos': ['#e9ce45', '#eb3524'],
-  'team-auzhous': ['#b7f4f1', '#dd3428'],
-  teamnosleep: ['#fdf4c6', '#c12a1f'],
-  'turbo-team-racing': ['#87a7ec', '#e94c2c'],
-  'winning-formula': ['#69e1d9', '#e58c36'],
-  'zak-brown-band': ['#e7a5a1', '#d340f4'],
 }
 
 const getDimensions = (size) => {
@@ -32,7 +21,7 @@ const getDimensions = (size) => {
   }
 }
 
-const shimmer = (w, h, [startColor]) => `
+const rectangle = (w, h, [startColor]) => `
 <svg width="${w}" height="${h}" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
   <rect width="${w}" height="${h}" fill="${startColor}" rx="8" />
   <rect id="r" width="${w}" height="${h}" fill="url(#g)" rx="8" />
@@ -44,9 +33,9 @@ const toBase64 = (str) =>
     : window.btoa(str)
 
 const CarImage = ({ constructor, size }) => {
-  const constructorCarImageUrl = getCarPath(constructor)
+  const constructorCarImageUrl = normalizeConstructorName(constructor)
   const widthHeight = getDimensions(size)
-  const colors = COLORS_BY_TEAM[constructorCarImageUrl]
+  const colors = COLORS_BY_CONSTRUCTOR[constructorCarImageUrl]
   return (
     <Image
       priority
@@ -57,7 +46,7 @@ const CarImage = ({ constructor, size }) => {
       className={`rounded-lg shadow-lg ${SIZES[size]}`}
       placeholder="blur"
       blurDataURL={`data:image/svg+xml;base64,${toBase64(
-        shimmer(widthHeight, widthHeight, colors)
+        rectangle(widthHeight, widthHeight, colors)
       )}`}
     />
   )
