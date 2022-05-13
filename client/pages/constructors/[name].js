@@ -5,7 +5,6 @@ import { google } from 'googleapis'
 import { googleAuth } from 'helpers/auth'
 import { COLORS_BY_CONSTRUCTOR, normalizeConstructorName } from 'helpers/cars'
 import { toNum } from 'helpers/utils'
-
 import {
   CartesianGrid,
   Legend,
@@ -55,10 +54,15 @@ const Constructor = ({
 
   const constructorCarImageUrl = normalizeConstructorName(constructorName)
   const [colorOne, colorTwo] = COLORS_BY_CONSTRUCTOR[constructorCarImageUrl]
+  const imagePath = `/cars/${normalizeConstructorName(constructorName)}.jpg`
 
   return (
     <Layout documentTitle={constructorName}>
-      <div className="flex flex-col items-center sm:flex-row">
+      <div
+        className="bg-cover bg-center w-screen absolute h-80 left-0 top-[72px] sm:top-[60px] shadow-inset-black-7"
+        style={{ backgroundImage: `url(${imagePath})` }}
+      />
+      <div className="relative flex flex-col items-center sm:flex-row">
         <CarImage constructor={constructorName} size="large" />
         <div className="mx-4 my-2 text-center sm:mx-8 sm:text-left">
           {data.map(({ value, label }, index) => {
@@ -69,11 +73,11 @@ const Constructor = ({
             return (
               <div key={label} className="flex flex-col mt-4 lg:mt-2">
                 <h2
-                  className={`font-bold tracking-tight text-gray-900 dark:text-gray-900 ${fontSizeClass}`}
+                  className={`font-bold tracking-tight dark:sm:text-gray-200 text-gray-900 dark:text-gray-900 ${fontSizeClass}`}
                 >
                   {value}
                 </h2>
-                <p className="leading-none tracking-wide text-gray-600 text-md lg:text-lg dark:text-gray-600">
+                <p className="leading-none tracking-wide text-gray-600 dark:sm:text-gray-300 text-md lg:text-lg dark:text-gray-600">
                   {label}
                 </p>
               </div>
