@@ -15,10 +15,12 @@ const HomePage = ({ constructors }) => {
             key={constructor}
             href={{
               pathname: '/constructors/[name]',
-              query: { name: encodeURIComponent(normalizeConstructorName(constructor)) },
+              query: {
+                name: encodeURIComponent(normalizeConstructorName(constructor)),
+              },
             }}
           >
-            <a className="relative flex flex-col items-center justify-center div-children:hover:shadow-inset-black-7">
+            <a className="relative flex flex-col items-center justify-center sm:div-children:hover:shadow-inset-black-7">
               <div
                 className="bg-contain rounded-lg h-72 w-72 shadow-inset-black-6"
                 style={{
@@ -47,11 +49,15 @@ export async function getStaticProps(context) {
     includeGridData: true,
   })
 
+  const constructors = existingColumnData.data.sheets[0].data[0].rowData
+    ?.map((row) => row.values.map((rowValue) => rowValue.formattedValue))
+    .flat()
+
+  constructors.sort()
+
   return {
     props: {
-      constructors: existingColumnData.data.sheets[0].data[0].rowData
-        ?.map((row) => row.values.map((rowValue) => rowValue.formattedValue))
-        .flat(),
+      constructors,
     },
   }
 }
