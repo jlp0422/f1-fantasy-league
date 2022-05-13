@@ -1,5 +1,21 @@
+import Layout from 'components/Layout'
+import Image from 'next/image'
+import mazepin from '../public/mazepin-500.gif'
+
 const Custom500 = () => {
-  return <h1>500 - Server-side error occurred</h1>
+  return (
+    <Layout pageTitle="500 OUT OF CONTROL" documentTitle="500">
+      <div className="mx-auto my-0 w-500 h-500">
+        <Image
+          layout="fixed"
+          width={498}
+          height={280}
+          src={mazepin}
+          alt="Mazepin Mazespin"
+        />
+      </div>
+    </Layout>
+  )
 }
 
 export default Custom500
