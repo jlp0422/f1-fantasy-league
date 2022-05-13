@@ -328,7 +328,7 @@ export async function getStaticPaths() {
         name: encodeURIComponent(normalizeConstructorName(constructor)),
       },
     })),
-    fallback: true,
+    fallback: false,
   }
 }
 
