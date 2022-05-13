@@ -5,8 +5,8 @@ import { google } from 'googleapis'
 import { googleAuth } from 'helpers/auth'
 import { COLORS_BY_CONSTRUCTOR, normalizeConstructorName } from 'helpers/cars'
 import { toNum } from 'helpers/utils'
-import Image from 'next/image'
-import { useRouter } from 'next/router'
+import Error from 'next/error'
+
 import {
   CartesianGrid,
   Legend,
@@ -38,57 +38,6 @@ const Constructor = ({
   //   totalPointsByRace,
   //   raceColumnByIndex,
   // })
-  const router = useRouter()
-
-  if (router.isFallback) {
-    const fallbackData = [
-      {
-        value: '&nbsp',
-        label: 'Constructor',
-      },
-      {
-        value: '&nbsp;',
-        label: 'Team Principal',
-      },
-      {
-        value: '&nbsp;',
-        label: 'Total Points',
-      },
-    ]
-    return (
-      <Layout documentTitle="Loading constructor">
-        <div className="flex flex-col items-center sm:flex-row">
-          {/* fix this at some point */}
-          <Image
-            src={`/cars/winning-formula.jpg`}
-            width={288}
-            height={288}
-            className="rounded-lg shadow-lg w-72 h-72"
-          />
-          <div className="mx-4 my-2 text-center sm:mx-8 sm:text-left">
-            {fallbackData.map(({ value, label }, index) => {
-              const fontSizeClass =
-                index > 0
-                  ? 'text-3xl md:text-4xl lg:text-5xl'
-                  : 'text-4xl md:text-5xl lg:text-6xl'
-              return (
-                <div key={label} className="flex flex-col mt-4 lg:mt-2">
-                  <h2
-                    className={`font-bold tracking-tight text-gray-900 dark:text-gray-900 ${fontSizeClass}`}
-                    dangerouslySetInnerHTML={{ __html: value }}
-                  />
-
-                  <p className="leading-none tracking-wide text-gray-600 text-md lg:text-lg dark:text-gray-600">
-                    {label}
-                  </p>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      </Layout>
-    )
-  }
 
   const data = [
     {
