@@ -5,7 +5,6 @@ import { google } from 'googleapis'
 import { googleAuth } from 'helpers/auth'
 import { COLORS_BY_CONSTRUCTOR, normalizeConstructorName } from 'helpers/cars'
 import { toNum } from 'helpers/utils'
-import Error from 'next/error'
 
 import {
   CartesianGrid,
