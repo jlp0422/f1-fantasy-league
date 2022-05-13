@@ -3,7 +3,7 @@ import Layout from 'components/Layout'
 import { google } from 'googleapis'
 import { googleAuth } from 'helpers/auth'
 import { normalizeConstructorName } from 'helpers/cars'
-import { toNum } from 'helpers/utils'
+import { sortArray, toNum } from 'helpers/utils'
 import Link from 'next/link'
 
 const sheets = google.sheets('v4')
@@ -38,7 +38,7 @@ const RacePoints = ({
             </tr>
           </thead>
           <tbody>
-            {Object.entries(racePointsByConstructorByRace).map(
+            {sortArray(Object.entries(racePointsByConstructorByRace)).map(
               ([constructor, pointsByRace]) => {
                 // minus 1 to account for total points column
                 const numExtraColumns =
@@ -56,11 +56,17 @@ const RacePoints = ({
                       className="flex items-center gap-3 px-6 py-4 font-medium text-gray-900 dark:text-white whitespace-nowrap w-max"
                     >
                       {/* maybe replace with car number */}
-                      <CarImage constructor={constructor} size="xsmall" />
+                      <span className="invisible hidden sm:block sm:visible">
+                        <CarImage constructor={constructor} size="xsmall" />
+                      </span>
                       <Link
                         href={{
                           pathname: '/constructors/[name]',
-                          query: { name: encodeURIComponent(normalizeConstructorName(constructor)) },
+                          query: {
+                            name: encodeURIComponent(
+                              normalizeConstructorName(constructor)
+                            ),
+                          },
                         }}
                       >
                         <a className="text-sm sm:text-base dark:hover:text-gray-300">

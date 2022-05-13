@@ -23,11 +23,11 @@ const Standings = ({ standings }) => {
                 </div>
                 <div className="flex items-center flex-1 min-w-0">
                   <div className="relative w-8 h-8 sm:w-12 sm:h-12">
-                  {/* replace with numbers */}
+                    {/* replace with numbers */}
                     <Image
                       className="rounded-full"
                       layout="fill"
-                      src={`/cars/winning-formula.jpeg`}
+                      src={`/cars/${normalizeConstructorName(constructor)}.jpg`}
                       alt={`${constructor} Car Livery`}
                     />
                   </div>
@@ -35,7 +35,11 @@ const Standings = ({ standings }) => {
                     <Link
                       href={{
                         pathname: '/constructors/[name]',
-                        query: { name: encodeURIComponent(normalizeConstructorName(constructor)) },
+                        query: {
+                          name: encodeURIComponent(
+                            normalizeConstructorName(constructor)
+                          ),
+                        },
                       }}
                     >
                       <a className="dark:hover:text-gray-300">{constructor}</a>

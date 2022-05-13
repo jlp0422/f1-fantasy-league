@@ -1,6 +1,7 @@
 import Layout from 'components/Layout'
 import { google } from 'googleapis'
 import { googleAuth } from 'helpers/auth'
+import { sortArray } from 'helpers/utils'
 import { normalizeConstructorName } from 'helpers/cars'
 import Link from 'next/link'
 
@@ -53,11 +54,9 @@ export async function getStaticProps(context) {
     ?.map((row) => row.values.map((rowValue) => rowValue.formattedValue))
     .flat()
 
-  constructors.sort()
-
   return {
     props: {
-      constructors,
+      constructors: sortArray(constructors),
     },
   }
 }
