@@ -1,11 +1,21 @@
 import CarNumber from 'components/CarNumber'
 import Layout from 'components/Layout'
-import { CAR_NUMBER_BACKGROUND_COLORS } from 'constants/index'
 import { google } from 'googleapis'
 import { googleAuth } from 'helpers/auth'
 import { normalizeConstructorName } from 'helpers/cars'
 import { sortArray, toNum, sum } from 'helpers/utils'
 import Link from 'next/link'
+
+const CAR_NUMBER_BACKGROUND_COLORS = {
+  'winning-formula': 'bg-winning-formula-base',
+  'guenthers-angels': 'bg-guenthers-angels-base',
+  'zak-brown-band': 'bg-zak-brown-band-base',
+  'turbo-team-racing': 'bg-turbo-team-racing-base',
+  'once-campeonatos': 'bg-once-campeonatos-base',
+  teamnosleep: 'bg-teamnosleep-base',
+  'look-at-this-hornergraph': 'bg-look-at-this-hornergraph-base',
+  'team-auzhous': 'bg-team-auzhous-base',
+}
 
 const sheets = google.sheets('v4')
 
