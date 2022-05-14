@@ -58,7 +58,7 @@ const RacePoints = ({
                     className="flex items-center gap-3 px-6 py-4 font-medium text-gray-900 dark:text-white whitespace-nowrap w-max"
                   >
                     <div
-                      className={`relative w-12 h-12 sm:w-16 sm:h-16 sm:p-3 p-2 rounded-full`}
+                      className={`relative w-10 h-10 sm:w-14 sm:h-14 sm:p-3 p-2 rounded-full`}
                       style={{ backgroundColor: numberBgColor }}
                     >
                       <CarNumber constructor={constructor} size="small" />
@@ -78,12 +78,12 @@ const RacePoints = ({
                       </a>
                     </Link>
                   </th>
-                  <td className="px-6 py-4 text-center">
+                  <td className="px-6 py-4 text-sm text-center sm:text-base">
                     {racePointsByConstructor[constructor].total}
                   </td>
                   {pointsByRace.map((pointValue, index) => (
                     <td
-                      className="px-6 py-4 text-center"
+                      className="px-6 py-4 text-sm text-center sm:text-base"
                       key={`${constructor}-${pointValue}-${index}`}
                     >
                       {pointValue}
