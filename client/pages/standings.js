@@ -1,9 +1,7 @@
+import ConstructorStandingRow from 'components/ConstructorStandingRow'
 import Layout from 'components/Layout'
 import { google } from 'googleapis'
 import { googleAuth } from 'helpers/auth'
-import { normalizeConstructorName } from 'helpers/cars'
-import Image from 'next/image'
-import Link from 'next/link'
 
 const sheets = google.sheets('v4')
 
@@ -13,44 +11,11 @@ const Standings = ({ standings }) => {
       <ol className="w-auto my-4 text-lg font-medium text-gray-900 bg-white border border-gray-200 rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white">
         {standings.map(([constructor, points], index) => {
           return (
-            <li
+            <ConstructorStandingRow
               key={constructor}
-              className="w-full px-4 py-2.5 border-b border-gray-200 dark:border-gray-600 first-of-type:rounded-t-lg last-of-type:rounded-b-lg  odd:bg-white even:bg-gray-50 odd:dark:bg-gray-800 even:dark:bg-gray-700"
-            >
-              <div className="flex items-center space-x-4">
-                <div className="flex-shrink-0 text-base sm:text-lg">
-                  {index + 1}.
-                </div>
-                <div className="flex items-center flex-1 min-w-0">
-                  <div className="relative w-8 h-8 sm:w-12 sm:h-12">
-                    {/* replace with numbers */}
-                    <Image
-                      className="rounded-full"
-                      layout="fill"
-                      src={`/cars/${normalizeConstructorName(constructor)}.jpg`}
-                      alt={`${constructor} Car Livery`}
-                    />
-                  </div>
-                  <p className="ml-2 text-base font-medium text-gray-900 truncate sm:text-lg dark:text-white">
-                    <Link
-                      href={{
-                        pathname: '/constructors/[name]',
-                        query: {
-                          name: encodeURIComponent(
-                            normalizeConstructorName(constructor)
-                          ),
-                        },
-                      }}
-                    >
-                      <a className="dark:hover:text-gray-300">{constructor}</a>
-                    </Link>
-                  </p>
-                </div>
-                <div className="inline-flex items-center text-base font-semibold text-gray-900 sm:text-lg dark:text-white">
-                  {points} points
-                </div>
-              </div>
-            </li>
+              points={points}
+              constructor={constructor}
+            />
           )
         })}
       </ol>

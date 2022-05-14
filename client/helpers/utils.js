@@ -5,3 +5,5 @@ export const sortArray = (array, sortFn) => {
   copy.sort(sortFn)
   return copy
 }
+
+export const sum = (array) => array.reduce((sum, number) => (sum += number), 0)

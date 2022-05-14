@@ -3,7 +3,8 @@ import Layout from 'components/Layout'
 import { CONSTRUCTOR_NAMES } from 'constants/index'
 import { google } from 'googleapis'
 import { googleAuth } from 'helpers/auth'
-import { COLORS_BY_CONSTRUCTOR, normalizeConstructorName } from 'helpers/cars'
+import { normalizeConstructorName } from 'helpers/cars'
+import { COLORS_BY_CONSTRUCTOR } from 'constants/index'
 import { toNum } from 'helpers/utils'
 import {
   CartesianGrid,

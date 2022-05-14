@@ -1,9 +1,10 @@
-import CarImage from 'components/CarImage'
+import CarNumber from 'components/CarNumber'
 import Layout from 'components/Layout'
+import { CAR_NUMBER_BACKGROUND_COLORS } from 'constants/index'
 import { google } from 'googleapis'
 import { googleAuth } from 'helpers/auth'
 import { normalizeConstructorName } from 'helpers/cars'
-import { sortArray, toNum } from 'helpers/utils'
+import { sortArray, toNum, sum } from 'helpers/utils'
 import Link from 'next/link'
 
 const sheets = google.sheets('v4')
@@ -20,7 +21,6 @@ const RacePoints = ({
   //   raceColumnByIndex,
   //   racePointsByConstructorByRace,
   // })
-  // TODO: add sorting by column header
   return (
     <Layout pageTitle="Points by Race" documentTitle="Points by Race">
       <div className="relative my-4 overflow-x-auto rounded-lg shadow-md">
@@ -38,63 +38,65 @@ const RacePoints = ({
             </tr>
           </thead>
           <tbody>
-            {sortArray(Object.entries(racePointsByConstructorByRace)).map(
-              ([constructor, pointsByRace]) => {
-                // minus 1 to account for total points column
-                const numExtraColumns =
-                  Object.keys(raceColumnByIndex).length -
-                  pointsByRace.length -
-                  1
-                const extraColumns = new Array(numExtraColumns).fill(0)
-                return (
-                  <tr
-                    key={constructor}
-                    className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 odd:bg-white even:bg-gray-50 odd:dark:bg-gray-800 even:dark:bg-gray-700"
+            {sortArray(
+              Object.entries(racePointsByConstructorByRace),
+              ([_a, aPoints], [_b, bPoints]) => sum(bPoints) - sum(aPoints)
+            ).map(([constructor, pointsByRace]) => {
+              const normalized = normalizeConstructorName(constructor)
+              const bgColor = CAR_NUMBER_BACKGROUND_COLORS[normalized]
+              // minus 1 to account for total points column
+              const numExtraColumns =
+                Object.keys(raceColumnByIndex).length - pointsByRace.length - 1
+              const extraColumns = new Array(numExtraColumns).fill(0)
+              return (
+                <tr
+                  key={constructor}
+                  className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 odd:bg-white even:bg-gray-50 odd:dark:bg-gray-800 even:dark:bg-gray-700"
+                >
+                  <th
+                    scope="row"
+                    className="flex items-center gap-3 px-6 py-4 font-medium text-gray-900 dark:text-white whitespace-nowrap w-max"
                   >
-                    <th
-                      scope="row"
-                      className="flex items-center gap-3 px-6 py-4 font-medium text-gray-900 dark:text-white whitespace-nowrap w-max"
+                    <div
+                      className={`relative w-12 h-12 sm:w-16 sm:h-16 sm:p-3 p-2 ${bgColor} rounded-full`}
                     >
-                      {/* maybe replace with car number */}
-                      <span className="invisible hidden sm:block sm:visible">
-                        <CarImage constructor={constructor} size="xsmall" />
-                      </span>
-                      <Link
-                        href={{
-                          pathname: '/constructors/[name]',
-                          query: {
-                            name: encodeURIComponent(
-                              normalizeConstructorName(constructor)
-                            ),
-                          },
-                        }}
-                      >
-                        <a className="text-sm sm:text-base dark:hover:text-gray-300">
-                          {constructor}
-                        </a>
-                      </Link>
-                    </th>
-                    <td className="px-6 py-4 text-center">
-                      {racePointsByConstructor[constructor].total}
+                      <CarNumber constructor={constructor} size="small" />
+                    </div>
+                    <Link
+                      href={{
+                        pathname: '/constructors/[name]',
+                        query: {
+                          name: encodeURIComponent(
+                            normalizeConstructorName(constructor)
+                          ),
+                        },
+                      }}
+                    >
+                      <a className="text-sm sm:text-base dark:hover:text-gray-300">
+                        {constructor}
+                      </a>
+                    </Link>
+                  </th>
+                  <td className="px-6 py-4 text-center">
+                    {racePointsByConstructor[constructor].total}
+                  </td>
+                  {pointsByRace.map((pointValue, index) => (
+                    <td
+                      className="px-6 py-4 text-center"
+                      key={`${constructor}-${pointValue}-${index}`}
+                    >
+                      {pointValue}
                     </td>
-                    {pointsByRace.map((pointValue, index) => (
-                      <td
-                        className="px-6 py-4 text-center"
-                        key={`${constructor}-${pointValue}-${index}`}
-                      >
-                        {pointValue}
-                      </td>
-                    ))}
-                    {extraColumns.map((_, index) => (
-                      <td
-                        className="px-6 py-4 text-center"
-                        key={`empty-${constructor}-${index}`}
-                      />
-                    ))}
-                  </tr>
-                )
-              }
-            )}
+                  ))}
+                  {extraColumns.map((_, index) => (
+                    <td
+                      className="px-6 py-4 text-center"
+                      key={`empty-${constructor}-${index}`}
+                    />
+                  ))}
+                </tr>
+              )
+            })}
           </tbody>
         </table>
       </div>

@@ -21,16 +21,16 @@ const getDimensions = (size) => {
   }
 }
 
-const CarNumber = ({ constructor }) => {
+const CarNumber = ({ constructor, size }) => {
   const constructorCarNumberUrl = normalizeConstructorName(constructor)
   const widthHeight = getDimensions(size)
   return (
     <Image
-      src={`/numbers/${constructorCarNumberUrl}.jpeg`}
+      src={`/numbers/${constructorCarNumberUrl}.png`}
       alt={`${constructor} Car Number`}
       width={widthHeight}
       height={widthHeight}
-      className={`rounded-lg shadow-lg ${SIZES[size]}`}
+      className={`${SIZES[size]}`}
     />
   )
 }

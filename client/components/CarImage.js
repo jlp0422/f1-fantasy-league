@@ -1,4 +1,5 @@
-import { normalizeConstructorName, COLORS_BY_CONSTRUCTOR } from 'helpers/cars'
+import { normalizeConstructorName } from 'helpers/cars'
+import { COLORS_BY_CONSTRUCTOR } from 'constants/index'
 import Image from 'next/image'
 
 const SIZES = {
