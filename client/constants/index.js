@@ -19,3 +19,14 @@ export const COLORS_BY_CONSTRUCTOR = {
   'winning-formula': ['#69e1d9', '#e58c36'],
   'zak-brown-band': ['#e7a5a1', '#d340f4'],
 }
+
+export const CAR_NUMBER_BACKGROUND_COLORS = {
+  'guenthers-angels': '#adcdef',
+  'look-at-this-hornergraph': '#fbf85a',
+  'once-campeonatos': '#e9ce45',
+  'team-auzhous': '#e44e38',
+  teamnosleep: '#fdf4c6',
+  'turbo-team-racing': '#e9482b',
+  'winning-formula': '#69e1d9',
+  'zak-brown-band': '#dd46f1',
+}

@@ -1,21 +1,11 @@
 import CarNumber from 'components/CarNumber'
 import Layout from 'components/Layout'
 import { google } from 'googleapis'
+import { CAR_NUMBER_BACKGROUND_COLORS } from 'constants/index'
 import { googleAuth } from 'helpers/auth'
 import { normalizeConstructorName } from 'helpers/cars'
 import { sortArray, toNum, sum } from 'helpers/utils'
 import Link from 'next/link'
-
-const CAR_NUMBER_BACKGROUND_COLORS = {
-  'winning-formula': 'bg-winning-formula-base',
-  'guenthers-angels': 'bg-guenthers-angels-base',
-  'zak-brown-band': 'bg-zak-brown-band-base',
-  'turbo-team-racing': 'bg-turbo-team-racing-base',
-  'once-campeonatos': 'bg-once-campeonatos-base',
-  teamnosleep: 'bg-teamnosleep-base',
-  'look-at-this-hornergraph': 'bg-look-at-this-hornergraph-base',
-  'team-auzhous': 'bg-team-auzhous-base',
-}
 
 const sheets = google.sheets('v4')
 
@@ -53,7 +43,7 @@ const RacePoints = ({
               ([_a, aPoints], [_b, bPoints]) => sum(bPoints) - sum(aPoints)
             ).map(([constructor, pointsByRace]) => {
               const normalized = normalizeConstructorName(constructor)
-              const bgColor = CAR_NUMBER_BACKGROUND_COLORS[normalized]
+              const numberBgColor = CAR_NUMBER_BACKGROUND_COLORS[normalized]
               // minus 1 to account for total points column
               const numExtraColumns =
                 Object.keys(raceColumnByIndex).length - pointsByRace.length - 1
@@ -68,7 +58,8 @@ const RacePoints = ({
                     className="flex items-center gap-3 px-6 py-4 font-medium text-gray-900 dark:text-white whitespace-nowrap w-max"
                   >
                     <div
-                      className={`relative w-12 h-12 sm:w-16 sm:h-16 sm:p-3 p-2 ${bgColor} rounded-full`}
+                      className={`relative w-12 h-12 sm:w-16 sm:h-16 sm:p-3 p-2 rounded-full`}
+                      style={{ backgroundColor: numberBgColor }}
                     >
                       <CarNumber constructor={constructor} size="small" />
                     </div>
