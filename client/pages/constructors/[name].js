@@ -54,7 +54,7 @@ const Constructor = ({
 
   const constructorCarImageUrl = normalizeConstructorName(constructorName)
   const [colorOne, colorTwo] = COLORS_BY_CONSTRUCTOR[constructorCarImageUrl]
-  const imagePath = `/cars/${normalizeConstructorName(constructorName)}.jpg`
+  const imagePath = `/cars/${constructorCarImageUrl}.jpg`
 
   return (
     <Layout documentTitle={constructorName}>
