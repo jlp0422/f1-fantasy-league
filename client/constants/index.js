@@ -12,42 +12,58 @@ export const CONSTRUCTOR_NAMES = [
 export const COLORS_BY_CONSTRUCTOR = {
   'guenthers-angels': {
     numberBackground: '#adcdef',
-    primary: '#983ee6',
-    secondary: '#e967c0',
+    numberText: '#4b48c8',
+    primary: '#4324A8',
+    secondary: '#adcdef',
+    tertiary: '#e73564'
   },
   'look-at-this-hornergraph': {
-    numberBackground: '#fbf85a',
-    primary: '#80f4d3',
-    secondary: '#faf254',
+    numberBackground: '#fcf859',
+    numberText: '#3f7f25',
+    primary: '#fcf859',
+    secondary: '#204620',
+    tertiary: '#d9a439'
   },
   'once-campeonatos': {
-    numberBackground: '#e9ce45',
-    primary: '#e9ce45',
-    secondary: '#eb3524',
+    numberBackground: '#f9f4b9',
+    numberText: '#e23d26',
+    primary: '#f9f4b9',
+    secondary: '#ea3323',
+    tertiary: '#1c461a'
   },
   'team-auzhous': {
-    numberBackground: '#e44e38',
-    primary: '#b7f4f1',
-    secondary: '#dd3428',
+    numberBackground: '#cb3025',
+    numberText: '#f5d6b7',
+    primary: '#cb3025',
+    secondary: '#f5d6b7',
+    tertiary: '#398282'
   },
   teamnosleep: {
-    numberBackground: '#fdf4c6',
-    primary: '#fdf4c6',
-    secondary: '#c12a1f',
+    numberBackground: '#f1e4cb',
+    numberText: '#e8352b',
+    primary: '#c9a261',
+    secondary: '#f1e4cb',
+    tertiary: '#c2281e'
   },
   'turbo-team-racing': {
-    numberBackground: '#e9482b',
-    primary: '#87a7ec',
-    secondary: '#e94c2c',
+    numberBackground: '#E64629',
+    numberText: '#0c2a6f',
+    primary: '#E64629',
+    secondary: '#f2ad3e',
+    tertiary: '#0c255f'
   },
   'winning-formula': {
-    numberBackground: '#69e1d9',
-    primary: '#69e1d9',
-    secondary: '#e58c36',
+    numberBackground: '#5DD1EA',
+    numberText: '#17277d',
+    primary: '#5DD1EA',
+    secondary: '#0F2164',
+    tertiary: '#a7a2a2'
   },
   'zak-brown-band': {
-    numberBackground: '#dd46f1',
-    primary: '#e7a5a1',
-    secondary: '#d340f4',
+    numberBackground: '#df45f2',
+    numberText: '#080c37',
+    primary: '#df45f2',
+    secondary: '#74f8c8',
+    tertiary: '#3f8625'
   },
 }

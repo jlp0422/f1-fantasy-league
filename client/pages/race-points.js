@@ -44,8 +44,7 @@ const RacePoints = ({
               ([_a, aPoints], [_b, bPoints]) => sum(bPoints) - sum(aPoints)
             ).map(([constructor, pointsByRace]) => {
               const normalized = normalizeConstructorName(constructor)
-              const numberBgColor =
-                COLORS_BY_CONSTRUCTOR[normalized].numberBackground
+              const { numberBackground } = COLORS_BY_CONSTRUCTOR[normalized]
               // minus 1 to account for total points column
               const numExtraColumns = totalRaces - pointsByRace.length - 1
               const extraColumns = new Array(numExtraColumns).fill(0)
@@ -60,7 +59,7 @@ const RacePoints = ({
                   >
                     <div
                       className={`relative w-10 h-10 sm:w-14 sm:h-14 sm:p-3 p-2 rounded-full`}
-                      style={{ backgroundColor: numberBgColor }}
+                      style={{ backgroundColor: numberBackground }}
                     >
                       <CarNumber constructor={constructor} size="small" />
                     </div>
