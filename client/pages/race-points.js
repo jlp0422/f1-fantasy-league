@@ -15,6 +15,7 @@ const RacePoints = ({
   raceColumnByIndex,
   racePointsByConstructorByRace,
 }) => {
+  const totalRaces = Object.keys(raceColumnByIndex).length
   // console.log({
   //   racePointTable,
   //   racePointsByConstructor,
@@ -43,10 +44,10 @@ const RacePoints = ({
               ([_a, aPoints], [_b, bPoints]) => sum(bPoints) - sum(aPoints)
             ).map(([constructor, pointsByRace]) => {
               const normalized = normalizeConstructorName(constructor)
-              const numberBgColor = COLORS_BY_CONSTRUCTOR[normalized].numberBackground
+              const numberBgColor =
+                COLORS_BY_CONSTRUCTOR[normalized].numberBackground
               // minus 1 to account for total points column
-              const numExtraColumns =
-                Object.keys(raceColumnByIndex).length - pointsByRace.length - 1
+              const numExtraColumns = totalRaces - pointsByRace.length - 1
               const extraColumns = new Array(numExtraColumns).fill(0)
               return (
                 <tr

@@ -54,8 +54,8 @@ const Constructor = ({
   ]
 
   const constructorCarImageUrl = normalizeConstructorName(constructorName)
-  const [colorOne, colorTwo] =
-    COLORS_BY_CONSTRUCTOR[constructorCarImageUrl].livery
+  const { primary: primaryColor, secondary: secondaryColor } =
+    COLORS_BY_CONSTRUCTOR[constructorCarImageUrl]
   const imagePath = `/cars/${constructorCarImageUrl}.jpg`
 
   return (
@@ -229,13 +229,13 @@ const Constructor = ({
                 <Line
                   type="monotone"
                   dataKey={drivers[0]}
-                  stroke={colorOne}
+                  stroke={primaryColor}
                   strokeWidth={3}
                 />
                 <Line
                   type="monotone"
                   dataKey={drivers[1]}
-                  stroke={colorTwo}
+                  stroke={secondaryColor}
                   strokeWidth={3}
                 />
               </LineChart>
