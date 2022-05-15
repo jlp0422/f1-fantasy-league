@@ -36,7 +36,7 @@ const toBase64 = (str) =>
 const CarImage = ({ constructor, size }) => {
   const constructorCarImageUrl = normalizeConstructorName(constructor)
   const widthHeight = getDimensions(size)
-  const colors = COLORS_BY_CONSTRUCTOR[constructorCarImageUrl]
+  const colors = COLORS_BY_CONSTRUCTOR[constructorCarImageUrl].livery
   return (
     <Image
       priority

@@ -1,11 +1,11 @@
 import CarNumber from 'components/CarNumber'
-import { CAR_NUMBER_BACKGROUND_COLORS } from 'constants/index'
+import { COLORS_BY_CONSTRUCTOR } from 'constants/index'
 import { normalizeConstructorName } from 'helpers/cars'
 import Link from 'next/link'
 
 const ConstructorStandingRow = ({ constructor, principal, points }) => {
   const normalized = normalizeConstructorName(constructor)
-  const numberBgColor = CAR_NUMBER_BACKGROUND_COLORS[normalized]
+  const numberBgColor = COLORS_BY_CONSTRUCTOR[normalized].numberBackground
   return (
     <li className="w-full px-4 py-2.5 border-b border-gray-600 first-of-type:rounded-t-lg last-of-type:rounded-b-lg odd:bg-gray-800 even:bg-gray-700">
       <div className="flex items-center space-x-4">

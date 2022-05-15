@@ -54,7 +54,8 @@ const Constructor = ({
   ]
 
   const constructorCarImageUrl = normalizeConstructorName(constructorName)
-  const [colorOne, colorTwo] = COLORS_BY_CONSTRUCTOR[constructorCarImageUrl]
+  const [colorOne, colorTwo] =
+    COLORS_BY_CONSTRUCTOR[constructorCarImageUrl].livery
   const imagePath = `/cars/${constructorCarImageUrl}.jpg`
 
   return (

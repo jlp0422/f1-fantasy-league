@@ -1,6 +1,6 @@
 import CarNumber from 'components/CarNumber'
 import Layout from 'components/Layout'
-import { CAR_NUMBER_BACKGROUND_COLORS } from 'constants/index'
+import { COLORS_BY_CONSTRUCTOR } from 'constants/index'
 import { google } from 'googleapis'
 import { googleAuth } from 'helpers/auth'
 import { normalizeConstructorName } from 'helpers/cars'
@@ -43,7 +43,7 @@ const RacePoints = ({
               ([_a, aPoints], [_b, bPoints]) => sum(bPoints) - sum(aPoints)
             ).map(([constructor, pointsByRace]) => {
               const normalized = normalizeConstructorName(constructor)
-              const numberBgColor = CAR_NUMBER_BACKGROUND_COLORS[normalized]
+              const numberBgColor = COLORS_BY_CONSTRUCTOR[normalized].numberBackground
               // minus 1 to account for total points column
               const numExtraColumns =
                 Object.keys(raceColumnByIndex).length - pointsByRace.length - 1
