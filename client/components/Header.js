@@ -14,7 +14,7 @@ const Header = () => {
   ]
   const activeRouteClass = 'dark:text-white'
   return (
-    <nav className="px-4 py-4 bg-white border-gray-200 sm:px-8 dark:bg-gray-800">
+    <nav className="relative z-10 px-4 py-4 bg-white border-gray-200 sm:px-8 dark:bg-gray-800">
       <div className="flex flex-wrap items-center justify-between">
         <Link href="/">
           <a className="flex items-center">

@@ -6,6 +6,7 @@ const Layout = ({ children, pageTitle, documentTitle }) => {
     <div>
       <Head>
         <title>{`${documentTitle} | F1 Fantasy 2022`}</title>
+        {/* <link rel="shortcut icon" href="/favicon.ico" /> */}
         <meta name="viewport" content="initial-scale=1.0, width=device-width" />
         <meta property="og:title" content={documentTitle} key="title" />
       </Head>
