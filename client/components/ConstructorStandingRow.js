@@ -1,9 +1,9 @@
 import CarNumber from 'components/CarNumber'
-import { normalizeConstructorName } from 'helpers/cars'
 import { CAR_NUMBER_BACKGROUND_COLORS } from 'constants/index'
+import { normalizeConstructorName } from 'helpers/cars'
 import Link from 'next/link'
 
-const ConstructorStandingRow = ({ constructor, points }) => {
+const ConstructorStandingRow = ({ constructor, principal, points }) => {
   const normalized = normalizeConstructorName(constructor)
   const numberBgColor = CAR_NUMBER_BACKGROUND_COLORS[normalized]
   return (
@@ -16,20 +16,25 @@ const ConstructorStandingRow = ({ constructor, points }) => {
           >
             <CarNumber constructor={constructor} size="small" />
           </div>
-          <p className="ml-4 text-base font-medium text-white truncate sm:text-2xl">
+          <div className="flex flex-col ml-4">
             <Link
               href={{
                 pathname: '/constructors/[name]',
                 query: {
-                  name: encodeURIComponent(
-                    normalizeConstructorName(constructor)
-                  ),
+                  name: encodeURIComponent(normalized),
                 },
               }}
             >
-              <a className="hover:text-gray-300">{constructor}</a>
+              <a>
+                <p className="text-base font-medium truncate text-gray-50 sm:text-2xl hover:text-gray-300">
+                  {constructor}
+                </p>
+              </a>
             </Link>
-          </p>
+            <p className="invisible hidden text-gray-300 sm:visible sm:block sm:text-base">
+              Team Principal: {principal}
+            </p>
+          </div>
         </div>
         <div className="inline-flex items-center text-base font-semibold text-white sm:text-2xl">
           {points} points

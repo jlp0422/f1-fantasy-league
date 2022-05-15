@@ -9,10 +9,11 @@ const Standings = ({ standings }) => {
   return (
     <Layout pageTitle="Standings" documentTitle="Standings">
       <ol className="w-auto my-4 text-lg font-medium text-gray-900 bg-white border border-gray-200 rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-        {standings.map(([constructor, points], index) => {
+        {standings.map(([constructor, principal, points], index) => {
           return (
             <ConstructorStandingRow
               key={constructor}
+              principal={principal}
               points={points}
               constructor={constructor}
             />
@@ -27,7 +28,7 @@ export async function getStaticProps(context) {
   google.options({ auth: googleAuth })
 
   const existingColumnData = await sheets.spreadsheets.get({
-    ranges: ["'STANDINGS'!A2:B9"],
+    ranges: ["'STANDINGS'!A2:C9"],
     spreadsheetId: process.env.SPREADSHEET_ID,
     includeGridData: true,
   })

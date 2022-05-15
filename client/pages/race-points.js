@@ -1,10 +1,10 @@
 import CarNumber from 'components/CarNumber'
 import Layout from 'components/Layout'
-import { google } from 'googleapis'
 import { CAR_NUMBER_BACKGROUND_COLORS } from 'constants/index'
+import { google } from 'googleapis'
 import { googleAuth } from 'helpers/auth'
 import { normalizeConstructorName } from 'helpers/cars'
-import { sortArray, toNum, sum } from 'helpers/utils'
+import { sortArray, sum, toNum } from 'helpers/utils'
 import Link from 'next/link'
 
 const sheets = google.sheets('v4')
@@ -67,9 +67,7 @@ const RacePoints = ({
                       href={{
                         pathname: '/constructors/[name]',
                         query: {
-                          name: encodeURIComponent(
-                            normalizeConstructorName(constructor)
-                          ),
+                          name: encodeURIComponent(normalized),
                         },
                       }}
                     >
