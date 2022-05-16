@@ -1,8 +1,8 @@
+import Dismiss from 'components/icons/Dismiss'
+import Hamburger from 'components/icons/Hamburger'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useState } from 'react'
-import Dismiss from 'components/icons/Dismiss'
-import Hamburger from 'components/icons/Hamburger'
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false)
@@ -46,13 +46,12 @@ const Header = () => {
           <ul className="flex flex-col mt-4 md:flex-row md:space-x-8 md:mt-0 md:text-sm md:font-medium">
             {routes.map(({ href, title }) => {
               const isActiveRoute = pathname === href
-              console.log({ isActiveRoute})
               return (
                 <li key={href}>
                   <Link href={href}>
                     <a
-                      className={`block py-2 pr-4 pl-3 border-b md:border-0  md:p-0 text-gray-400 md:hover:text-white hover:bg-gray-700 hover:text-gray-200 md:hover:bg-transparent border-gray-700 ${
-                        isActiveRoute && 'text-white'
+                      className={`block py-2 pr-4 pl-3 border-b md:border-0 md:p-0  md:hover:text-white hover:bg-gray-700 hover:text-gray-200 md:hover:bg-transparent border-gray-700 ${
+                        isActiveRoute ? 'text-white' : 'text-gray-400'
                       }`}
                       onClick={() => setIsOpen((open) => !open)}
                     >
