@@ -75,11 +75,11 @@ const Constructor = ({
             return (
               <div key={label} className="flex flex-col mt-4 lg:mt-2">
                 <h2
-                  className={`font-bold tracking-tight dark:sm:text-gray-200 text-gray-900 dark:text-gray-900 ${fontSizeClass}`}
+                  className={`font-bold tracking-tight sm:text-gray-200 marker:text-gray-900 ${fontSizeClass}`}
                 >
                   {value}
                 </h2>
-                <p className="leading-none tracking-wide text-gray-600 dark:sm:text-gray-300 text-md lg:text-lg dark:text-gray-600">
+                <p className="leading-none tracking-wide text-gray-600 sm:text-gray-300 text-md lg:text-lg">
                   {label}
                 </p>
               </div>
@@ -90,8 +90,8 @@ const Constructor = ({
 
       {/* mobile points table */}
       <div className="relative visible block my-4 overflow-x-auto rounded-lg shadow-md md:hidden md:invisible">
-        <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400 dark:bg-gray-800">
-          <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+        <table className="w-full text-sm text-left text-gray-400 bg-gray-800">
+          <thead className="text-xs text-gray-400 uppercase bg-gray-700">
             <tr>
               <th scope="col" className="px-3 py-3">
                 &nbsp;
@@ -112,7 +112,7 @@ const Constructor = ({
               return (
                 <tr
                   key={race}
-                  className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 odd:bg-white even:bg-gray-50 odd:dark:bg-gray-800 even:dark:bg-gray-700"
+                  className="bg-gray-800 border-b border-gray-700 hover:bg-gray-600 odd:bg-gray-800 even:bg-gray-700"
                 >
                   <th
                     key={race}
@@ -140,8 +140,8 @@ const Constructor = ({
 
       {/* desktop points table */}
       <div className="relative invisible hidden my-10 overflow-x-auto rounded-lg shadow-md md:block md:visible">
-        <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400 dark:bg-gray-800">
-          <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+        <table className="w-full text-sm text-left text-gray-400 bg-gray-800">
+          <thead className="text-xs text-gray-400 uppercase bg-gray-700">
             <tr>
               <th scope="col" className="px-6 py-3">
                 Driver
@@ -163,11 +163,11 @@ const Constructor = ({
               return (
                 <tr
                   key={driver}
-                  className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 odd:bg-white even:bg-gray-50 odd:dark:bg-gray-800 even:dark:bg-gray-700"
+                  className="border-b border-gray-700 bg-gray-50 hover:bg-gray-600 odd:bg-gray-800 even:bg-gray-700"
                 >
                   <th
                     scope="row"
-                    className="px-6 py-4 font-medium text-gray-900 dark:text-white whitespace-nowrap"
+                    className="px-6 py-4 font-medium text-white whitespace-nowrap"
                   >
                     {driver}
                   </th>
@@ -196,7 +196,7 @@ const Constructor = ({
       {/* charts */}
       {chartsEnabled && (
         <div className="invisible hidden sm:visible sm:block">
-          <h2 className="text-xl font-bold tracking-tight text-gray-900 dark:text-gray-900 md:text-2xl lg:text-3xl">
+          <h2 className="text-xl font-bold tracking-tight text-gray-900 md:text-2xl lg:text-3xl">
             Driver Points by Race
           </h2>
           <div className="w-full mt-4 rounded-lg bg-slate-600 h-500">

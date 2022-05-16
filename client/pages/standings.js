@@ -8,7 +8,7 @@ const sheets = google.sheets('v4')
 const Standings = ({ standings }) => {
   return (
     <Layout pageTitle="Standings" documentTitle="Standings">
-      <ol className="w-auto my-4 text-lg font-medium text-gray-900 bg-white border border-gray-200 rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+      <ol className="w-auto my-4 text-lg font-medium text-white bg-gray-700 border border-gray-600 rounded-lg">
         {standings.map(([constructor, principal, points], index) => {
           return (
             <ConstructorStandingRow

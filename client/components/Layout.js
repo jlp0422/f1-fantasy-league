@@ -13,7 +13,7 @@ const Layout = ({ children, pageTitle, documentTitle }) => {
       <Header />
       <main className="mx-4 mt-4 mb-12 sm:mx-8">
         {pageTitle ? (
-          <h1 className="mb-4 text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-900">
+          <h1 className="mb-4 text-3xl font-bold tracking-tight text-gray-900">
             {pageTitle}
           </h1>
         ) : null}
