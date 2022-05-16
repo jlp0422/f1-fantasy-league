@@ -30,7 +30,7 @@ const HomePage = ({ constructors }) => {
                     backgroundImage: `url('/cars/${normalized}.jpg')`,
                   }}
                 />
-                <h2 className="absolute px-4 text-3xl font-bold text-center uppercase dark:text-gray-100">
+                <h2 className="absolute px-4 text-3xl font-bold text-center text-gray-100 uppercase">
                   {constructor}
                 </h2>
               </a>
