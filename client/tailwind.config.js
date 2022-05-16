@@ -10,10 +10,10 @@ module.exports = {
         'inset-black-7': 'inset 0 0 0 100vw rgba(0,0,0,0.7)',
       },
       height: {
-        '500': '500px'
+        500: '500px',
       },
       width: {
-        '500': '500px'
+        500: '500px',
       },
     },
   },

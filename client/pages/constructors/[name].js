@@ -3,7 +3,8 @@ import Layout from 'components/Layout'
 import { CONSTRUCTOR_NAMES } from 'constants/index'
 import { google } from 'googleapis'
 import { googleAuth } from 'helpers/auth'
-import { COLORS_BY_CONSTRUCTOR, normalizeConstructorName } from 'helpers/cars'
+import { normalizeConstructorName } from 'helpers/cars'
+import { COLORS_BY_CONSTRUCTOR } from 'constants/index'
 import { toNum } from 'helpers/utils'
 import {
   CartesianGrid,
@@ -53,7 +54,8 @@ const Constructor = ({
   ]
 
   const constructorCarImageUrl = normalizeConstructorName(constructorName)
-  const [colorOne, colorTwo] = COLORS_BY_CONSTRUCTOR[constructorCarImageUrl]
+  const { primary: primaryColor, secondary: secondaryColor } =
+    COLORS_BY_CONSTRUCTOR[constructorCarImageUrl]
   const imagePath = `/cars/${constructorCarImageUrl}.jpg`
 
   return (
@@ -137,7 +139,7 @@ const Constructor = ({
       </div>
 
       {/* desktop points table */}
-      <div className="relative invisible hidden my-8 overflow-x-auto rounded-lg shadow-md md:block md:visible">
+      <div className="relative invisible hidden my-10 overflow-x-auto rounded-lg shadow-md md:block md:visible">
         <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400 dark:bg-gray-800">
           <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
             <tr>
@@ -227,13 +229,13 @@ const Constructor = ({
                 <Line
                   type="monotone"
                   dataKey={drivers[0]}
-                  stroke={colorOne}
+                  stroke={primaryColor}
                   strokeWidth={3}
                 />
                 <Line
                   type="monotone"
                   dataKey={drivers[1]}
-                  stroke={colorTwo}
+                  stroke={secondaryColor}
                   strokeWidth={3}
                 />
               </LineChart>
