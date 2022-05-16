@@ -30,7 +30,7 @@ const ConstructorStandingRow = ({ constructor, principal, points }) => {
             >
               <a>
                 <p
-                  className="text-base font-bold truncate sm:text-2xl"
+                  className="text-base font-bold truncate sm:text-2xl hover:underline"
                   style={{ color: numberText }}
                 >
                   {constructor}
