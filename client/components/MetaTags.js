@@ -5,7 +5,7 @@ import { useRouter } from 'next/router'
 const MetaTags = ({
   documentTitle,
   metaImageUrl = 'https://res.cloudinary.com/jlp0422/image/upload/v1652746266/f1-fantasy-2022/cars/turbo-team-racing.jpg',
-  description = 'Home built website for F1 Fantasy 2022 League',
+  description = 'Custom built website for F1 Fantasy 2022 League',
 }) => {
   const { asPath } = useRouter()
   const contentUrl = `https://f1-fantasy-2022.vercel.app${asPath}`
@@ -20,29 +20,29 @@ const MetaTags = ({
       <meta name="viewport" content="initial-scale=1.0, width=device-width" />
 
       {/* <!-- Search Engine --> */}
-      <meta name="description" content={description} />
-      <meta name="image" content={contentUrl} />
+      <meta name="description" content={description} key="desc" />
+      <meta name="image" content={contentUrl} key="img" />
 
       {/* <!-- Schema.org for Google --> */}
-      <meta itemprop="name" content={docAndSiteTitle} />
-      <meta itemprop="description" content={description} />
-      <meta itemprop="image" content={contentUrl} />
+      <meta itemprop="name" content={docAndSiteTitle} key="g-name" />
+      <meta itemprop="description" content={description} key="g-desc" />
+      <meta itemprop="image" content={contentUrl} key="g-img" />
 
       {/* <!-- Twitter --> */}
-      <meta name="twitter:card" content="summary" />
-      <meta name="twitter:title" content={docAndSiteTitle} />
-      <meta name="twitter:description" content={description} />
-      <meta name="twitter:site" content="@jeremyphilipson" />
-      <meta name="twitter:image:src" content={metaImageUrl} />
+      <meta name="twitter:card" content="summary" key="tw-card" />
+      <meta name="twitter:title" content={docAndSiteTitle} key="tw-title" />
+      <meta name="twitter:description" content={description} key="tw-desc" />
+      <meta name="twitter:site" content="@jeremyphilipson" key="tw-site" />
+      <meta name="twitter:image:src" content={metaImageUrl} key="tw-img-src" />
 
       {/* <!-- Open Graph general (Facebook, Pinterest & Google+) --> */}
-      <meta property="og:title" content={documentTitle} key="title" />
-      <meta property="og:image" content={metaImageUrl} />
-      <meta name="og:description" content={description} />
-      <meta name="og:url" content={contentUrl} />
-      <meta name="og:site_name" content={docAndSiteTitle} />
-      <meta property="og:type" content="website" />
-      <meta property="og:locale" content="en_US" />
+      <meta property="og:title" content={docAndSiteTitle} key="og-title" />
+      <meta property="og:image" content={metaImageUrl} key="og-image" />
+      <meta name="og:description" content={description} key="og-desc" />
+      <meta name="og:url" content={contentUrl} key="og-url" />
+      <meta name="og:site_name" content={docAndSiteTitle} key="og-site" />
+      <meta property="og:type" content="website" key="og-type" />
+      <meta property="og:locale" content="en_US" key="og-locale" />
     </Head>
   )
 }
