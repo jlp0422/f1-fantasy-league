@@ -7,7 +7,11 @@ const sheets = google.sheets('v4')
 
 const Standings = ({ standings }) => {
   return (
-    <Layout pageTitle="Standings" documentTitle="Standings">
+    <Layout
+      pageTitle="Standings"
+      documentTitle="Standings"
+      description="Overall season standings for all Constructors"
+    >
       <ol className="w-auto my-4 text-lg font-medium text-white bg-gray-700 border border-gray-600 rounded-lg">
         {standings.map(([constructor, principal, points], index) => {
           return (

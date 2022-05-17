@@ -1,6 +1,5 @@
 import Header from 'components/Header'
 import Head from 'next/head'
-import { useRouter } from 'next/router'
 
 const Layout = ({
   children,
@@ -9,8 +8,6 @@ const Layout = ({
   metaImageUrl = 'https://res.cloudinary.com/jlp0422/image/upload/v1652746266/f1-fantasy-2022/cars/turbo-team-racing.jpg',
   description = 'Home built website for F1 Fantasy 2022 League',
 }) => {
-  const router = useRouter()
-  console.log({ router })
   return (
     <div>
       <Head>

@@ -23,7 +23,11 @@ const RacePoints = ({
   //   racePointsByConstructorByRace,
   // })
   return (
-    <Layout pageTitle="Points by Race" documentTitle="Points by Race">
+    <Layout
+      pageTitle="Points by Race"
+      documentTitle="Points by Race"
+      description="Points by Race for all Constructors"
+    >
       <div className="relative my-4 overflow-x-auto rounded-lg shadow-md">
         <table className="w-full text-sm text-left text-gray-400 bg-gray-800">
           <thead className="text-xs text-gray-400 uppercase bg-gray-700">
