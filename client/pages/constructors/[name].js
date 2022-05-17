@@ -56,7 +56,7 @@ const Constructor = ({
   const constructorCarImageUrl = normalizeConstructorName(constructorName)
   const { primary: primaryColor, secondary: secondaryColor } =
     COLORS_BY_CONSTRUCTOR[constructorCarImageUrl]
-  const imagePath = `/cars/${constructorCarImageUrl}.jpg`
+  const imagePath = `/cars/${constructorCarImageUrl}.webp`
 
   return (
     <Layout documentTitle={constructorName}>
