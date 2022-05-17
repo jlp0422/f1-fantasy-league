@@ -12,7 +12,7 @@ const Standings = ({ standings }) => {
       documentTitle="Standings"
       description="Overall season standings for all Constructors"
     >
-      <ol className="w-auto my-4 text-lg font-medium text-white bg-gray-700 border border-gray-600 rounded-lg">
+      <ol className="w-auto my-4 text-lg font-medium text-white">
         {standings.map(([constructor, principal, points], index) => {
           return (
             <ConstructorStandingRow

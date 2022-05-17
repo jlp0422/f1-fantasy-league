@@ -8,6 +8,7 @@ const Layout = ({
   metaImageUrl,
   description,
 }) => {
+  const noPadding = false
   return (
     <div>
       <MetaTags
@@ -16,9 +17,17 @@ const Layout = ({
         description={description}
       />
       <Header />
-      <main className="mx-4 mt-4 mb-12 sm:mx-8">
+      <main
+        className={`${
+          noPadding ? 'mx-0' : 'mx-4 xl:mx-auto sm:mx-8'
+        } mt-4 mb-12 max-w-7xl`}
+      >
         {pageTitle ? (
-          <h1 className="mb-4 text-3xl font-bold tracking-tight text-gray-900">
+          <h1
+            className={`${
+              noPadding ? 'mx-4' : 'mx-auto'
+            } mb-2 sm:mb-4 text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 text-center sm:text-left max-w-7xl mx-auto`}
+          >
             {pageTitle}
           </h1>
         ) : null}
