@@ -27,7 +27,7 @@ const HomePage = ({ constructors }) => {
                 <div
                   className="bg-contain rounded-lg h-72 w-72 shadow-inset-black-6"
                   style={{
-                    backgroundImage: `url('/cars/${normalized}.jpg')`,
+                    backgroundImage: `url('/cars/${normalized}.webp')`,
                   }}
                 />
                 <h2 className="absolute px-4 text-3xl font-bold text-center text-gray-100 uppercase">
