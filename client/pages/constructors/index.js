@@ -9,7 +9,7 @@ const sheets = google.sheets('v4')
 
 const HomePage = ({ constructors }) => {
   return (
-    <Layout documentTitle="Home">
+    <Layout documentTitle="Constructors">
       <div className="grid grid-cols-1 gap-y-8 gap-x-4 justify-items-center sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {constructors.map((constructor) => {
           const normalized = normalizeConstructorName(constructor)
