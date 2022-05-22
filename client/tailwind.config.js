@@ -15,6 +15,9 @@ module.exports = {
       width: {
         500: '500px',
       },
+      screens: {
+        xs: '400px',
+      },
     },
   },
   plugins: [

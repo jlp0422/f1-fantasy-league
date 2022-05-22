@@ -8,11 +8,11 @@ const sheets = google.sheets('v4')
 const Standings = ({ standings }) => {
   return (
     <Layout
-      pageTitle="Standings"
       documentTitle="Standings"
       description="Overall season standings for all Constructors"
+      fullWidth
     >
-      <ol className="w-auto my-4 text-lg font-medium text-white bg-gray-700 border border-gray-600 rounded-lg">
+      <ol className="w-auto mb-4 text-lg font-medium text-white">
         {standings.map(([constructor, principal, points], index) => {
           return (
             <ConstructorStandingRow

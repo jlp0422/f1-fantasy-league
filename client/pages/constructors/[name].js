@@ -64,7 +64,7 @@ const Constructor = ({
       metaImageUrl={getCloudinaryCarUrl(constructorCarImageUrl)}
     >
       <div
-        className="bg-cover bg-center w-screen absolute h-80 left-0 top-[72px] sm:top-[60px] shadow-inset-black-7"
+        className="bg-cover bg-center w-screen absolute h-80 left-0 top-[64px] sm:top-[72px] shadow-inset-black-7"
         style={{ backgroundImage: `url(${imagePath})` }}
       />
       <div className="relative flex flex-col items-center sm:flex-row">

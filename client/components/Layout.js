@@ -3,11 +3,14 @@ import MetaTags from 'components/MetaTags'
 
 const Layout = ({
   children,
-  pageTitle,
   documentTitle,
   metaImageUrl,
   description,
+  fullWidth,
 }) => {
+  const classes = fullWidth
+    ? 'm-0'
+    : 'mx-4 mt-4 mb-12 xl:mx-auto sm:mx-8 max-w-7xl'
   return (
     <div>
       <MetaTags
@@ -16,13 +19,8 @@ const Layout = ({
         description={description}
       />
       <Header />
-      <main className="mx-4 mt-4 mb-12 sm:mx-8">
-        {pageTitle ? (
-          <h1 className="mb-4 text-3xl font-bold tracking-tight text-gray-900">
-            {pageTitle}
-          </h1>
-        ) : null}
-        {children}
+      <main className={classes}>
+        <div>{children}</div>
       </main>
     </div>
   )
