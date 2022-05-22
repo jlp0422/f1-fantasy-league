@@ -4,7 +4,11 @@ import mazepin from '../public/mazepin-500.gif'
 
 const Custom500 = () => {
   return (
-    <Layout pageTitle="500 OUT OF CONTROL" documentTitle="500">
+    <Layout
+      pageTitle="500 OUT OF CONTROL"
+      documentTitle="500"
+      description="500 Page"
+    >
       <div className="mx-auto my-0 w-500 h-500">
         <Image
           layout="fixed"

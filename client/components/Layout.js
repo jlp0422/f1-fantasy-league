@@ -1,15 +1,20 @@
 import Header from 'components/Header'
-import Head from 'next/head'
+import MetaTags from 'components/MetaTags'
 
-const Layout = ({ children, pageTitle, documentTitle }) => {
+const Layout = ({
+  children,
+  pageTitle,
+  documentTitle,
+  metaImageUrl,
+  description,
+}) => {
   return (
     <div>
-      <Head>
-        <title>{`${documentTitle} | F1 Fantasy 2022`}</title>
-        {/* <link rel="shortcut icon" href="/favicon.ico" /> */}
-        <meta name="viewport" content="initial-scale=1.0, width=device-width" />
-        <meta property="og:title" content={documentTitle} key="title" />
-      </Head>
+      <MetaTags
+        documentTitle={documentTitle}
+        metaImageUrl={metaImageUrl}
+        description={description}
+      />
       <Header />
       <main className="mx-4 mt-4 mb-12 sm:mx-8">
         {pageTitle ? (

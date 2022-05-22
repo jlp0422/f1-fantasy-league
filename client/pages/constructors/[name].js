@@ -1,10 +1,9 @@
 import CarImage from 'components/CarImage'
 import Layout from 'components/Layout'
-import { CONSTRUCTOR_NAMES } from 'constants/index'
+import { COLORS_BY_CONSTRUCTOR, CONSTRUCTOR_NAMES } from 'constants/index'
 import { google } from 'googleapis'
 import { googleAuth } from 'helpers/auth'
-import { normalizeConstructorName } from 'helpers/cars'
-import { COLORS_BY_CONSTRUCTOR } from 'constants/index'
+import { getCloudinaryCarUrl, normalizeConstructorName } from 'helpers/cars'
 import { toNum } from 'helpers/utils'
 import {
   CartesianGrid,
@@ -14,7 +13,7 @@ import {
   ResponsiveContainer,
   Tooltip,
   XAxis,
-  YAxis,
+  YAxis
 } from 'recharts'
 
 const sheets = google.sheets('v4')
@@ -59,7 +58,11 @@ const Constructor = ({
   const imagePath = `/cars/${constructorCarImageUrl}.webp`
 
   return (
-    <Layout documentTitle={constructorName}>
+    <Layout
+      documentTitle={constructorName}
+      description={`Constructor information for ${constructorName}`}
+      metaImageUrl={getCloudinaryCarUrl(constructorCarImageUrl)}
+    >
       <div
         className="bg-cover bg-center w-screen absolute h-80 left-0 top-[72px] sm:top-[60px] shadow-inset-black-7"
         style={{ backgroundImage: `url(${imagePath})` }}
