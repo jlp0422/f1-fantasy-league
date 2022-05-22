@@ -19,5 +19,5 @@ export const rgbDataURL = (r, g, b) =>
     triplet(0, r, g) + triplet(b, 255, 255)
   }/yH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==`
 
-export const getCloudinaryUrl = (constructorName) =>
+export const getCloudinaryCarUrl = (constructorName) =>
   `https://res.cloudinary.com/jlp0422/image/upload/v1652746266/f1-fantasy-2022/cars/${constructorName}.jpg`

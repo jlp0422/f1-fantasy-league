@@ -3,7 +3,7 @@ import Layout from 'components/Layout'
 import { COLORS_BY_CONSTRUCTOR, CONSTRUCTOR_NAMES } from 'constants/index'
 import { google } from 'googleapis'
 import { googleAuth } from 'helpers/auth'
-import { getCloudinaryUrl, normalizeConstructorName } from 'helpers/cars'
+import { getCloudinaryCarUrl, normalizeConstructorName } from 'helpers/cars'
 import { toNum } from 'helpers/utils'
 import {
   CartesianGrid,
@@ -61,7 +61,7 @@ const Constructor = ({
     <Layout
       documentTitle={constructorName}
       description={`Constructor information for ${constructorName}`}
-      metaImageUrl={getCloudinaryUrl(constructorCarImageUrl)}
+      metaImageUrl={getCloudinaryCarUrl(constructorCarImageUrl)}
     >
       <div
         className="bg-cover bg-center w-screen absolute h-80 left-0 top-[72px] sm:top-[60px] shadow-inset-black-7"

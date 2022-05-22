@@ -4,7 +4,7 @@ import { useRouter } from 'next/router'
 
 const MetaTags = ({
   documentTitle,
-  metaImageUrl = 'https://res.cloudinary.com/jlp0422/image/upload/v1652746266/f1-fantasy-2022/cars/turbo-team-racing.jpg',
+  metaImageUrl = 'https://res.cloudinary.com/jlp0422/image/upload/v1653181121/f1-fantasy-2022/logo.png',
   description = 'Custom built website for F1 Fantasy 2022 League',
 }) => {
   const { asPath } = useRouter()
