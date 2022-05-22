@@ -17,7 +17,7 @@ const Header = () => {
 
   return (
     <nav
-      className="relative z-10 px-4 py-6 bg-gray-800 border-gray-200 md:py-6 md:px-8"
+      className="relative z-10 px-3 py-6 bg-gray-800 border-gray-200 md:py-6 md:px-8"
       style={{ backgroundColor: '#171420' }}
     >
       <div className="flex flex-wrap items-center justify-between mx-auto max-w-7xl">
@@ -35,7 +35,7 @@ const Header = () => {
         </button>
         <Link href="/">
           <a className="flex items-center justify-center mx-auto md:w-auto md:flex-1 md:justify-start">
-            <button className="leading-[0rem] max-w-[199px] xs:max-w-[299px] sm:max-w-[448px]">
+            <button className="leading-[0rem] max-w-[200px] xs:max-w-[300px] sm:max-w-[450px]">
               <Image
                 layout="intrinsic"
                 src={headerLogo}
@@ -48,7 +48,7 @@ const Header = () => {
           className={`${isOpen ? 'block' : 'hidden'} w-full md:block md:w-auto`}
           id="mobile-menu"
         >
-          <ul className="flex flex-col mt-2 md:flex-row md:space-x-8 md:mt-0 md:text-sm md:font-medium">
+          <ul className="flex flex-col mt-6 md:flex-row md:space-x-8 md:mt-0 md:text-sm md:font-medium">
             {routes.map(({ href, title }) => {
               const isActiveRoute = pathname === href
               return (
