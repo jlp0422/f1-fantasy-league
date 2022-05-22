@@ -1,8 +1,10 @@
 import Dismiss from 'components/icons/Dismiss'
 import Hamburger from 'components/icons/Hamburger'
+import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useState } from 'react'
+import headerLogo from '../public/fate-eight.png'
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false)
@@ -33,11 +35,13 @@ const Header = () => {
         </button>
         <Link href="/">
           <a className="flex items-center justify-center mx-auto md:w-auto md:flex-1 md:justify-start">
-            <img
-              src="/FATE-EIGHT-01.png"
-              className="h-4 xs:h-6 sm:h-9"
-              alt="Fate of the Eight"
-            />
+            <button className="leading-[0rem] max-w-[199px] xs:max-w-[299px] sm:max-w-[448px]">
+              <Image
+                layout="intrinsic"
+                src={headerLogo}
+                alt="Fate of the Eight"
+              />
+            </button>
           </a>
         </Link>
         <div
