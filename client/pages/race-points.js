@@ -106,7 +106,7 @@ const RacePoints = ({
   )
 }
 
-export async function getStaticProps(context) {
+export async function getStaticProps() {
   google.options({ auth: googleAuth })
 
   const racePointsData = await sheets.spreadsheets.get({
