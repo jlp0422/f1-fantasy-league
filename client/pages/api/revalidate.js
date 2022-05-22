@@ -1,4 +1,5 @@
 import { CONSTRUCTOR_NAMES } from 'constants/index'
+import { normalizeConstructorName } from 'helpers/cars'
 
 const routes = CONSTRUCTOR_NAMES.map((constructor) =>
   encodeURIComponent(normalizeConstructorName(constructor))
