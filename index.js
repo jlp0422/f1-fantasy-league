@@ -166,6 +166,12 @@ async function main() {
         text: message,
       }
       sgMail.send(data).then(LOG_INFO).catch(LOG_ERROR)
+
+      LOG_INFO('revalidating pages...')
+      const response = await fetch(
+        `https://f1-fantasy-2022.vercel.app/api/revalidate?secret=${process.env.REVALIDATE_TOKEN}`
+      )
+      LOG_INFO('revalidation response: ', response)
     } else {
       LOG_INFO(
         `Something went wrong: ${res.statusText} with error: ${res.data?.error?.message}`
