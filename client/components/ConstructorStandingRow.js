@@ -11,7 +11,7 @@ const ConstructorStandingRow = ({ constructor, principal, points }) => {
       className="w-full px-4 py-2 sm:px-8 sm:py-2.5 border-b border-gray-600"
       style={{ backgroundColor: numberBackground }}
     >
-      <div className="flex items-center max-w-6xl mx-auto space-x-4">
+      <div className="flex items-center mx-auto space-x-4 max-w-7xl">
         <div className="flex items-center flex-1 min-w-0 truncate">
           <div
             className="relative min-w-[48px] min-h-[48px] w-14 h-14 p-2 rounded-full sm:w-20 sm:h-20 sm:p-4"
@@ -45,12 +45,16 @@ const ConstructorStandingRow = ({ constructor, principal, points }) => {
             </p>
           </div>
         </div>
-        {/* check ellipsis overflow */}
         <p
-          className="inline-flex items-center text-xl font-bold sm:text-2xl"
+          className="items-center invisible hidden font-bold sm:visible sm:inline-flex sm:text-2xl md:text-3xl"
           style={{ color: numberText }}
         >
-          {/* mobile pts, desktop points */}
+          {points} points
+        </p>
+        <p
+          className="inline-flex items-center visible text-xl font-bold sm:hidden sm:invisible sm:text-2xl"
+          style={{ color: numberText }}
+        >
           {points} pts
         </p>
       </div>

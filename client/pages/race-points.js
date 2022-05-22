@@ -24,7 +24,6 @@ const RacePoints = ({
   // })
   return (
     <Layout
-      pageTitle="Points by Race"
       documentTitle="Points by Race"
       description="Points by Race for all Constructors"
     >

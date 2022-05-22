@@ -23,6 +23,7 @@ const Header = () => {
           data-collapse-toggle="mobile-menu"
           type="button"
           className="absolute inline-flex items-center p-2 text-sm text-gray-400 rounded-lg md:hidden focus:outline-none focus:ring-2 hover:bg-gray-700 focus:ring-gray-600 xs:top-4 sm:top-4"
+          style={isOpen ? { top: 11 } : {}}
           aria-controls="mobile-menu"
           aria-expanded="false"
           onClick={() => setIsOpen((open) => !open)}

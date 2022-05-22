@@ -4,11 +4,7 @@ import max404 from '../public/max-404.gif'
 
 const Custom404 = () => {
   return (
-    <Layout
-      pageTitle="404 MAX NOT HAPPY"
-      documentTitle="404"
-      description="404 Page"
-    >
+    <Layout documentTitle="404" description="404 Page">
       <div className="mx-auto my-0 w-500 h-500">
         <Image
           layout="fixed"
