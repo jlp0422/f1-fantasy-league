@@ -169,7 +169,7 @@ async function main() {
 
       LOG_INFO('revalidating pages...')
       const response = await fetch(
-        `https://f1-fantasy-2022.vercel.app/api/revalidate?secret=${process.env.REVALIDATE_TOKEN}`
+        `https://fate-of-the-eight.vercel.app/api/revalidate?secret=${process.env.REVALIDATE_TOKEN}`
       )
       LOG_INFO('revalidation response: ', response)
     } else {

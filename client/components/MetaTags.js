@@ -4,10 +4,10 @@ import { useRouter } from 'next/router'
 const MetaTags = ({
   documentTitle,
   metaImageUrl = 'https://res.cloudinary.com/jlp0422/image/upload/b_rgb:000000,c_scale,w_2500/v1653181121/f1-fantasy-2022/logo.png',
-  description = 'Standings for 2022 Fate of the Eight F1 Fantasy',
+  description = 'Standings for Fate of the Eight F1 Fantasy 2022',
 }) => {
   const { asPath } = useRouter()
-  const contentUrl = `https://f1-fantasy-2022.vercel.app${asPath}`
+  const contentUrl = `https://fate-of-the-eight.vercel.app${asPath}`
   const docAndSiteTitle = `${documentTitle} | Fate of the Eight`
   return (
     <Head>
@@ -15,7 +15,7 @@ const MetaTags = ({
       <link rel="icon" href="/favicon/favicon.ico" />
       <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png"/>
       <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png" />
-      <link rel="manifest" href="/site.webmanifest"/>
+      <link rel="manifest" href="/favicon/site.webmanifest"/>
 
 
       {/* <!-- COMMON TAGS --> */}
