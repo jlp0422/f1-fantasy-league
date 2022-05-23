@@ -64,7 +64,7 @@ const Constructor = ({
       metaImageUrl={getCloudinaryCarUrl(constructorCarImageUrl)}
     >
       <div
-        className="bg-cover bg-center w-screen absolute h-80 sm:h-[340px] left-0 top-[64px] sm:top-[72px] shadow-inset-black-7"
+        className="bg-cover bg-center w-screen absolute h-80 sm:h-[336px] left-0 top-[64px] sm:top-[72px] shadow-inset-black-7"
         style={{ backgroundImage: `url(${imagePath})` }}
       />
       <div className="relative flex flex-col items-center sm:flex-row">
@@ -91,14 +91,18 @@ const Constructor = ({
 
       {/* mobile points table */}
       <div className="relative visible block my-4 overflow-x-auto rounded-lg shadow-md md:hidden md:invisible">
-        <table className="w-full text-sm text-left text-gray-300 bg-gray-800 font-secondary">
+        <table className="w-full text-base text-left text-gray-300 bg-gray-800 font-secondary">
           <thead className="uppercase bg-gray-700">
             <tr>
               <th scope="col" className="p-3">
                 &nbsp;
               </th>
               {drivers.map((driver) => (
-                <th key={driver} scope="col" className="p-3 text-center text-gray-100">
+                <th
+                  key={driver}
+                  scope="col"
+                  className="p-3 text-center text-gray-100"
+                >
                   {driver}
                 </th>
               ))}
@@ -115,11 +119,7 @@ const Constructor = ({
                   key={race}
                   className="bg-gray-800 border-b border-gray-700 hover:bg-gray-600 odd:bg-gray-800 even:bg-gray-700"
                 >
-                  <th
-                    key={race}
-                    scope="col"
-                    className="p-3 text-left"
-                  >
+                  <th key={race} scope="col" className="p-3 text-left">
                     {race}
                   </th>
                   <td className="p-3 text-center text-gray-100">
@@ -141,14 +141,18 @@ const Constructor = ({
 
       {/* desktop points table */}
       <div className="relative invisible hidden my-10 overflow-x-auto rounded-lg shadow-md md:block md:visible">
-        <table className="w-full text-sm text-left text-gray-300 bg-gray-800 font-secondary">
-          <thead className="text-sm uppercase bg-gray-700 whitespace-nowrap">
+        <table className="w-full text-base text-left text-gray-300 uppercase bg-gray-800 font-secondary">
+          <thead className="bg-gray-700 whitespace-nowrap">
             <tr>
               <th scope="col" className="px-6 py-3 font-normal">
                 Driver
               </th>
               {Object.values(raceColumnByIndex).map((race) => (
-                <th key={race} scope="col" className="px-6 py-3 font-normal text-center">
+                <th
+                  key={race}
+                  scope="col"
+                  className="px-6 py-3 font-normal text-center"
+                >
                   {race}
                 </th>
               ))}
@@ -166,10 +170,7 @@ const Constructor = ({
                   key={driver}
                   className="text-base font-semibold text-gray-100 border-b border-gray-700 bg-gray-50 hover:bg-gray-600 odd:bg-gray-800 even:bg-gray-700"
                 >
-                  <th
-                    scope="row"
-                    className="px-6 py-4 whitespace-nowrap"
-                  >
+                  <th scope="row" className="px-6 py-4 whitespace-nowrap">
                     {driver}
                   </th>
                   <td className="px-6 py-4 text-center">{total}</td>
