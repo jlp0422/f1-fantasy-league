@@ -31,11 +31,18 @@ const RacePoints = ({
         <table className="w-full text-base text-left text-gray-300 uppercase bg-gray-800 font-secondary">
           <thead className="bg-gray-700 whitespace-nowrap">
             <tr>
-              <th scope="col" className="px-6 py-3">
+              <th
+                scope="col"
+                className="px-6 py-3 sticky w-[310px] min-w-[310px] max-w-[310px] left-0 bg-gray-700"
+              >
                 Constructor
               </th>
               {Object.values(raceColumnByIndex).map((race) => (
-                <th key={race} scope="col" className="px-6 py-3 font-normal text-center">
+                <th
+                  key={race}
+                  scope="col"
+                  className="px-6 py-3 font-normal text-center"
+                >
                   {race}
                 </th>
               ))}
@@ -54,14 +61,14 @@ const RacePoints = ({
               return (
                 <tr
                   key={constructor}
-                  className="text-lg bg-gray-800 border-b border-gray-700 sm:hover:bg-gray-600 odd:bg-gray-800 even:bg-gray-700"
+                  className="text-lg bg-gray-800 border-b border-gray-700 th-child:odd:bg-gray-800 th-child:even:bg-gray-700 sm:hover:bg-gray-600 th-child:sm:hover:bg-gray-600 odd:bg-gray-800 even:bg-gray-700"
                 >
                   <th
                     scope="row"
-                    className="flex items-center gap-3 px-6 py-4 font-semibold text-gray-100 whitespace-nowrap w-max"
+                    className="flex items-center sticky w-[310px] min-w-[310px] max-w-[310px] left-0  gap-3 px-6 py-4 font-semibold text-gray-100 whitespace-nowrap"
                   >
                     <div
-                      className={`relative w-10 h-10 sm:w-14 sm:h-14 sm:p-3 p-2 rounded-full`}
+                      className="relative w-10 h-10 p-2 rounded-full sm:w-14 sm:h-14 sm:p-3"
                       style={{ backgroundColor: numberBackground }}
                     >
                       <CarNumber constructor={constructor} size="small" />
