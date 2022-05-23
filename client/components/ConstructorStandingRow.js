@@ -8,18 +8,18 @@ const ConstructorStandingRow = ({ constructor, principal, points }) => {
   const { numberBackground, numberText } = COLORS_BY_CONSTRUCTOR[normalized]
   return (
     <li
-      className="w-full px-4 py-2 sm:px-8 sm:py-2.5 border-b border-gray-600"
+      className="w-full pr-2 py-2 sm:px-8 sm:py-2.5 border-b border-gray-600"
       style={{ backgroundColor: numberBackground }}
     >
-      <div className="flex items-center mx-auto space-x-4 max-w-7xl">
+      <div className="flex items-center mx-auto space-x-3 max-w-7xl">
         <div className="flex items-center flex-1 min-w-0 truncate">
           <div
-            className="relative min-w-[48px] min-h-[48px] w-14 h-14 p-2 rounded-full sm:w-20 sm:h-20 sm:p-4"
+            className="relative min-w-[48px] min-h-[48px] w-12 h-12 p-2 rounded-full sm:w-20 sm:h-20 sm:p-4"
             style={{ backgroundColor: numberBackground }}
           >
             <CarNumber constructor={constructor} size="small" />
           </div>
-          <div className="flex flex-col ml-2 truncate sm:ml-4">
+          <div className="flex flex-col ml-1 truncate sm:ml-4">
             <Link
               href={{
                 pathname: '/constructors/[name]',
@@ -30,7 +30,7 @@ const ConstructorStandingRow = ({ constructor, principal, points }) => {
             >
               <a>
                 <p
-                  className="text-xl font-bold truncate sm:text-4xl hover:underline"
+                  className="pr-[2px] text-2xl font-bold tracking-tight uppercase truncate md:tracking-normal sm:text-4xl sm:hover:underline font-primary"
                   style={{ color: numberText }}
                 >
                   {constructor}
@@ -38,21 +38,21 @@ const ConstructorStandingRow = ({ constructor, principal, points }) => {
               </a>
             </Link>
             <p
-              className="invisible hidden italic sm:visible sm:block sm:text-base"
-              style={{ color: numberText }}
+              className="invisible hidden italic font-semibold uppercase sm:visible sm:block sm:text-lg font-secondary"
+              style={{ color: numberText, lineHeight: 1.25 }}
             >
               Team Principal: {principal}
             </p>
           </div>
         </div>
         <p
-          className="items-center invisible hidden font-bold sm:visible sm:inline-flex sm:text-2xl md:text-3xl"
+          className="items-center invisible hidden font-bold uppercase sm:visible sm:inline-flex sm:text-3xl md:text-4xl font-primary"
           style={{ color: numberText }}
         >
           {points} points
         </p>
         <p
-          className="inline-flex items-center visible text-xl font-bold sm:hidden sm:invisible sm:text-2xl"
+          className="inline-flex items-center visible text-xl font-bold uppercase sm:hidden sm:invisible sm:text-2xl font-primary"
           style={{ color: numberText }}
         >
           {points} pts

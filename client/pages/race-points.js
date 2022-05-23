@@ -28,14 +28,14 @@ const RacePoints = ({
       description="Points by Race for all Constructors"
     >
       <div className="relative my-4 overflow-x-auto rounded-lg shadow-md">
-        <table className="w-full text-sm text-left text-gray-400 bg-gray-800">
-          <thead className="text-xs text-gray-400 uppercase bg-gray-700">
+        <table className="w-full text-base text-left text-gray-300 uppercase bg-gray-800 font-secondary">
+          <thead className="bg-gray-700 whitespace-nowrap">
             <tr>
               <th scope="col" className="px-6 py-3">
                 Constructor
               </th>
               {Object.values(raceColumnByIndex).map((race) => (
-                <th key={race} scope="col" className="px-6 py-3 text-center">
+                <th key={race} scope="col" className="px-6 py-3 font-normal text-center">
                   {race}
                 </th>
               ))}
@@ -54,11 +54,11 @@ const RacePoints = ({
               return (
                 <tr
                   key={constructor}
-                  className="bg-gray-800 border-b border-gray-700 hover:bg-gray-600 odd:bg-gray-800 even:bg-gray-700"
+                  className="text-lg bg-gray-800 border-b border-gray-700 sm:hover:bg-gray-600 odd:bg-gray-800 even:bg-gray-700"
                 >
                   <th
                     scope="row"
-                    className="flex items-center gap-3 px-6 py-4 font-medium text-white whitespace-nowrap w-max"
+                    className="flex items-center gap-3 px-6 py-4 font-semibold text-gray-100 whitespace-nowrap w-max"
                   >
                     <div
                       className={`relative w-10 h-10 sm:w-14 sm:h-14 sm:p-3 p-2 rounded-full`}
@@ -74,17 +74,15 @@ const RacePoints = ({
                         },
                       }}
                     >
-                      <a className="text-sm sm:text-base hover:text-gray-300">
-                        {constructor}
-                      </a>
+                      <a className=" sm:hover:text-gray-300">{constructor}</a>
                     </Link>
                   </th>
-                  <td className="px-6 py-4 text-sm text-center sm:text-base">
+                  <td className="px-6 py-4 text-center ">
                     {racePointsByConstructor[constructor].total}
                   </td>
                   {pointsByRace.map((pointValue, index) => (
                     <td
-                      className="px-6 py-4 text-sm text-center sm:text-base"
+                      className="px-6 py-4 text-center"
                       key={`${constructor}-${pointValue}-${index}`}
                     >
                       {pointValue}

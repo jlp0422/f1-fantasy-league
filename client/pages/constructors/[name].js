@@ -13,7 +13,7 @@ import {
   ResponsiveContainer,
   Tooltip,
   XAxis,
-  YAxis
+  YAxis,
 } from 'recharts'
 
 const sheets = google.sheets('v4')
@@ -64,7 +64,7 @@ const Constructor = ({
       metaImageUrl={getCloudinaryCarUrl(constructorCarImageUrl)}
     >
       <div
-        className="bg-cover bg-center w-screen absolute h-80 left-0 top-[64px] sm:top-[72px] shadow-inset-black-7"
+        className="bg-cover bg-center w-screen absolute h-80 sm:h-[336px] left-0 top-[64px] sm:top-[72px] shadow-inset-black-7"
         style={{ backgroundImage: `url(${imagePath})` }}
       />
       <div className="relative flex flex-col items-center sm:flex-row">
@@ -72,17 +72,15 @@ const Constructor = ({
         <div className="mx-4 my-2 text-center sm:mx-8 sm:text-left">
           {data.map(({ value, label }, index) => {
             const fontSizeClass =
-              index > 0
-                ? 'text-3xl md:text-4xl lg:text-5xl'
-                : 'text-4xl md:text-5xl lg:text-6xl'
+              index > 0 ? 'text-4xl lg:text-5xl' : 'text-5xl lg:text-6xl'
             return (
               <div key={label} className="flex flex-col mt-4 lg:mt-2">
                 <h2
-                  className={`font-bold tracking-tight sm:text-gray-200 marker:text-gray-900 ${fontSizeClass}`}
+                  className={`font-bold tracking-normal font-primary uppercase sm:text-gray-200 marker:text-gray-900 ${fontSizeClass}`}
                 >
                   {value}
                 </h2>
-                <p className="leading-none tracking-wide text-gray-600 sm:text-gray-300 text-md lg:text-lg">
+                <p className="text-2xl leading-none tracking-wide text-gray-600 font-tertiary sm:text-gray-300">
                   {label}
                 </p>
               </div>
@@ -93,14 +91,18 @@ const Constructor = ({
 
       {/* mobile points table */}
       <div className="relative visible block my-4 overflow-x-auto rounded-lg shadow-md md:hidden md:invisible">
-        <table className="w-full text-sm text-left text-gray-400 bg-gray-800">
-          <thead className="text-xs text-gray-400 uppercase bg-gray-700">
+        <table className="w-full text-base text-left text-gray-300 bg-gray-800 font-secondary">
+          <thead className="uppercase bg-gray-700">
             <tr>
-              <th scope="col" className="px-3 py-3">
+              <th scope="col" className="p-3">
                 &nbsp;
               </th>
               {drivers.map((driver) => (
-                <th key={driver} scope="col" className="px-6 py-3 text-center">
+                <th
+                  key={driver}
+                  scope="col"
+                  className="p-3 text-center text-gray-100"
+                >
                   {driver}
                 </th>
               ))}
@@ -117,19 +119,15 @@ const Constructor = ({
                   key={race}
                   className="bg-gray-800 border-b border-gray-700 hover:bg-gray-600 odd:bg-gray-800 even:bg-gray-700"
                 >
-                  <th
-                    key={race}
-                    scope="col"
-                    className="py-3 pl-6 pr-3 text-left"
-                  >
+                  <th key={race} scope="col" className="p-3 text-left">
                     {race}
                   </th>
-                  <td className="px-6 py-4 text-center">
+                  <td className="p-3 text-center text-gray-100">
                     {index > 0
                       ? driverOnePoints.pointsByRace[index - 1]
                       : driverOnePoints.total}
                   </td>
-                  <td className="px-6 py-4 text-center">
+                  <td className="p-3 text-center text-gray-100">
                     {index > 0
                       ? driverTwoPoints.pointsByRace[index - 1]
                       : driverTwoPoints.total}
@@ -143,14 +141,18 @@ const Constructor = ({
 
       {/* desktop points table */}
       <div className="relative invisible hidden my-10 overflow-x-auto rounded-lg shadow-md md:block md:visible">
-        <table className="w-full text-sm text-left text-gray-400 bg-gray-800">
-          <thead className="text-xs text-gray-400 uppercase bg-gray-700">
+        <table className="w-full text-base text-left text-gray-300 uppercase bg-gray-800 font-secondary">
+          <thead className="bg-gray-700 whitespace-nowrap">
             <tr>
-              <th scope="col" className="px-6 py-3">
+              <th scope="col" className="px-6 py-3 font-normal">
                 Driver
               </th>
               {Object.values(raceColumnByIndex).map((race) => (
-                <th key={race} scope="col" className="px-6 py-3 text-center">
+                <th
+                  key={race}
+                  scope="col"
+                  className="px-6 py-3 font-normal text-center"
+                >
                   {race}
                 </th>
               ))}
@@ -166,12 +168,9 @@ const Constructor = ({
               return (
                 <tr
                   key={driver}
-                  className="border-b border-gray-700 bg-gray-50 hover:bg-gray-600 odd:bg-gray-800 even:bg-gray-700"
+                  className="text-base font-semibold text-gray-100 border-b border-gray-700 bg-gray-50 hover:bg-gray-600 odd:bg-gray-800 even:bg-gray-700"
                 >
-                  <th
-                    scope="row"
-                    className="px-6 py-4 font-medium text-white whitespace-nowrap"
-                  >
+                  <th scope="row" className="px-6 py-4 whitespace-nowrap">
                     {driver}
                   </th>
                   <td className="px-6 py-4 text-center">{total}</td>
