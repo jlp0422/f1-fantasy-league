@@ -30,7 +30,7 @@ const HomePage = ({ constructors }) => {
                     backgroundImage: `url('/cars/${normalized}.webp')`,
                   }}
                 />
-                <h2 className="absolute px-4 text-3xl font-bold text-center text-gray-100 uppercase">
+                <h2 className="absolute px-4 text-4xl font-bold text-center text-gray-100 uppercase font-primary">
                   {constructor}
                 </h2>
               </a>

@@ -55,7 +55,7 @@ const Header = () => {
                 <li key={href}>
                   <Link href={href}>
                     <a
-                      className={`block py-2 pr-4 pl-3 border-b md:border-0 md:p-0 text-base lg:text-lg md:hover:text-white hover:bg-gray-700 hover:text-gray-200 md:hover:bg-transparent border-gray-700 ${
+                      className={`font-secondary uppercase block py-2 pr-4 pl-3 border-b md:border-0 md:p-0 text-lg lg:text-xl md:hover:text-white hover:bg-gray-700 hover:text-gray-200 md:hover:bg-transparent border-gray-700 ${
                         isActiveRoute ? 'text-white' : 'text-gray-400'
                       }`}
                       onClick={() => setIsOpen((open) => !open)}
