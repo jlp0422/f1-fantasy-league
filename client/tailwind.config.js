@@ -29,6 +29,7 @@ module.exports = {
   plugins: [
     plugin(function ({ addVariant }) {
       addVariant('div-children', '& > div')
+      addVariant('th-child', '& > th')
     }),
   ],
 }

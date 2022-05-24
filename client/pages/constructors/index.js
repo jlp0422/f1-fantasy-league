@@ -1,9 +1,9 @@
+import ConstructorLink from 'components/ConstructorLink'
 import Layout from 'components/Layout'
 import { google } from 'googleapis'
 import { googleAuth } from 'helpers/auth'
 import { normalizeConstructorName } from 'helpers/cars'
 import { sortArray } from 'helpers/utils'
-import Link from 'next/link'
 
 const sheets = google.sheets('v4')
 
@@ -14,15 +14,7 @@ const HomePage = ({ constructors }) => {
         {constructors.map((constructor) => {
           const normalized = normalizeConstructorName(constructor)
           return (
-            <Link
-              key={constructor}
-              href={{
-                pathname: '/constructors/[name]',
-                query: {
-                  name: encodeURIComponent(normalized),
-                },
-              }}
-            >
+            <ConstructorLink normalizedConstructor={normalized}>
               <a className="relative flex flex-col items-center justify-center sm:div-children:hover:shadow-inset-black-7">
                 <div
                   className="bg-contain rounded-lg h-72 w-72 shadow-inset-black-6"
@@ -34,7 +26,7 @@ const HomePage = ({ constructors }) => {
                   {constructor}
                 </h2>
               </a>
-            </Link>
+            </ConstructorLink>
           )
         })}
       </div>

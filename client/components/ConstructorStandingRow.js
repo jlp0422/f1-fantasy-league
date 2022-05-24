@@ -1,14 +1,14 @@
 import CarNumber from 'components/CarNumber'
+import ConstructorLink from 'components/ConstructorLink'
 import { COLORS_BY_CONSTRUCTOR } from 'constants/index'
 import { normalizeConstructorName } from 'helpers/cars'
-import Link from 'next/link'
 
 const ConstructorStandingRow = ({ constructor, principal, points }) => {
   const normalized = normalizeConstructorName(constructor)
   const { numberBackground, numberText } = COLORS_BY_CONSTRUCTOR[normalized]
   return (
     <li
-      className="w-full pr-2 py-2 sm:px-8 sm:py-2.5 border-b border-gray-600"
+      className="w-full pr-3 pl-1 py-3 sm:px-8 sm:py-2.5 border-b border-gray-600"
       style={{ backgroundColor: numberBackground }}
     >
       <div className="flex items-center mx-auto space-x-3 max-w-7xl">
@@ -20,14 +20,7 @@ const ConstructorStandingRow = ({ constructor, principal, points }) => {
             <CarNumber constructor={constructor} size="small" />
           </div>
           <div className="flex flex-col ml-1 truncate sm:ml-4">
-            <Link
-              href={{
-                pathname: '/constructors/[name]',
-                query: {
-                  name: encodeURIComponent(normalized),
-                },
-              }}
-            >
+            <ConstructorLink normalizedConstructor={normalized}>
               <a>
                 <p
                   className="pr-[2px] text-2xl font-bold tracking-tight uppercase truncate md:tracking-normal sm:text-4xl sm:hover:underline font-primary"
@@ -36,7 +29,7 @@ const ConstructorStandingRow = ({ constructor, principal, points }) => {
                   {constructor}
                 </p>
               </a>
-            </Link>
+            </ConstructorLink>
             <p
               className="invisible hidden italic font-semibold uppercase sm:visible sm:block sm:text-lg font-secondary"
               style={{ color: numberText, lineHeight: 1.25 }}
