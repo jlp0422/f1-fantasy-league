@@ -117,7 +117,7 @@ const Constructor = ({
               return (
                 <tr
                   key={race}
-                  className="bg-gray-800 border-b border-gray-700 hover:bg-gray-600 odd:bg-gray-800 even:bg-gray-700"
+                  className="border-b border-gray-700 odd:bg-gray-800 even:bg-gray-700"
                 >
                   <th key={race} scope="col" className="p-3 text-left">
                     {race}
