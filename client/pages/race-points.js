@@ -34,13 +34,13 @@ const RacePoints = ({
             <tr>
               <th
                 scope="col"
-                className="px-6 py-3 sticky invisible hidden sm:block sm:visible sm:w-[310px] sm:min-w-[310px] sm:max-w-[310px] left-0 bg-gray-700"
+                className="px-6 py-3 sticky invisible hidden sm:table-cell sm:visible sm:w-[310px] sm:min-w-[310px] sm:max-w-[310px] left-0 bg-gray-700"
               >
                 Constructor
               </th>
               <th
                 scope="col"
-                className="px-6 py-3 visible block sticky left-0 w-[88px] min-w-[88px] max-w-[88px] bg-gray-700 sm:invisible sm:hidden"
+                className="px-6 py-3 visible table-cell sticky left-0 w-[88px] min-w-[88px] max-w-[88px] bg-gray-700 sm:invisible sm:hidden"
               >
                 &nbsp;
               </th>
@@ -72,21 +72,23 @@ const RacePoints = ({
                 >
                   <th
                     scope="row"
-                    className="flex justify-center sm:justify-start items-center sticky w-[88px] min-w-[88px] max-w-[88px] sm:w-[310px] sm:min-w-[310px] sm:max-w-[310px] left-0 gap-3 px-2 py-3 sm:px-6 sm:py-4 font-semibold text-gray-100 whitespace-nowrap"
+                    className="sticky w-[88px] min-w-[88px] max-w-[88px] sm:w-[310px] sm:min-w-[310px] sm:max-w-[310px] left-0 "
                   >
-                    <ConstructorLink normalizedConstructor={normalized}>
-                      <a
-                        className="relative w-10 h-10 p-2 rounded-full sm:w-14 sm:h-14 sm:p-3"
-                        style={{ backgroundColor: numberBackground }}
-                      >
-                        <CarNumber constructor={constructor} size="small" />
-                      </a>
-                    </ConstructorLink>
-                    <ConstructorLink normalizedConstructor={normalized}>
-                      <a className="invisible hidden sm:block sm:visible sm:hover:text-gray-300">
-                        {constructor}
-                      </a>
-                    </ConstructorLink>
+                    <div className="flex items-center justify-center gap-3 px-2 py-3 font-semibold text-gray-100 sm:justify-start sm:px-6 sm:py-4 whitespace-nowrap">
+                      <ConstructorLink normalizedConstructor={normalized}>
+                        <a
+                          className="relative w-10 h-10 p-2 rounded-full sm:w-14 sm:h-14 sm:p-3"
+                          style={{ backgroundColor: numberBackground }}
+                        >
+                          <CarNumber constructor={constructor} size="small" />
+                        </a>
+                      </ConstructorLink>
+                      <ConstructorLink normalizedConstructor={normalized}>
+                        <a className="invisible hidden sm:block sm:visible sm:hover:text-gray-300">
+                          {constructor}
+                        </a>
+                      </ConstructorLink>
+                    </div>
                   </th>
                   <td className="px-6 py-4 text-center ">
                     {racePointsByConstructor[constructor].total}
