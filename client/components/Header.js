@@ -17,7 +17,7 @@ const Header = () => {
 
   return (
     <nav
-      className="relative z-10 px-2 pt-6 pb-4 bg-gray-800 border-gray-200 md:py-6 md:px-8"
+      className="relative z-10 px-2 py-6 bg-gray-800 border-gray-200 md:px-8"
       style={{ backgroundColor: '#171420' }}
     >
       <div className="flex flex-wrap items-center justify-between mx-auto max-w-7xl">
