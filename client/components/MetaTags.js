@@ -19,7 +19,7 @@ const MetaTags = ({
 
 
       {/* <!-- COMMON TAGS --> */}
-      <meta charset="utf-8" />
+      <meta charSet="utf-8" />
       <meta name="viewport" content="initial-scale=1.0, width=device-width" />
 
       {/* <!-- Search Engine --> */}
@@ -27,9 +27,9 @@ const MetaTags = ({
       <meta name="image" content={contentUrl} key="img" />
 
       {/* <!-- Schema.org for Google --> */}
-      <meta itemprop="name" content={docAndSiteTitle} key="g-name" />
-      <meta itemprop="description" content={description} key="g-desc" />
-      <meta itemprop="image" content={contentUrl} key="g-img" />
+      <meta itemProp="name" content={docAndSiteTitle} key="g-name" />
+      <meta itemProp="description" content={description} key="g-desc" />
+      <meta itemProp="image" content={contentUrl} key="g-img" />
 
       {/* <!-- Twitter --> */}
       <meta name="twitter:card" content="summary" key="tw-card" />

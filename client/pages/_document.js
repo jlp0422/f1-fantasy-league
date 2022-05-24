@@ -5,7 +5,7 @@ const Document = () => {
     <Html>
       <Head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         <link
           href="https://fonts.googleapis.com/css2?family=Racing+Sans+One&family=Saira+Condensed:wght@400;600&family=Teko:wght@300;400;500&display=swap"
           rel="stylesheet"
