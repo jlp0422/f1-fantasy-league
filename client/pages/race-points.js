@@ -34,7 +34,7 @@ const RacePoints = ({
             <tr>
               <th
                 scope="col"
-                className="px-6 py-3 sticky invisible hidden sm:block sm:visible sm:w-[310px] sm:min-w-[310px] sm:max-w-[310px] left-0 bg-gray-700"
+                className="sticky left-0 invisible hidden px-6 py-3 bg-gray-700 sm:block sm:visible"
               >
                 Constructor
               </th>
