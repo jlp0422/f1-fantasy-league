@@ -17,7 +17,7 @@ const Header = () => {
 
   return (
     <nav
-      className="relative z-10 px-3 py-6 bg-gray-800 border-gray-200 md:py-6 md:px-8"
+      className="relative z-10 px-2 pt-6 pb-4 bg-gray-800 border-gray-200 md:py-6 md:px-8"
       style={{ backgroundColor: '#171420' }}
     >
       <div className="flex flex-wrap items-center justify-between mx-auto max-w-7xl">
@@ -33,17 +33,17 @@ const Header = () => {
           <span className="sr-only">Open main menu</span>
           {isOpen ? <Dismiss /> : <Hamburger />}
         </button>
-        <Link href="/">
-          <a className="flex items-center justify-center mx-auto md:w-auto md:flex-1 md:justify-start">
-            <button className="leading-[0rem] max-w-[200px] xs:max-w-[300px] sm:max-w-[450px]">
+        <div className="flex items-center justify-center mx-auto md:w-auto md:flex-1 md:justify-start">
+          <Link href="/">
+            <a className="leading-[0rem] max-w-[200px] xs:max-w-[300px] sm:max-w-[450px]">
               <Image
                 layout="intrinsic"
                 src={headerLogo}
                 alt="Fate of the Eight"
               />
-            </button>
-          </a>
-        </Link>
+            </a>
+          </Link>
+        </div>
         <div
           className={`${isOpen ? 'block' : 'hidden'} w-full md:block md:w-auto`}
           id="mobile-menu"
@@ -55,7 +55,7 @@ const Header = () => {
                 <li key={href}>
                   <Link href={href}>
                     <a
-                      className={`font-secondary uppercase block py-2 pr-4 pl-3 border-b md:border-0 md:p-0 text-lg lg:text-xl md:hover:text-white hover:bg-gray-700 hover:text-gray-200 md:hover:bg-transparent border-gray-700 ${
+                      className={`font-secondary uppercase block px-3 py-2 border-b md:border-0 md:p-0 text-lg lg:text-xl md:hover:text-white hover:bg-gray-700 hover:text-gray-200 md:hover:bg-transparent border-gray-700 ${
                         isActiveRoute ? 'text-white' : 'text-gray-400'
                       }`}
                       onClick={() => setIsOpen((open) => !open)}
