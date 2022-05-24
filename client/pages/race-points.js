@@ -1,11 +1,11 @@
 import CarNumber from 'components/CarNumber'
+import ConstructorLink from 'components/ConstructorLink'
 import Layout from 'components/Layout'
 import { COLORS_BY_CONSTRUCTOR } from 'constants/index'
 import { google } from 'googleapis'
 import { googleAuth } from 'helpers/auth'
 import { normalizeConstructorName } from 'helpers/cars'
 import { sortArray, sum, toNum } from 'helpers/utils'
-import Link from 'next/link'
 
 const sheets = google.sheets('v4')
 
@@ -26,16 +26,23 @@ const RacePoints = ({
     <Layout
       documentTitle="Points by Race"
       description="Points by Race for all Constructors"
+      fullWidth
     >
-      <div className="relative my-4 overflow-x-auto rounded-lg shadow-md">
+      <div className="relative mx-2 my-4 overflow-x-auto rounded-lg shadow-md sm:m-4">
         <table className="w-full text-base text-left text-gray-300 uppercase bg-gray-800 font-secondary">
           <thead className="bg-gray-700 whitespace-nowrap">
             <tr>
               <th
                 scope="col"
-                className="px-6 py-3 sticky w-[310px] min-w-[310px] max-w-[310px] left-0 bg-gray-700"
+                className="px-6 py-3 sticky invisible hidden sm:w-[310px] sm:min-w-[310px] sm:max-w-[310px] left-0 bg-gray-700"
               >
                 Constructor
+              </th>
+              <th
+                scope="col"
+                className="px-6 py-3 visible block sticky left-0 w-[88px] min-w-[88px] max-w-[88px] bg-gray-700 sm:invisible sm:hidden"
+              >
+                &nbsp;
               </th>
               {Object.values(raceColumnByIndex).map((race) => (
                 <th
@@ -65,24 +72,21 @@ const RacePoints = ({
                 >
                   <th
                     scope="row"
-                    className="flex items-center sticky w-[310px] min-w-[310px] max-w-[310px] left-0  gap-3 px-6 py-4 font-semibold text-gray-100 whitespace-nowrap"
+                    className="flex justify-center sm:justify-start items-center sticky w-[88px] min-w-[88px] max-w-[88px] sm:w-[310px] sm:min-w-[310px] sm:max-w-[310px] left-0 gap-3 px-2 py-3 sm:px-6 sm:py-4 font-semibold text-gray-100 whitespace-nowrap"
                   >
-                    <div
-                      className="relative w-10 h-10 p-2 rounded-full sm:w-14 sm:h-14 sm:p-3"
-                      style={{ backgroundColor: numberBackground }}
-                    >
-                      <CarNumber constructor={constructor} size="small" />
-                    </div>
-                    <Link
-                      href={{
-                        pathname: '/constructors/[name]',
-                        query: {
-                          name: encodeURIComponent(normalized),
-                        },
-                      }}
-                    >
-                      <a className=" sm:hover:text-gray-300">{constructor}</a>
-                    </Link>
+                    <ConstructorLink normalizedConstructor={normalized}>
+                      <a
+                        className="relative w-10 h-10 p-2 rounded-full sm:w-14 sm:h-14 sm:p-3"
+                        style={{ backgroundColor: numberBackground }}
+                      >
+                        <CarNumber constructor={constructor} size="small" />
+                      </a>
+                    </ConstructorLink>
+                    <ConstructorLink normalizedConstructor={normalized}>
+                      <a className="invisible hidden sm:block sm:visible sm:hover:text-gray-300">
+                        {constructor}
+                      </a>
+                    </ConstructorLink>
                   </th>
                   <td className="px-6 py-4 text-center ">
                     {racePointsByConstructor[constructor].total}

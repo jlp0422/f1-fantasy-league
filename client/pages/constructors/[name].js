@@ -144,7 +144,10 @@ const Constructor = ({
         <table className="w-full text-base text-left text-gray-300 uppercase bg-gray-800 font-secondary">
           <thead className="bg-gray-700 whitespace-nowrap">
             <tr>
-              <th scope="col" className="px-6 py-3 font-normal">
+              <th
+                scope="col"
+                className="px-6 py-3 font-normal sticky w-44 min-w-[176px] max-w-[176px] left-0 bg-gray-700"
+              >
                 Driver
               </th>
               {Object.values(raceColumnByIndex).map((race) => (
@@ -168,9 +171,12 @@ const Constructor = ({
               return (
                 <tr
                   key={driver}
-                  className="text-base font-semibold text-gray-100 border-b border-gray-700 bg-gray-50 hover:bg-gray-600 odd:bg-gray-800 even:bg-gray-700"
+                  className="text-base font-semibold text-gray-100 border-b border-gray-700 bg-gray-50 hover:bg-gray-600 odd:bg-gray-800 even:bg-gray-700 th-child:odd:bg-gray-800 th-child:even:bg-gray-700 th-child:hover:bg-gray-600"
                 >
-                  <th scope="row" className="px-6 py-4 whitespace-nowrap">
+                  <th
+                    scope="row"
+                    className="px-6 py-4 whitespace-nowrap sticky w-44 min-w-[176px] max-w-[176px] left-0 "
+                  >
                     {driver}
                   </th>
                   <td className="px-6 py-4 text-center">{total}</td>
