@@ -1,4 +1,6 @@
 import CarImage from 'components/CarImage'
+import TickXAxis from 'components/charts/TickXAxis'
+import TickYAxis from 'components/charts/TickYAxis'
 import Layout from 'components/Layout'
 import { COLORS_BY_CONSTRUCTOR, CONSTRUCTOR_NAMES } from 'constants/index'
 import { google } from 'googleapis'
@@ -204,7 +206,7 @@ const Constructor = ({
       {/* charts */}
       {chartsEnabled && (
         <div className="invisible hidden sm:visible sm:block">
-          <h2 className="text-xl font-bold tracking-tight text-gray-900 md:text-2xl lg:text-3xl">
+          <h2 className="text-xl font-bold tracking-tight text-gray-900 font-secondary md:text-2xl lg:text-3xl">
             Driver Points by Race
           </h2>
           <div className="w-full mt-4 rounded-lg bg-slate-600 h-500">
@@ -228,7 +230,9 @@ const Constructor = ({
                   axisLine={{ stroke: '#ccc' }}
                   tickLine={{ stroke: '#ccc' }}
                 />
-                <Tooltip contentStyle={{ backgroundColor: '#ccc' }} />
+                <Tooltip
+                  contentStyle={{ backgroundColor: '#475569', color: '#fff' }}
+                />
                 <Legend
                   wrapperStyle={{
                     paddingTop: '50px',
@@ -252,34 +256,6 @@ const Constructor = ({
         </div>
       )}
     </Layout>
-  )
-}
-
-const TickYAxis = ({ x, y, payload }) => {
-  return (
-    <g transform={`translate(${x},${y})`}>
-      <text x={0} y={0} dy={6} textAnchor="end" fill="#fff" className="text-sm">
-        {payload.value} pts
-      </text>
-    </g>
-  )
-}
-
-const TickXAxis = ({ x, y, payload }) => {
-  return (
-    <g transform={`translate(${x},${y})`}>
-      <text
-        x={0}
-        y={0}
-        dy={16}
-        textAnchor="end"
-        fill="#fff"
-        transform="rotate(-35)"
-        className="text-xs"
-      >
-        {payload.value}
-      </text>
-    </g>
   )
 }
 
