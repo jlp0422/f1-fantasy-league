@@ -45,12 +45,12 @@ const RacePoints = ({
       fullWidth
     >
       <div className="relative mx-2 my-4 overflow-x-auto rounded-lg sm:m-4">
-        <div className="relative">
+        <div className="relative font-tertiary">
           <button
             onClick={() => setIsTabDropdownOpen((open) => !open)}
             id="dropdownDefault"
             data-dropdown-toggle="dropdown"
-            className="text-white mt-2 my-4 w-40 font-medium rounded-lg text-sm px-4 py-2.5 text-center inline-flex items-center justify-between bg-blue-600 hover:bg-blue-700 capitalize"
+            className="text-white mt-2 my-4 w-40 font-medium rounded-lg text-xl px-4 py-2.5 text-center inline-flex items-center justify-between bg-blue-600 hover:bg-blue-700 capitalize"
             type="button"
           >
             {activeTab}
@@ -77,7 +77,7 @@ const RacePoints = ({
               } divide-y divide-gray-100 rounded shadow w-40 bg-gray-700 absolute top-[52px]`}
             >
               <ul
-                className="py-1 mt-2 text-sm text-gray-200"
+                className="py-1 mt-2 text-xl text-gray-200"
                 aria-labelledby="dropdownDefault"
               >
                 {tabOptions.map((tab) => (

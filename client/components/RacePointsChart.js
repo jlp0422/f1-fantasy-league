@@ -27,12 +27,12 @@ const RacePointsChart = ({
       <h2 className="text-xl font-bold tracking-tight text-gray-900 font-secondary md:text-2xl lg:text-3xl">
         Cumulative Points by Race
       </h2>
-      <div className="relative">
+      <div className="relative font-tertiary">
         <button
           onClick={() => setIsChartDropdownOpen((open) => !open)}
           id="dropdownDefault"
           data-dropdown-toggle="dropdown"
-          className="text-white mt-2 my-4 font-medium rounded-lg text-sm px-4 py-2.5 text-center inline-flex items-center bg-blue-600 hover:bg-blue-700"
+          className="text-white mt-2 my-4 font-medium rounded-lg text-xl px-4 py-2.5 text-center inline-flex items-center bg-blue-600 hover:bg-blue-700"
           type="button"
         >
           {selectedChartConstructor || 'All'}
@@ -59,7 +59,7 @@ const RacePointsChart = ({
             } divide-y divide-gray-100 rounded shadow w-fit bg-gray-700 absolute top-[52px]`}
           >
             <ul
-              className="py-1 mt-2 text-sm text-gray-200"
+              className="py-1 mt-2 text-xl text-gray-200"
               aria-labelledby="dropdownDefault"
             >
               <li>
