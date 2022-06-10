@@ -1,5 +1,7 @@
 import TickXAxis from 'components/charts/TickXAxis'
 import TickYAxis from 'components/charts/TickYAxis'
+import CheckboxEmpty from 'components/icons/CheckboxEmpty'
+import CheckboxFilled from 'components/icons/CheckboxFilled'
 import { COLORS_BY_CONSTRUCTOR } from 'constants/index'
 import { normalizeConstructorName } from 'helpers/cars'
 import {
@@ -15,13 +17,33 @@ import {
 
 const RacePointsChart = ({
   setIsChartDropdownOpen,
-  selectedChartConstructor,
+  selectedChartConstructors,
   isChartDropdownOpen,
-  setSelectedChartConstructor,
+  setSelectedChartConstructors,
   cumulativePointsByConstructor,
   constructors,
-  chartLines
+  chartLines,
 }) => {
+  const updateSelectedConstructors = (constructor) => {
+    if (selectedChartConstructors.includes(constructor)) {
+      setSelectedChartConstructors((existing) =>
+        existing.filter((c) => c !== constructor)
+      )
+    } else {
+      setSelectedChartConstructors((existing) => existing.concat(constructor))
+    }
+    setIsChartDropdownOpen(false)
+  }
+
+  const dropdownDisplay = () => {
+    if (selectedChartConstructors.length) {
+      if (selectedChartConstructors.length > 3) {
+        return `${selectedChartConstructors.slice(0, 3).join(', ')}, ...`
+      }
+      return selectedChartConstructors.join(', ')
+    }
+    return 'All'
+  }
   return (
     <div>
       <h2 className="text-xl font-bold tracking-tight text-gray-900 font-secondary md:text-2xl lg:text-3xl">
@@ -32,10 +54,10 @@ const RacePointsChart = ({
           onClick={() => setIsChartDropdownOpen((open) => !open)}
           id="dropdownDefault"
           data-dropdown-toggle="dropdown"
-          className="text-white mt-2 my-4 font-medium rounded-lg text-xl px-4 py-2.5 text-center inline-flex items-center bg-blue-600 hover:bg-blue-700"
+          className="text-white mt-2 my-4 font-medium rounded-lg text-xl px-4 py-2.5 text-center inline-flex items-center bg-gray-600 hover:bg-gray-700"
           type="button"
         >
-          {selectedChartConstructor || 'All'}
+          {dropdownDisplay()}
           <svg
             className="w-4 h-4 ml-2"
             fill="none"
@@ -56,7 +78,7 @@ const RacePointsChart = ({
             id="dropdown"
             className={`z-10 ${
               isChartDropdownOpen ? 'block' : 'hidden'
-            } divide-y divide-gray-100 rounded shadow w-fit bg-gray-700 absolute top-[52px]`}
+            } divide-y divide-gray-100 rounded shadow w-fit bg-gray-500 absolute top-[58px] left-2`}
           >
             <ul
               className="py-1 mt-2 text-xl text-gray-200"
@@ -65,7 +87,7 @@ const RacePointsChart = ({
               <li>
                 <button
                   onClick={() => {
-                    setSelectedChartConstructor(null)
+                    setSelectedChartConstructors([])
                     setIsChartDropdownOpen(false)
                   }}
                   className="block w-full px-4 py-2 text-left hover:bg-gray-600 hover:text-white"
@@ -73,19 +95,24 @@ const RacePointsChart = ({
                   All
                 </button>
               </li>
-              {constructors.map((constructor) => (
-                <li>
-                  <button
-                    onClick={() => {
-                      setSelectedChartConstructor(constructor)
-                      setIsChartDropdownOpen(false)
-                    }}
-                    className="block w-full px-4 py-2 text-left hover:bg-gray-600 hover:text-white"
-                  >
-                    {constructor}
-                  </button>
-                </li>
-              ))}
+              {constructors.map((constructor) => {
+                const Icon = selectedChartConstructors.includes(constructor)
+                  ? CheckboxFilled
+                  : CheckboxEmpty
+                return (
+                  <li key={constructor}>
+                    <button
+                      onClick={() => {
+                        updateSelectedConstructors(constructor)
+                      }}
+                      className="flex w-full gap-1 px-4 py-2 text-left hover:bg-gray-600 hover:text-white"
+                    >
+                      <Icon />
+                      {constructor}
+                    </button>
+                  </li>
+                )
+              })}
             </ul>
           </div>
         )}
@@ -110,9 +137,20 @@ const RacePointsChart = ({
               tickLine={{ stroke: '#ccc' }}
             />
             <Tooltip
-              contentStyle={{ backgroundColor: '#475569', color: '#fff' }}
+              contentStyle={{
+                backgroundColor: '#475569',
+                color: '#fff',
+                fontFamily: 'Teko',
+                fontSize: '20px',
+              }}
             />
-            <Legend wrapperStyle={{ paddingTop: '50px' }} />
+            <Legend
+              wrapperStyle={{
+                paddingTop: '50px',
+                fontFamily: 'Teko',
+                fontSize: '24px',
+              }}
+            />
             {chartLines.map((constructor) => {
               const normalized = normalizeConstructorName(constructor)
               const { primary } = COLORS_BY_CONSTRUCTOR[normalized]
