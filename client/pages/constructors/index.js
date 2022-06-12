@@ -14,7 +14,7 @@ const HomePage = ({ constructors }) => {
         {constructors.map((constructor) => {
           const normalized = normalizeConstructorName(constructor)
           return (
-            <ConstructorLink normalizedConstructor={normalized}>
+            <ConstructorLink normalizedConstructor={normalized} key={constructor}>
               <a className="relative flex flex-col items-center justify-center sm:div-children:hover:shadow-inset-black-7">
                 <div
                   className="bg-contain rounded-lg h-72 w-72 shadow-inset-black-6"
