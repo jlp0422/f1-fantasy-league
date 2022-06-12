@@ -222,11 +222,18 @@ const Constructor = ({
                   tickLine={{ stroke: '#ccc' }}
                 />
                 <Tooltip
-                  contentStyle={{ backgroundColor: '#475569', color: '#fff' }}
+                  contentStyle={{
+                    backgroundColor: '#475569',
+                    color: '#fff',
+                    fontFamily: 'Teko',
+                    fontSize: '20px',
+                  }}
                 />
                 <Legend
                   wrapperStyle={{
                     paddingTop: '50px',
+                    fontFamily: 'Teko',
+                    fontSize: '24px',
                   }}
                 />
                 <Line
