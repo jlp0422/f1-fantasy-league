@@ -24,21 +24,12 @@ const Constructor = ({
   constructorName,
   drivers,
   racePointsByDriver,
-  totalPointsByRace,
+  // totalPointsByRace,
   teamPrincipal,
   raceColumnByIndex,
   pointsByDriverChartData,
   chartsEnabled,
 }) => {
-  // console.log({
-  //   constructorName,
-  //   teamPrincipal,
-  //   drivers,
-  //   racePointsByDriver,
-  //   totalPointsByRace,
-  //   raceColumnByIndex,
-  // })
-
   const data = [
     {
       value: constructorName,

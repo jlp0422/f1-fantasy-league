@@ -36,9 +36,11 @@ const RacePointsChart = ({
   }
 
   const dropdownDisplay = () => {
-    if (selectedChartConstructors.length) {
-      if (selectedChartConstructors.length > 3) {
-        return `${selectedChartConstructors.slice(0, 3).join(', ')}, ...`
+    const length = selectedChartConstructors.length
+    if (length > 0) {
+      if (length > 3) {
+        const extra = length - 3
+        return `${selectedChartConstructors.slice(0, 3).join(', ')} (+${extra})`
       }
       return selectedChartConstructors.join(', ')
     }

@@ -9,7 +9,7 @@ import { useState } from 'react'
 const sheets = google.sheets('v4')
 
 const RacePoints = ({
-  racePointTable,
+  // racePointTable,
   racePointsByConstructor,
   raceColumnByIndex,
   racePointsByConstructorByRace,
@@ -26,14 +26,6 @@ const RacePoints = ({
   const chartLines = selectedChartConstructors.length
     ? selectedChartConstructors
     : constructors
-
-  // console.log({
-  //   racePointTable,
-  //   racePointsByConstructor,
-  //   raceColumnByIndex,
-  //   racePointsByConstructorByRace,
-  //   cumulativePointsByConstructor,
-  // })
 
   return (
     <Layout
