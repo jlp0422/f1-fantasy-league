@@ -7,7 +7,8 @@
   "type": "module",
   "scripts": {
     "update-standings:dev": "NODE_ENV=development node --require dotenv/config index.js",
-    "update-standings:prod": "NODE_ENV=production node --require dotenv/config index.js"
+    "update-standings:prod": "NODE_ENV=production node --require dotenv/config index.js",
+    "revalidate": "NODE_ENV=production node --require dotenv/config revalidate.js"
   },
   "dependencies": {
     "@sendgrid/mail": "^7.6.2",
