@@ -34,10 +34,12 @@ const HomePage = ({ constructors }) => {
 }
 
 export async function getStaticProps() {
-  const { data: constructors } = await supabase
+  const { data: constructors, error } = await supabase
     .from('constructor')
     .select('id, name')
     .order('name')
+
+  console.log({ error })
 
   return {
     props: {
