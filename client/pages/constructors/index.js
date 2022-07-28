@@ -1,7 +1,7 @@
 import ConstructorLink from 'components/ConstructorLink'
 import Layout from 'components/Layout'
 import { normalizeConstructorName } from 'helpers/cars'
-import { supabase } from 'helpers/database'
+import { supabase } from 'lib/database'
 
 const HomePage = ({ constructors }) => {
   return (
@@ -34,12 +34,11 @@ const HomePage = ({ constructors }) => {
 }
 
 export async function getStaticProps() {
-  const { data: constructors, error } = await supabase
+  const { data: constructors } = await supabase
     .from('constructor')
     .select('id, name')
     .order('name')
 
-  console.log({ error })
 
   return {
     props: {

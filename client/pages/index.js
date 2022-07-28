@@ -1,9 +1,6 @@
 import ConstructorStandingRow from 'components/ConstructorStandingRow'
 import Layout from 'components/Layout'
-import { google } from 'googleapis'
-import { googleAuth } from 'helpers/auth'
-
-const sheets = google.sheets('v4')
+import { supabase } from 'lib/database'
 
 const Standings = ({ standings }) => {
   return (
@@ -13,35 +10,32 @@ const Standings = ({ standings }) => {
       fullWidth
     >
       <ol className="w-auto mb-4 text-lg font-medium text-white">
-        {standings.map(([constructor, principal, points], index) => {
-          return (
-            <ConstructorStandingRow
-              key={constructor}
-              principal={principal}
-              points={points}
-              constructor={constructor}
-            />
-          )
-        })}
+        {standings.map(
+          ({ id, name, team_principal, total_points }) => {
+            return (
+              <ConstructorStandingRow
+                key={id}
+                principal={team_principal}
+                points={total_points}
+                constructor={name}
+              />
+            )
+          }
+        )}
       </ol>
     </Layout>
   )
 }
 
 export async function getStaticProps() {
-  google.options({ auth: googleAuth })
-
-  const existingColumnData = await sheets.spreadsheets.get({
-    ranges: ["'STANDINGS'!A2:C9"],
-    spreadsheetId: process.env.SPREADSHEET_ID,
-    includeGridData: true,
-  })
+  const { data: standings } = await supabase
+    .rpc('sum_constructor_points')
+    .select('id, name, team_principal, total_points')
+    .order('total_points', { ascending: false })
 
   return {
     props: {
-      standings: existingColumnData.data.sheets[0].data[0].rowData?.map((row) =>
-        row.values.map((rowValue) => rowValue.formattedValue)
-      ),
+      standings,
     },
   }
 }
