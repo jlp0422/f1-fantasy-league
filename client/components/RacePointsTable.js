@@ -2,19 +2,20 @@ import CarNumber from 'components/CarNumber'
 import ConstructorLink from 'components/ConstructorLink'
 import { COLORS_BY_CONSTRUCTOR } from 'constants/index'
 import { normalizeConstructorName } from 'helpers/cars'
-import { sortArray, sum } from 'helpers/utils'
 
 const RacePointsTable = ({
-  raceColumnByIndex,
-  racePointsByConstructorByRace,
-  racePointsByConstructor,
-  totalRaces,
+  races,
+  standings,
+  constructorsById,
+  indexedRacePoints,
+  totalCompletedRaces,
 }) => {
   return (
     <table className="w-full text-base text-left text-gray-300 uppercase bg-gray-800 font-secondary">
       <thead className="bg-gray-700 whitespace-nowrap">
         <tr>
           <th
+            key="Constructor"
             scope="col"
             className="px-6 py-3 sticky invisible hidden sm:table-cell sm:visible sm:w-[310px] sm:min-w-[310px] sm:max-w-[310px] left-0 bg-gray-700"
           >
@@ -26,30 +27,34 @@ const RacePointsTable = ({
           >
             &nbsp;
           </th>
-          {Object.values(raceColumnByIndex).map((race) => (
+          <th
+            key="Total Points"
+            scope="col"
+            className="px-6 py-3 font-normal text-center"
+          >
+            Total points
+          </th>
+          {races.map((race) => (
             <th
-              key={race}
+              key={race.id}
               scope="col"
               className="px-6 py-3 font-normal text-center"
             >
-              {race}
+              {race.location}
             </th>
           ))}
         </tr>
       </thead>
       <tbody>
-        {sortArray(
-          Object.entries(racePointsByConstructorByRace),
-          ([_a, aPoints], [_b, bPoints]) => sum(bPoints) - sum(aPoints)
-        ).map(([constructor, pointsByRace]) => {
-          const normalized = normalizeConstructorName(constructor)
+        {standings.map((constructor) => {
+          const normalized = normalizeConstructorName(constructor.name)
           const { numberBackground } = COLORS_BY_CONSTRUCTOR[normalized]
           // minus 1 to account for total points column
-          const numExtraColumns = totalRaces - pointsByRace.length - 1
+          const numExtraColumns = races.length - totalCompletedRaces
           const extraColumns = new Array(numExtraColumns).fill(0)
           return (
             <tr
-              key={constructor}
+              key={constructor.name}
               className="text-lg bg-gray-800 border-b border-gray-700 th-child:odd:bg-gray-800 th-child:even:bg-gray-700 sm:hover:bg-gray-600 th-child:sm:hover:bg-gray-600 odd:bg-gray-800 even:bg-gray-700"
             >
               <th
@@ -62,31 +67,31 @@ const RacePointsTable = ({
                       className="relative w-10 h-10 p-2 rounded-full sm:w-14 sm:h-14 sm:p-3"
                       style={{ backgroundColor: numberBackground }}
                     >
-                      <CarNumber constructor={constructor} size="small" />
+                      <CarNumber constructor={constructor.name} size="small" />
                     </a>
                   </ConstructorLink>
                   <ConstructorLink normalizedConstructor={normalized}>
                     <a className="invisible hidden sm:block sm:visible sm:hover:text-gray-300">
-                      {constructor}
+                      {constructor.name}
                     </a>
                   </ConstructorLink>
                 </div>
               </th>
               <td className="px-6 py-4 text-center ">
-                {racePointsByConstructor[constructor].total}
+                {constructorsById[constructor.id].total_points}
               </td>
-              {pointsByRace.map((pointValue, index) => (
+              {races.map((race) => (
                 <td
                   className="px-6 py-4 text-center"
-                  key={`${constructor}-${pointValue}-${index}`}
+                  key={`${constructor.id}-${race.id}`}
                 >
-                  {pointValue}
+                  {indexedRacePoints[race.id][constructor.id].race_points}
                 </td>
               ))}
               {extraColumns.map((_, index) => (
                 <td
                   className="px-6 py-4 text-center"
-                  key={`empty-${constructor}-${index}`}
+                  key={`empty-${constructor.id}-${index}`}
                 />
               ))}
             </tr>

@@ -257,6 +257,7 @@ const Constructor = ({
   )
 }
 
+// update to use supabase api
 export async function getStaticPaths() {
   return {
     paths: CONSTRUCTOR_NAMES.map((constructor) => ({

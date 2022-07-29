@@ -1,31 +1,28 @@
 import Layout from 'components/Layout'
 import RacePointsChart from 'components/RacePointsChart'
 import RacePointsTable from 'components/RacePointsTable'
-import { google } from 'googleapis'
-import { googleAuth } from 'helpers/auth'
-import { sum, toNum } from 'helpers/utils'
+import { indexBy, sum } from 'helpers/utils'
+import { supabase } from 'lib/database'
 import { useState } from 'react'
 
-const sheets = google.sheets('v4')
-
 const RacePoints = ({
-  // racePointTable,
-  racePointsByConstructor,
-  raceColumnByIndex,
-  racePointsByConstructorByRace,
-  constructors,
   chartsEnabled,
   cumulativePointsByConstructor,
+  races,
+  standings,
+  constructorsById,
+  totalCompletedRaces,
+  indexedRacePoints,
+  constructors,
 }) => {
   const tabOptions = ['table', 'chart']
   const [isTabDropdownOpen, setIsTabDropdownOpen] = useState(false)
   const [activeTab, setActiveTab] = useState('table')
   const [isChartDropdownOpen, setIsChartDropdownOpen] = useState(false)
   const [selectedChartConstructors, setSelectedChartConstructors] = useState([])
-  const totalRaces = Object.keys(raceColumnByIndex).length
   const chartLines = selectedChartConstructors.length
     ? selectedChartConstructors
-    : constructors
+    : constructors.map(({ name }) => name)
 
   return (
     <Layout
@@ -88,10 +85,12 @@ const RacePoints = ({
       <div className="relative mx-2 mb-4 overflow-x-auto rounded-lg sm:mx-4">
         {activeTab === 'table' && (
           <RacePointsTable
-            raceColumnByIndex={raceColumnByIndex}
-            racePointsByConstructorByRace={racePointsByConstructorByRace}
-            racePointsByConstructor={racePointsByConstructor}
-            totalRaces={totalRaces}
+            races={races}
+            // results={results}
+            standings={standings}
+            constructorsById={constructorsById}
+            indexedRacePoints={indexedRacePoints}
+            totalCompletedRaces={totalCompletedRaces}
           />
         )}
 
@@ -113,83 +112,88 @@ const RacePoints = ({
 }
 
 export async function getStaticProps() {
-  google.options({ auth: googleAuth })
+  const { data: racePointsByConstructorByRace } = await supabase
+    .rpc('total_points_by_constructor_by_race')
+    .select('*')
 
-  const racePointsData = await sheets.spreadsheets.get({
-    ranges: ["'RACE POINTS'!A1:AA17"],
-    spreadsheetId: process.env.SPREADSHEET_ID,
-    includeGridData: true,
-  })
+  const indexedRacePoints = racePointsByConstructorByRace.reduce(
+    (memo, item) => {
+      const constructorId = item.constructor_id
+      const raceId = item.race_id
+      const existingRace = memo[raceId]
+      const prevRaceId = raceId - 1
+      const prevRacePoints =
+        memo[prevRaceId]?.[constructorId]?.total_points || 0
 
-  const racePoints = racePointsData.data.sheets[0].data[0].rowData.map((row) =>
-    row.values.map((value) => value.formattedValue || null).filter(Boolean)
-  )
-
-  const raceColumnByIndex = racePoints
-    .slice(0, 1)[0]
-    .slice(3)
-    .reduce(
-      (memo, item, index) =>
-        Object.assign({}, memo, {
-          [index]: item,
-        }),
-      {}
-    )
-
-  const racePointsByConstructor = racePoints.slice(1).reduce((memo, item) => {
-    const [constructor, _principal, driver, totalPoints, ...pointsByRace] = item
-    const driverTotalPoints = toNum(totalPoints)
-    if (!memo[constructor]) {
-      memo[constructor] = {}
-    }
-    memo[constructor] = Object.assign({}, memo[constructor], {
-      [driver]: {
-        total: driverTotalPoints,
-        pointsByRace,
-      },
-      total: (memo[constructor].total || 0) + driverTotalPoints,
-    })
-
-    return memo
-  }, {})
-
-  const constructorDrivers = Object.entries(racePointsByConstructor)
-  const racePointsByConstructorByRace = constructorDrivers.reduce(
-    (memo, [constructor, drivers]) => {
-      const [driver1, driver2] = Object.values(drivers).filter(
-        (item) => item.pointsByRace
-      )
-      memo[constructor] = driver1.pointsByRace.map(
-        (points, index) => toNum(points) + toNum(driver2.pointsByRace[index])
-      )
+      if (existingRace) {
+        memo[raceId] = {
+          ...existingRace,
+          [constructorId]: {
+            race_points: item.total_points,
+            total_points: prevRacePoints + item.total_points,
+          },
+        }
+      } else {
+        memo[raceId] = {
+          [constructorId]: {
+            race_points: item.total_points,
+            total_points: prevRacePoints + item.total_points,
+          },
+        }
+      }
       return memo
     },
     {}
   )
 
-  const constructors = Object.keys(racePointsByConstructorByRace)
-  const totalRaces = Object.values(racePointsByConstructorByRace)[0].length
-  const cumulativePointsByConstructor = Object.values(raceColumnByIndex)
-    .slice(1, totalRaces + 1)
-    .map((race, index) => {
-      const data = { race }
-      constructors.forEach((constructor) => {
-        const racePoints = racePointsByConstructorByRace[constructor]
-        const races = racePoints.slice(0, index + 1)
-        data[constructor] = sum(races)
-      })
-      return data
-    })
+  const totalCompletedRaces = new Set(
+    racePointsByConstructorByRace.map(({ race_id }) => race_id)
+  ).size
+
+  const { data: races } = await supabase
+    .from('race')
+    .select('id, location, start_date, season(year)')
+    .eq('season.year', 2022)
+    .order('start_date', { ascending: true })
+
+  const { data: constructors } = await supabase
+    .from('constructor')
+    .select('id, name')
+
+  const { data: standings } = await supabase
+    .rpc('sum_constructor_points')
+    .select('id, name, total_points')
+    .order('total_points', { ascending: false })
+
+  const constructorsById = indexBy('id')(standings)
+  const racesById = indexBy('id')(races)
+
+  const cumulativePointsByConstructor = Object.entries(indexedRacePoints).map(
+    ([raceId, data]) => {
+      const dataArray = Object.entries(data).reduce(
+        (memo, [constructorId, { total_points }]) =>
+          Object.assign({}, memo, {
+            [constructorsById[constructorId].name]: total_points,
+          }),
+        {}
+      )
+      return {
+        race: racesById[raceId].location,
+        ...dataArray,
+      }
+    }
+  )
 
   return {
     props: {
-      racePointTable: racePoints,
-      racePointsByConstructor,
-      raceColumnByIndex,
-      racePointsByConstructorByRace,
       chartsEnabled: process.env.CHARTS_ENABLED === 'true',
       cumulativePointsByConstructor,
+      races,
+      standings,
+      constructorsById,
+      indexedRacePoints,
       constructors,
+      totalCompletedRaces,
     },
   }
 }

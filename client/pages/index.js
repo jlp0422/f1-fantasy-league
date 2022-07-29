@@ -10,18 +10,14 @@ const Standings = ({ standings }) => {
       fullWidth
     >
       <ol className="w-auto mb-4 text-lg font-medium text-white">
-        {standings.map(
-          ({ id, name, team_principal, total_points }) => {
-            return (
-              <ConstructorStandingRow
-                key={id}
-                principal={team_principal}
-                points={total_points}
-                constructor={name}
-              />
-            )
-          }
-        )}
+        {standings.map(({ id, name, team_principal, total_points }) => (
+          <ConstructorStandingRow
+            key={id}
+            principal={team_principal}
+            points={total_points}
+            constructor={name}
+          />
+        ))}
       </ol>
     </Layout>
   )
