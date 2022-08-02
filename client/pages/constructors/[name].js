@@ -17,6 +17,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
+import { supabase } from 'lib/database'
 
 const sheets = google.sheets('v4')
 
@@ -257,12 +258,16 @@ const Constructor = ({
   )
 }
 
-// update to use supabase api
 export async function getStaticPaths() {
+  const { data: constructors } = await supabase
+    .from('constructor')
+    .select('id, name, season(year)')
+    .eq('season.year', 2022)
+
   return {
-    paths: CONSTRUCTOR_NAMES.map((constructor) => ({
+    paths: constructors.map((constructor) => ({
       params: {
-        name: encodeURIComponent(normalizeConstructorName(constructor)),
+        name: encodeURIComponent(normalizeConstructorName(constructor.name)),
       },
     })),
     fallback: false,
