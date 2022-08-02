@@ -31,6 +31,8 @@ const Constructor = ({
   pointsByDriverChartData,
   chartsEnabled,
 }) => {
+  console.log({ pointsByDriverChartData})
+  // console.log({ totalPointsByRace})
   const data = [
     {
       value: constructorName,
@@ -318,16 +320,16 @@ export async function getStaticProps({ params }) {
     })
   }, {})
 
-  const totalPointsByRace = Object.values(racePointsByDriver)
-    .filter((item) => item.pointsByRace)
-    .reduce((memo, driver) => {
-      if (!memo.length) {
-        return driver.pointsByRace
-      }
-      return memo.map(
-        (points, index) => toNum(points) + toNum(driver.pointsByRace[index])
-      )
-    }, [])
+  // const totalPointsByRace = Object.values(racePointsByDriver)
+  //   .filter((item) => item.pointsByRace)
+  //   .reduce((memo, driver) => {
+  //     if (!memo.length) {
+  //       return driver.pointsByRace
+  //     }
+  //     return memo.map(
+  //       (points, index) => toNum(points) + toNum(driver.pointsByRace[index])
+  //     )
+  //   }, [])
 
   const pointsByDriverChartData = Object.values(raceColumnByIndex)
     .filter((_race, index) => index > 0)
@@ -360,7 +362,7 @@ export async function getStaticProps({ params }) {
       drivers,
       teamPrincipal: constructorRacePoints.map((row) => row[1])[0],
       racePointsByDriver,
-      totalPointsByRace,
+      // totalPointsByRace,
       raceColumnByIndex,
       pointsByDriverChartData,
       chartsEnabled: process.env.CHARTS_ENABLED === 'true',
