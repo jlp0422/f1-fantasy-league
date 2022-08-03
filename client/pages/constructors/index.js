@@ -12,6 +12,7 @@ const HomePage = ({ constructors }) => {
           return (
             <ConstructorLink
               normalizedConstructor={normalized}
+              constructorId={constructor.id}
               key={constructor.id}
             >
               <a className="relative flex flex-col items-center justify-center sm:div-children:hover:shadow-inset-black-7">

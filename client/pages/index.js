@@ -16,6 +16,7 @@ const Standings = ({ standings }) => {
             principal={team_principal}
             points={total_points}
             constructor={name}
+            id={id}
           />
         ))}
       </ol>
