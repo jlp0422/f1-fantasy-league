@@ -25,14 +25,17 @@ const Constructor = ({
   constructorName,
   drivers,
   racePointsByDriver,
+  result,
   // totalPointsByRace,
   teamPrincipal,
   raceColumnByIndex,
   pointsByDriverChartData,
   chartsEnabled,
 }) => {
-  console.log({ pointsByDriverChartData})
-  // console.log({ totalPointsByRace})
+  // console.log({
+  // result,
+  // })
+
   const data = [
     {
       value: constructorName,
@@ -269,7 +272,9 @@ export async function getStaticPaths() {
   return {
     paths: constructors.map((constructor) => ({
       params: {
-        name: encodeURIComponent(normalizeConstructorName(constructor.name)),
+        name: encodeURIComponent(
+          `${constructor.id}-${normalizeConstructorName(constructor.name)}`
+        ),
       },
     })),
     fallback: false,
@@ -277,8 +282,105 @@ export async function getStaticPaths() {
 }
 
 export async function getStaticProps({ params }) {
-  const constructorName = decodeURIComponent(params.name)
+  const constructorNameParam = decodeURIComponent(params.name)
+  const constructorName = constructorNameParam.split('-').slice(1).join('-')
   google.options({ auth: googleAuth })
+  const constructorId = constructorNameParam.split('-')[0]
+
+  const { data: constructor } = await supabase
+    .from('constructor')
+    .select('id, name, team_principal, season(id, year)')
+    .eq('season.year', 2022)
+    .eq('id', constructorId)
+    .limit(1)
+    .single()
+
+  console.log({ constructor })
+
+  const { data: rawDrivers } = await supabase
+    .from('constructor_driver')
+    .select(
+      `id,
+      driver_one:driver_one_id(id, first_name, last_name),
+      driver_two:driver_two_id(id, first_name, last_name)
+    `
+    )
+    .eq('season_id', constructor.season.id)
+    .eq('constructor_id', constructor.id)
+
+  const makeName = (driver) => `${driver.first_name} ${driver.last_name}`
+
+  const cDrivers = rawDrivers
+    .map(({ driver_one, driver_two }) => [
+      makeName(driver_one),
+      makeName(driver_two),
+    ])
+    .flat()
+
+  const driverIds = rawDrivers
+    .map(({ driver_one, driver_two }) => [driver_one.id, driver_two.id])
+    .flat()
+
+  const { data: result } = await supabase
+    .from('driver_race_result')
+    .select(
+      `
+      id,
+      finish_position_points,
+      driver(
+        id,
+        abbreviation,
+        first_name,
+        last_name
+      ),
+      race!inner(
+        id,
+        location,
+        season!inner(
+          id,
+          year
+        )
+      )`
+    )
+    .eq('race.season.year', constructor.season.year)
+    .eq('constructor_id', constructor.id)
+    .order('race_id', { ascending: true })
+
+  const racePointsByDriver2 = result.reduce((memo, item) => {
+    const driverName = `${item.driver.first_name} ${item.driver.last_name}`
+    const current = memo[driverName]
+    if (current) {
+      memo[driverName] = {
+        total: current.total + item.finish_position_points,
+        pointsByRace: current.pointsByRace.concat(item.finish_position_points),
+      }
+    } else {
+      memo[driverName] = {
+        total: item.finish_position_points,
+        pointsByRace: [item.finish_position_points],
+      }
+    }
+    return memo
+  }, {})
+
+  const driverPointsByRace = result.reduce((memo, item) => {
+    const driverName = `${item.driver.first_name} ${item.driver.last_name}`
+    if (memo[item.race.location]) {
+      memo[item.race.location][driverName] = item.finish_position_points
+    } else {
+      memo[item.race.location] = {
+        [driverName]: item.finish_position_points,
+      }
+    }
+    return memo
+  }, {})
+
+  const pointsByDriverChartData2 = Object.entries(driverPointsByRace).map(
+    ([race, drivers]) => ({
+      race,
+      ...drivers,
+    })
+  )
 
   const racePointsData = await sheets.spreadsheets.get({
     ranges: ["'RACE POINTS'!A1:AA17"],
@@ -304,21 +406,19 @@ export async function getStaticProps({ params }) {
   const constructorRacePoints = racePoints.filter(
     (row) => normalizeConstructorName(row[0]) === constructorName
   )
-  const drivers = constructorRacePoints.map((row) => row[2])
+  // const racePointsByDriver = constructorRacePoints.reduce((memo, item) => {
+  //   const [_constructor, _principal, driver, totalPoints, ...pointsByRace] =
+  //     item
+  //   const driverTotalPoints = toNum(totalPoints)
 
-  const racePointsByDriver = constructorRacePoints.reduce((memo, item) => {
-    const [_constructor, _principal, driver, totalPoints, ...pointsByRace] =
-      item
-    const driverTotalPoints = toNum(totalPoints)
-
-    return Object.assign({}, memo, {
-      [driver]: {
-        total: driverTotalPoints,
-        pointsByRace,
-      },
-      total: (memo.total || 0) + driverTotalPoints,
-    })
-  }, {})
+  //   return Object.assign({}, memo, {
+  //     [driver]: {
+  //       total: driverTotalPoints,
+  //       pointsByRace,
+  //     },
+  //     total: (memo.total || 0) + driverTotalPoints,
+  //   })
+  // }, {})
 
   // const totalPointsByRace = Object.values(racePointsByDriver)
   //   .filter((item) => item.pointsByRace)
@@ -331,24 +431,24 @@ export async function getStaticProps({ params }) {
   //     )
   //   }, [])
 
-  const pointsByDriverChartData = Object.values(raceColumnByIndex)
-    .filter((_race, index) => index > 0)
-    .reduce((memo, race, index) => {
-      const [driverA, driverB] = drivers
-      const driverAPointsByRace =
-        racePointsByDriver[driverA].pointsByRace[index]
-      const driverBPointsByRace =
-        racePointsByDriver[driverB].pointsByRace[index]
+  // const pointsByDriverChartData = Object.values(raceColumnByIndex)
+  //   .filter((_race, index) => index > 0)
+  //   .reduce((memo, race, index) => {
+  //     const [driverA, driverB] = cDrivers
+  //     const driverAPointsByRace =
+  //       racePointsByDriver2[driverA].pointsByRace[index]
+  //     const driverBPointsByRace =
+  //       racePointsByDriver2[driverB].pointsByRace[index]
 
-      if (driverAPointsByRace && driverBPointsByRace) {
-        memo.push({
-          race,
-          [driverA]: driverAPointsByRace,
-          [driverB]: driverBPointsByRace,
-        })
-      }
-      return memo
-    }, [])
+  //     if (driverAPointsByRace && driverBPointsByRace) {
+  //       memo.push({
+  //         race,
+  //         [driverA]: driverAPointsByRace,
+  //         [driverB]: driverBPointsByRace,
+  //       })
+  //     }
+  //     return memo
+  //   }, [])
 
   if (!constructorRacePoints.length) {
     return {
@@ -358,14 +458,15 @@ export async function getStaticProps({ params }) {
 
   return {
     props: {
-      constructorName: constructorRacePoints[0][0],
-      drivers,
-      teamPrincipal: constructorRacePoints.map((row) => row[1])[0],
-      racePointsByDriver,
+      constructorName: constructor.name, // constructorRacePoints[0][0],
+      drivers: cDrivers,
+      teamPrincipal: constructor.team_principal, //constructorRacePoints.map((row) => row[1])[0],
+      racePointsByDriver: racePointsByDriver2,
       // totalPointsByRace,
       raceColumnByIndex,
-      pointsByDriverChartData,
+      pointsByDriverChartData: pointsByDriverChartData2,
       chartsEnabled: process.env.CHARTS_ENABLED === 'true',
+      result,
     },
   }
 }
