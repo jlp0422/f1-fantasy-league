@@ -8,7 +8,6 @@ const RacePointsTable = ({
   standings,
   constructorsById,
   indexedRacePoints,
-  totalCompletedRaces,
 }) => {
   return (
     <table className="w-full text-base text-left text-gray-300 uppercase bg-gray-800 font-secondary">
@@ -49,9 +48,6 @@ const RacePointsTable = ({
         {standings.map((constructor) => {
           const normalized = normalizeConstructorName(constructor.name)
           const { numberBackground } = COLORS_BY_CONSTRUCTOR[normalized]
-          // minus 1 to account for total points column
-          const numExtraColumns = races.length - totalCompletedRaces
-          const extraColumns = new Array(numExtraColumns).fill(0)
           return (
             <tr
               key={constructor.name}
@@ -62,7 +58,10 @@ const RacePointsTable = ({
                 className="sticky w-[88px] min-w-[88px] max-w-[88px] sm:w-[310px] sm:min-w-[310px] sm:max-w-[310px] left-0 "
               >
                 <div className="flex items-center justify-center gap-3 px-2 py-3 font-semibold text-gray-100 sm:justify-start sm:px-6 sm:py-4 whitespace-nowrap">
-                  <ConstructorLink normalizedConstructor={normalized} constructorId={constructor.id}>
+                  <ConstructorLink
+                    normalizedConstructor={normalized}
+                    constructorId={constructor.id}
+                  >
                     <a
                       className="relative w-10 h-10 p-2 rounded-full sm:w-14 sm:h-14 sm:p-3"
                       style={{ backgroundColor: numberBackground }}
@@ -70,7 +69,10 @@ const RacePointsTable = ({
                       <CarNumber constructor={constructor.name} size="small" />
                     </a>
                   </ConstructorLink>
-                  <ConstructorLink normalizedConstructor={normalized} constructorId={constructor.id}>
+                  <ConstructorLink
+                    normalizedConstructor={normalized}
+                    constructorId={constructor.id}
+                  >
                     <a className="invisible hidden sm:block sm:visible sm:hover:text-gray-300">
                       {constructor.name}
                     </a>
@@ -81,18 +83,15 @@ const RacePointsTable = ({
                 {constructorsById[constructor.id].total_points}
               </td>
               {races.map((race) => (
+                // use optional chaining
                 <td
                   className="px-6 py-4 text-center"
                   key={`${constructor.id}-${race.id}`}
                 >
-                  {indexedRacePoints[race.id][constructor.id].race_points}
+                  {indexedRacePoints[race.id]
+                    ? indexedRacePoints[race.id][constructor.id].race_points
+                    : null}
                 </td>
-              ))}
-              {extraColumns.map((_, index) => (
-                <td
-                  className="px-6 py-4 text-center"
-                  key={`empty-${constructor.id}-${index}`}
-                />
               ))}
             </tr>
           )

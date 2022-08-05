@@ -11,7 +11,7 @@ const RacePoints = ({
   races,
   standings,
   constructorsById,
-  totalCompletedRaces,
+  // totalCompletedRaces,
   indexedRacePoints,
   constructors,
 }) => {
@@ -30,7 +30,7 @@ const RacePoints = ({
       description="Points by Race for all Constructors"
       fullWidth
     >
-      <div className="relative mx-2 mt-2 font-tertiary sm:mx-4">
+      {chartsEnabled && (<div className="relative mx-2 mt-2 font-tertiary sm:mx-4">
         <button
           onClick={() => setIsTabDropdownOpen((open) => !open)}
           id="dropdownDefault"
@@ -81,8 +81,8 @@ const RacePoints = ({
             </ul>
           </div>
         )}
-      </div>
-      <div className="relative mx-2 mb-4 overflow-x-auto rounded-lg sm:mx-4">
+      </div>)}
+      <div className="relative mx-2 my-4 overflow-x-auto rounded-lg sm:mx-4">
         {activeTab === 'table' && (
           <RacePointsTable
             races={races}
@@ -90,7 +90,7 @@ const RacePoints = ({
             standings={standings}
             constructorsById={constructorsById}
             indexedRacePoints={indexedRacePoints}
-            totalCompletedRaces={totalCompletedRaces}
+            // totalCompletedRaces={totalCompletedRaces}
           />
         )}
 
@@ -116,28 +116,24 @@ export async function getStaticProps() {
     .rpc('total_points_by_constructor_by_race')
     .select('*')
 
+  console.log({ racePointsByConstructorByRace })
+
   const indexedRacePoints = racePointsByConstructorByRace.reduce(
     (memo, item) => {
       const constructorId = item.constructor_id
       const raceId = item.race_id
       const existingRace = memo[raceId]
-      const prevRaceId = raceId - 1
-      const prevRacePoints =
-        memo[prevRaceId]?.[constructorId]?.total_points || 0
-
       if (existingRace) {
         memo[raceId] = {
           ...existingRace,
           [constructorId]: {
             race_points: item.total_points,
-            total_points: prevRacePoints + item.total_points,
           },
         }
       } else {
         memo[raceId] = {
           [constructorId]: {
             race_points: item.total_points,
-            total_points: prevRacePoints + item.total_points,
           },
         }
       }
@@ -146,13 +142,13 @@ export async function getStaticProps() {
     {}
   )
 
-  const totalCompletedRaces = new Set(
-    racePointsByConstructorByRace.map(({ race_id }) => race_id)
-  ).size
+  // const totalCompletedRaces = new Set(
+  //   racePointsByConstructorByRace.map(({ race_id }) => race_id)
+  // ).size
 
   const { data: races } = await supabase
     .from('race')
-    .select('id, location, start_date, season(year)')
+    .select('id, location, country, start_date, season(year)')
     .eq('season.year', 2022)
     .order('start_date', { ascending: true })
 
@@ -168,32 +164,49 @@ export async function getStaticProps() {
   const constructorsById = indexBy('id')(standings)
   const racesById = indexBy('id')(races)
 
-  const cumulativePointsByConstructor = Object.entries(indexedRacePoints).map(
-    ([raceId, data]) => {
-      const dataArray = Object.entries(data).reduce(
-        (memo, [constructorId, { total_points }]) =>
-          Object.assign({}, memo, {
-            [constructorsById[constructorId].name]: total_points,
-          }),
-        {}
-      )
-      return {
-        race: racesById[raceId].location,
-        ...dataArray,
-      }
-    }
-  )
+  // const cumulativePointsByConstructor = Object.entries(indexedRacePoints).map(
+  //   ([raceId, data]) => {
+  //     const dataArray = Object.entries(data).reduce(
+  //       (memo, [constructorId, { total_points }]) =>
+  //         Object.assign({}, memo, {
+  //           [constructorsById[constructorId].name]: total_points,
+  //         }),
+  //       {}
+  //     )
+  //     return {
+  //       race: racesById[raceId].location,
+  //       ...dataArray,
+  //     }
+  //   }
+  // )
+
+  // const cumulativePointsByConstructor = racePointsByConstructorByRace.reduce(
+  //   (memo, item) => {
+  //     const constructorId = item.constructor_id
+  //     const raceId = item.race_id
+  //     const pointsArray = memo[constructorId]
+  //     if (pointsArray) {
+  //       const prevTotal = Object.values(pointsArray[pointsArray.length - 1])[0]
+  //       memo[[constructorsById[constructorId].name]].push({ [raceId]: prevTotal + item.total_points })
+  //     } else {
+  //       memo[[constructorsById[constructorId].name]] = [{ [raceId]: item.total_points }]
+  //     }
+  //     return memo
+  //   },
+  //   {}
+  // )
+  // console.log(cumulativePointsByConstructor)
 
   return {
     props: {
       chartsEnabled: process.env.CHARTS_ENABLED === 'true',
-      cumulativePointsByConstructor,
+      cumulativePointsByConstructor:[],
       races,
       standings,
       constructorsById,
       indexedRacePoints,
       constructors,
-      totalCompletedRaces,
+      // totalCompletedRaces,
     },
   }
 }

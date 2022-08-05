@@ -24,6 +24,7 @@ const RacePointsChart = ({
   constructors,
   chartLines,
 }) => {
+  console.log({ cumulativePointsByConstructor})
   const updateSelectedConstructors = (constructor) => {
     if (selectedChartConstructors.includes(constructor)) {
       setSelectedChartConstructors((existing) =>
