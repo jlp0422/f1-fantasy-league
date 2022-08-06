@@ -1,7 +1,7 @@
 import Layout from 'components/Layout'
 import RacePointsChart from 'components/RacePointsChart'
 import RacePointsTable from 'components/RacePointsTable'
-import { indexBy, sum } from 'helpers/utils'
+import { indexBy } from 'helpers/utils'
 import { supabase } from 'lib/database'
 import { useState } from 'react'
 
@@ -185,7 +185,6 @@ export async function getStaticProps() {
       memo.push(data)
     }
     return memo
-
   }, [])
 
   return {

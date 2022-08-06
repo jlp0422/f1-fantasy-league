@@ -8,6 +8,7 @@ const Custom500 = () => {
       <div className="mx-auto my-0 w-500 h-500">
         <Image
           layout="fixed"
+          priority
           width={498}
           height={280}
           src={mazepin}
