@@ -118,7 +118,7 @@ const Constructor = ({
                 className="border-b border-gray-700 odd:bg-gray-800 even:bg-gray-700"
               >
                 <th key={race.id} scope="col" className="p-3 text-left">
-                  {race.location}
+                  {race.country}
                 </th>
                 {driversWithPoints.map((driver) => {
                   const { completedRaceIds } = racePointsByDriver[driver]
@@ -168,7 +168,7 @@ const Constructor = ({
                   scope="col"
                   className="px-6 py-3 font-normal text-center"
                 >
-                  {race.location}
+                  {race.country}
                 </th>
               ))}
             </tr>
@@ -317,17 +317,6 @@ export async function getStaticProps({ params }) {
     .limit(1)
     .single()
 
-  const { data: rawDrivers } = await supabase
-    .from('constructor_driver')
-    .select(
-      `id,
-      driver_one:driver_one_id(id, first_name, last_name),
-      driver_two:driver_two_id(id, first_name, last_name)
-    `
-    )
-    .eq('season_id', constructor.season.id)
-    .eq('constructor_id', constructor.id)
-
   const makeName = (driver) => `${driver.first_name} ${driver.last_name}`
 
   const { data: races } = await supabase
@@ -338,7 +327,7 @@ export async function getStaticProps({ params }) {
 
   const racesById = indexBy('id')(races)
 
-  const { data: result } = await supabase
+  const { data: driverRaceResults } = await supabase
     .from('driver_race_result')
     .select(
       `
@@ -364,7 +353,7 @@ export async function getStaticProps({ params }) {
     .eq('constructor_id', constructor.id)
     .order('race_id', { ascending: true })
 
-  const racePointsByDriver = result.reduce((memo, item) => {
+  const racePointsByDriver = driverRaceResults.reduce((memo, item) => {
     const driverName = makeName(item.driver)
     const current = memo[driverName]
     const finishAndGridPoints =
@@ -383,7 +372,7 @@ export async function getStaticProps({ params }) {
     return memo
   }, {})
 
-  const driverPointsByRace = result.reduce((memo, item) => {
+  const driverPointsByRace = driverRaceResults.reduce((memo, item) => {
     const driverName = `${item.driver.first_name} ${item.driver.last_name}`
     if (memo[item.race.id]) {
       memo[item.race.id][driverName] = item.finish_position_points
@@ -397,7 +386,7 @@ export async function getStaticProps({ params }) {
 
   const pointsByDriverChartData = Object.entries(driverPointsByRace).map(
     ([raceId, drivers]) => ({
-      race: racesById[raceId].location,
+      race: racesById[raceId].country,
       ...drivers,
     })
   )

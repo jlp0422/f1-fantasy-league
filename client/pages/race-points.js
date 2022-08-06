@@ -173,7 +173,7 @@ export async function getStaticProps() {
   )
 
   const chartData = races.reduce((memo, race, index) => {
-    const data = { race: race.location }
+    const data = { race: race.country }
     let hasRaceData = false
     constructors.forEach((c) => {
       const cPoints = cumulativePointsByConstructor[c.id][index]

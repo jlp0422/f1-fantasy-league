@@ -31,7 +31,7 @@ const RacePointsTable = ({
             scope="col"
             className="px-6 py-3 font-normal text-center"
           >
-            Total points
+            Total Points
           </th>
           {races.map((race) => (
             <th
@@ -39,7 +39,7 @@ const RacePointsTable = ({
               scope="col"
               className="px-6 py-3 font-normal text-center"
             >
-              {race.location}
+              {race.country}
             </th>
           ))}
         </tr>
