@@ -344,6 +344,7 @@ export async function getStaticProps({ params }) {
       `
       id,
       finish_position_points,
+      grid_difference_points,
       driver(
         id,
         abbreviation,
@@ -366,14 +367,16 @@ export async function getStaticProps({ params }) {
   const racePointsByDriver = result.reduce((memo, item) => {
     const driverName = makeName(item.driver)
     const current = memo[driverName]
+    const finishAndGridPoints =
+      item.finish_position_points + item.grid_difference_points
     if (current) {
       memo[driverName] = {
-        total: current.total + item.finish_position_points,
+        total: current.total + finishAndGridPoints,
         completedRaceIds: current.completedRaceIds.concat(item.race.id),
       }
     } else {
       memo[driverName] = {
-        total: item.finish_position_points,
+        total: finishAndGridPoints,
         completedRaceIds: [item.race.id],
       }
     }
