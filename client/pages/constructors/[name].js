@@ -29,12 +29,16 @@ const Constructor = ({
   // totalPointsByRace,
   teamPrincipal,
   raceColumnByIndex,
+  driverPointsByRace,
   pointsByDriverChartData,
+  races,
   chartsEnabled,
 }) => {
-  // console.log({
-  // result,
-  // })
+  console.log({
+    result,
+    racePointsByDriver,
+    driverPointsByRace,
+  })
 
   const data = [
     {
@@ -46,6 +50,7 @@ const Constructor = ({
       label: 'Team Principal',
     },
     {
+      // get from somewhere else
       value: racePointsByDriver.total,
       label: 'Total Points',
     },
@@ -89,7 +94,7 @@ const Constructor = ({
       </div>
 
       {/* mobile points table */}
-      <div className="relative visible block my-4 overflow-x-auto rounded-lg shadow-md md:hidden md:invisible">
+      {/* <div className="relative visible block my-4 overflow-x-auto rounded-lg shadow-md md:hidden md:invisible">
         <table className="w-full text-base text-left text-gray-300 bg-gray-800 font-secondary">
           <thead className="uppercase bg-gray-700">
             <tr>
@@ -136,7 +141,7 @@ const Constructor = ({
             })}
           </tbody>
         </table>
-      </div>
+      </div> */}
 
       {/* desktop points table */}
       <div className="relative invisible hidden my-10 overflow-x-auto rounded-lg shadow-md md:block md:visible">
@@ -149,24 +154,27 @@ const Constructor = ({
               >
                 Driver
               </th>
-              {Object.values(raceColumnByIndex).map((race) => (
+              <th scope="col" className="px-6 py-3 font-normal text-center">
+                Total Points
+              </th>
+              {races.map((race) => (
                 <th
-                  key={race}
+                  key={race.id}
                   scope="col"
                   className="px-6 py-3 font-normal text-center"
                 >
-                  {race}
+                  {race.location}
                 </th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {drivers.map((driver) => {
-              const { pointsByRace, total } = racePointsByDriver[driver]
-              // minus 1 to account for total points column
+            {Object.keys(racePointsByDriver).map((driver) => {
+              const { completedRaceIds, pointsByRace, total } = racePointsByDriver[driver]
+              {/* // minus 1 to account for total points column
               const numExtraColumns =
                 Object.keys(raceColumnByIndex).length - pointsByRace.length - 1
-              const extraColumns = new Array(numExtraColumns).fill(0)
+              const extraColumns = new Array(numExtraColumns).fill(0) */}
               return (
                 <tr
                   key={driver}
@@ -179,20 +187,23 @@ const Constructor = ({
                     {driver}
                   </th>
                   <td className="px-6 py-4 text-center">{total}</td>
-                  {pointsByRace.map((pointValue, index) => (
+                  {pointsByRace.map(({ raceId, points }, index) => {
+                    const correspondingRace = races[index]
+                    console.log('matching race!', raceId, driver)
+                    return (
                     <td
                       className="px-6 py-4 text-center"
-                      key={`${driver}-${pointValue}-${index}`}
+                      key={`${driver}-${points}-${index}`}
                     >
-                      {pointValue}
+                      {correspondingRace ? points : "0"}
                     </td>
-                  ))}
-                  {extraColumns.map((_, index) => (
+                  )})}
+                  {/* {extraColumns.map((_, index) => (
                     <td
                       className="px-6 py-4 text-center"
                       key={`empty-${driver}-${index}`}
                     />
-                  ))}
+                  ))} */}
                 </tr>
               )
             })}
@@ -315,6 +326,12 @@ export async function getStaticProps({ params }) {
     ])
     .flat()
 
+  const { data: races } = await supabase
+    .from('race')
+    .select('id, location, country, start_date, season(year)')
+    .eq('season.year', 2022)
+    .order('start_date', { ascending: true })
+
   const driverIds = rawDrivers
     .map(({ driver_one, driver_two }) => [driver_one.id, driver_two.id])
     .flat()
@@ -345,17 +362,19 @@ export async function getStaticProps({ params }) {
     .order('race_id', { ascending: true })
 
   const racePointsByDriver2 = result.reduce((memo, item) => {
-    const driverName = `${item.driver.first_name} ${item.driver.last_name}`
+    const driverName = makeName(item.driver)
     const current = memo[driverName]
     if (current) {
       memo[driverName] = {
         total: current.total + item.finish_position_points,
-        pointsByRace: current.pointsByRace.concat(item.finish_position_points),
+        pointsByRace: current.pointsByRace.concat({ raceId: item.race.id, points: item.finish_position_points}),
+        completedRaceIds: current.completedRaceIds.concat(item.race.id),
       }
     } else {
       memo[driverName] = {
         total: item.finish_position_points,
-        pointsByRace: [item.finish_position_points],
+        pointsByRace: [{ raceId: item.race.id, points: item.finish_position_points}],
+        completedRaceIds: [item.race.id],
       }
     }
     return memo
@@ -363,10 +382,10 @@ export async function getStaticProps({ params }) {
 
   const driverPointsByRace = result.reduce((memo, item) => {
     const driverName = `${item.driver.first_name} ${item.driver.last_name}`
-    if (memo[item.race.location]) {
-      memo[item.race.location][driverName] = item.finish_position_points
+    if (memo[item.race.id]) {
+      memo[item.race.id][driverName] = item.finish_position_points
     } else {
-      memo[item.race.location] = {
+      memo[item.race.id] = {
         [driverName]: item.finish_position_points,
       }
     }
@@ -465,6 +484,8 @@ export async function getStaticProps({ params }) {
       pointsByDriverChartData: pointsByDriverChartData2,
       chartsEnabled: process.env.CHARTS_ENABLED === 'true',
       result,
+      driverPointsByRace,
+      races,
     },
   }
 }
