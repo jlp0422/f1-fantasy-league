@@ -295,8 +295,6 @@ export async function getStaticProps({ params }) {
     .limit(1)
     .single()
 
-  console.log({ constructor })
-
   const { data: rawDrivers } = await supabase
     .from('constructor_driver')
     .select(

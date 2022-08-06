@@ -11,7 +11,6 @@ const RacePoints = ({
   races,
   standings,
   constructorsById,
-  // totalCompletedRaces,
   indexedRacePoints,
   constructors,
 }) => {
@@ -30,67 +29,67 @@ const RacePoints = ({
       description="Points by Race for all Constructors"
       fullWidth
     >
-      {chartsEnabled && (<div className="relative mx-2 mt-2 font-tertiary sm:mx-4">
-        <button
-          onClick={() => setIsTabDropdownOpen((open) => !open)}
-          id="dropdownDefault"
-          data-dropdown-toggle="dropdown"
-          className="text-white mt-2 my-4 w-40 font-medium rounded-lg text-xl px-4 py-2.5 text-center inline-flex items-center justify-between bg-gray-600 hover:bg-gray-700 capitalize"
-          type="button"
-        >
-          {activeTab}
-          <svg
-            className="w-4 h-4 ml-2"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
+      {chartsEnabled && (
+        <div className="relative mx-2 mt-2 font-tertiary sm:mx-4">
+          <button
+            onClick={() => setIsTabDropdownOpen((open) => !open)}
+            id="dropdownDefault"
+            data-dropdown-toggle="dropdown"
+            className="text-white mt-2 my-4 w-40 font-medium rounded-lg text-xl px-4 py-2.5 text-center inline-flex items-center justify-between bg-gray-600 hover:bg-gray-700 capitalize"
+            type="button"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M19 9l-7 7-7-7"
-            ></path>
-          </svg>
-        </button>
-        {isTabDropdownOpen && (
-          <div
-            id="dropdown"
-            className={`z-10 ${
-              isTabDropdownOpen ? 'block' : 'hidden'
-            } divide-y divide-gray-100 rounded shadow w-40 bg-gray-500 absolute top-[58px] left-2`}
-          >
-            <ul
-              className="py-1 mt-2 text-xl text-gray-200"
-              aria-labelledby="dropdownDefault"
+            {activeTab}
+            <svg
+              className="w-4 h-4 ml-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
             >
-              {tabOptions.map((tab) => (
-                <li key={tab}>
-                  <button
-                    onClick={() => {
-                      setActiveTab(tab)
-                      setIsTabDropdownOpen(false)
-                    }}
-                    className="block w-full px-4 py-2 text-left capitalize hover:bg-gray-600 hover:text-white"
-                  >
-                    {tab}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-      </div>)}
-      <div className="relative mx-2 my-4 overflow-x-auto rounded-lg sm:mx-4">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M19 9l-7 7-7-7"
+              ></path>
+            </svg>
+          </button>
+          {isTabDropdownOpen && (
+            <div
+              id="dropdown"
+              className={`z-10 ${
+                isTabDropdownOpen ? 'block' : 'hidden'
+              } divide-y divide-gray-100 rounded shadow w-40 bg-gray-500 absolute top-[58px] left-2`}
+            >
+              <ul
+                className="py-1 mt-2 text-xl text-gray-200"
+                aria-labelledby="dropdownDefault"
+              >
+                {tabOptions.map((tab) => (
+                  <li key={tab}>
+                    <button
+                      onClick={() => {
+                        setActiveTab(tab)
+                        setIsTabDropdownOpen(false)
+                      }}
+                      className="block w-full px-4 py-2 text-left capitalize hover:bg-gray-600 hover:text-white"
+                    >
+                      {tab}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
+      <div className="relative mx-2 mb-4 overflow-x-auto rounded-lg sm:mx-4">
         {activeTab === 'table' && (
           <RacePointsTable
             races={races}
-            // results={results}
             standings={standings}
             constructorsById={constructorsById}
             indexedRacePoints={indexedRacePoints}
-            // totalCompletedRaces={totalCompletedRaces}
           />
         )}
 
@@ -112,13 +111,11 @@ const RacePoints = ({
 }
 
 export async function getStaticProps() {
-  const { data: racePointsByConstructorByRace } = await supabase
+  const { data: totalPointsByConstructorByRace } = await supabase
     .rpc('total_points_by_constructor_by_race')
     .select('*')
 
-  console.log({ racePointsByConstructorByRace })
-
-  const indexedRacePoints = racePointsByConstructorByRace.reduce(
+  const indexedRacePoints = totalPointsByConstructorByRace.reduce(
     (memo, item) => {
       const constructorId = item.constructor_id
       const raceId = item.race_id
@@ -142,10 +139,6 @@ export async function getStaticProps() {
     {}
   )
 
-  // const totalCompletedRaces = new Set(
-  //   racePointsByConstructorByRace.map(({ race_id }) => race_id)
-  // ).size
-
   const { data: races } = await supabase
     .from('race')
     .select('id, location, country, start_date, season(year)')
@@ -162,51 +155,48 @@ export async function getStaticProps() {
     .order('total_points', { ascending: false })
 
   const constructorsById = indexBy('id')(standings)
-  const racesById = indexBy('id')(races)
 
-  // const cumulativePointsByConstructor = Object.entries(indexedRacePoints).map(
-  //   ([raceId, data]) => {
-  //     const dataArray = Object.entries(data).reduce(
-  //       (memo, [constructorId, { total_points }]) =>
-  //         Object.assign({}, memo, {
-  //           [constructorsById[constructorId].name]: total_points,
-  //         }),
-  //       {}
-  //     )
-  //     return {
-  //       race: racesById[raceId].location,
-  //       ...dataArray,
-  //     }
-  //   }
-  // )
+  const cumulativePointsByConstructor = totalPointsByConstructorByRace.reduce(
+    (memo, item) => {
+      const constructorId = item.constructor_id
+      const points = item.total_points
+      if (memo[constructorId]) {
+        const arr = memo[constructorId]
+        const prevTotal = arr[arr.length - 1]
+        memo[constructorId].push(prevTotal + points)
+      } else {
+        memo[constructorId] = [points]
+      }
+      return memo
+    },
+    {}
+  )
 
-  // const cumulativePointsByConstructor = racePointsByConstructorByRace.reduce(
-  //   (memo, item) => {
-  //     const constructorId = item.constructor_id
-  //     const raceId = item.race_id
-  //     const pointsArray = memo[constructorId]
-  //     if (pointsArray) {
-  //       const prevTotal = Object.values(pointsArray[pointsArray.length - 1])[0]
-  //       memo[[constructorsById[constructorId].name]].push({ [raceId]: prevTotal + item.total_points })
-  //     } else {
-  //       memo[[constructorsById[constructorId].name]] = [{ [raceId]: item.total_points }]
-  //     }
-  //     return memo
-  //   },
-  //   {}
-  // )
-  // console.log(cumulativePointsByConstructor)
+  const chartData = races.reduce((memo, race, index) => {
+    const data = { race: race.location }
+    let hasRaceData = false
+    constructors.forEach((c) => {
+      const cPoints = cumulativePointsByConstructor[c.id][index]
+      data[c.name] = cPoints
+      hasRaceData = !isNaN(cPoints)
+    })
+
+    if (hasRaceData) {
+      memo.push(data)
+    }
+    return memo
+
+  }, [])
 
   return {
     props: {
       chartsEnabled: process.env.CHARTS_ENABLED === 'true',
-      cumulativePointsByConstructor:[],
+      cumulativePointsByConstructor: chartData,
       races,
       standings,
       constructorsById,
       indexedRacePoints,
       constructors,
-      // totalCompletedRaces,
     },
   }
 }
