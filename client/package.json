@@ -13,7 +13,6 @@
   "dependencies": {
     "@supabase/supabase-js": "^1.35.4",
     "dotenv": "^16.0.0",
-    "googleapis": "^100.0.0",
     "hex-rgb": "^5.0.0",
     "next": "^12.1.5",
     "react": "^18.1.0",
