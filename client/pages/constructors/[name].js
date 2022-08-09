@@ -274,7 +274,7 @@ const Constructor = ({
                           ? secondaryColor
                           : primaryColor
                       }
-                      strokeWidth={3}
+                      strokeWidth={5}
                     />
                   )
                 })}
@@ -397,7 +397,10 @@ export async function getStaticProps({ params }) {
     )
   )
 
-  const driversWithPoints = Object.keys(racePointsByDriver)
+  const driversWithPoints = Object.entries(racePointsByDriver)
+    .map(([driver, { total }]) => ({ driver, total }))
+    .sort((a, b) => b.total - a.total)
+    .map(({ driver }) => driver)
 
   if (!constructor) {
     return {

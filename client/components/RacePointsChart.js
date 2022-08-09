@@ -98,7 +98,9 @@ const RacePointsChart = ({
                 </button>
               </li>
               {constructors.map((constructor) => {
-                const Icon = selectedChartConstructors.includes(constructor.name)
+                const Icon = selectedChartConstructors.includes(
+                  constructor.name
+                )
                   ? CheckboxFilled
                   : CheckboxEmpty
                 return (
