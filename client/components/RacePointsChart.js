@@ -98,19 +98,21 @@ const RacePointsChart = ({
                 </button>
               </li>
               {constructors.map((constructor) => {
-                const Icon = selectedChartConstructors.includes(constructor)
+                const Icon = selectedChartConstructors.includes(
+                  constructor.name
+                )
                   ? CheckboxFilled
                   : CheckboxEmpty
                 return (
-                  <li key={constructor}>
+                  <li key={constructor.name}>
                     <button
                       onClick={() => {
-                        updateSelectedConstructors(constructor)
+                        updateSelectedConstructors(constructor.name)
                       }}
                       className="flex w-full gap-1 px-4 py-2 text-left hover:bg-gray-600 hover:text-white"
                     >
                       <Icon />
-                      {constructor}
+                      {constructor.name}
                     </button>
                   </li>
                 )

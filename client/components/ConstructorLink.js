@@ -1,12 +1,12 @@
 import Link from 'next/link'
 
-const ConstructorLink = ({ normalizedConstructor, children }) => {
+const ConstructorLink = ({ normalizedConstructor, constructorId, children }) => {
   return (
     <Link
       href={{
         pathname: '/constructors/[name]',
         query: {
-          name: encodeURIComponent(normalizedConstructor),
+          name: `${constructorId}-${encodeURIComponent(normalizedConstructor)}`,
         },
       }}
     >

@@ -2,11 +2,10 @@ import CarImage from 'components/CarImage'
 import TickXAxis from 'components/charts/TickXAxis'
 import TickYAxis from 'components/charts/TickYAxis'
 import Layout from 'components/Layout'
-import { COLORS_BY_CONSTRUCTOR, CONSTRUCTOR_NAMES } from 'constants/index'
-import { google } from 'googleapis'
-import { googleAuth } from 'helpers/auth'
+import { COLORS_BY_CONSTRUCTOR } from 'constants/index'
 import { getCloudinaryCarUrl, normalizeConstructorName } from 'helpers/cars'
-import { toNum } from 'helpers/utils'
+import { indexBy, sum } from 'helpers/utils'
+import { supabase } from 'lib/database'
 import {
   CartesianGrid,
   Legend,
@@ -18,42 +17,43 @@ import {
   YAxis,
 } from 'recharts'
 
-const sheets = google.sheets('v4')
-
 const Constructor = ({
-  constructorName,
-  drivers,
+  races,
+  constructor,
+  totalPoints,
+  driverPointsByRace,
+  driversWithPoints,
   racePointsByDriver,
-  // totalPointsByRace,
-  teamPrincipal,
-  raceColumnByIndex,
   pointsByDriverChartData,
   chartsEnabled,
 }) => {
   const data = [
     {
-      value: constructorName,
+      value: constructor.name,
       label: 'Constructor',
     },
     {
-      value: teamPrincipal,
+      value: constructor.team_principal,
       label: 'Team Principal',
     },
     {
-      value: racePointsByDriver.total,
+      value: totalPoints,
       label: 'Total Points',
     },
   ]
 
-  const constructorCarImageUrl = normalizeConstructorName(constructorName)
-  const { primary: primaryColor, secondary: secondaryColor } =
-    COLORS_BY_CONSTRUCTOR[constructorCarImageUrl]
+  const constructorCarImageUrl = normalizeConstructorName(constructor.name)
+  const {
+    primary: primaryColor,
+    secondary: secondaryColor,
+    tertiary: tertiaryColor,
+  } = COLORS_BY_CONSTRUCTOR[constructorCarImageUrl]
   const imagePath = `/cars/${constructorCarImageUrl}.webp`
 
   return (
     <Layout
-      documentTitle={constructorName}
-      description={`Constructor information for ${constructorName}`}
+      documentTitle={constructor.name}
+      description={`Constructor information for ${constructor.name}`}
       metaImageUrl={getCloudinaryCarUrl(constructorCarImageUrl)}
     >
       <div
@@ -61,7 +61,7 @@ const Constructor = ({
         style={{ backgroundImage: `url(${imagePath})` }}
       />
       <div className="relative flex flex-col items-center sm:flex-row">
-        <CarImage constructor={constructorName} size="large" />
+        <CarImage constructor={constructor.name} size="large" />
         <div className="mx-4 my-2 text-center sm:mx-8 sm:text-left">
           {data.map(({ value, label }, index) => {
             const fontSizeClass =
@@ -90,7 +90,7 @@ const Constructor = ({
               <th scope="col" className="p-3">
                 &nbsp;
               </th>
-              {drivers.map((driver) => (
+              {driversWithPoints.map((driver) => (
                 <th
                   key={driver}
                   scope="col"
@@ -102,32 +102,48 @@ const Constructor = ({
             </tr>
           </thead>
           <tbody>
-            {Object.values(raceColumnByIndex).map((race, index) => {
-              const driverOne = drivers[0]
-              const driverTwo = drivers[1]
-              const driverOnePoints = racePointsByDriver[driverOne]
-              const driverTwoPoints = racePointsByDriver[driverTwo]
-              return (
-                <tr
-                  key={race}
-                  className="border-b border-gray-700 odd:bg-gray-800 even:bg-gray-700"
-                >
-                  <th key={race} scope="col" className="p-3 text-left">
-                    {race}
-                  </th>
-                  <td className="p-3 text-center text-gray-100">
-                    {index > 0
-                      ? driverOnePoints.pointsByRace[index - 1]
-                      : driverOnePoints.total}
-                  </td>
-                  <td className="p-3 text-center text-gray-100">
-                    {index > 0
-                      ? driverTwoPoints.pointsByRace[index - 1]
-                      : driverTwoPoints.total}
-                  </td>
-                </tr>
-              )
-            })}
+            <tr className="border-b border-gray-700 odd:bg-gray-800 even:bg-gray-700">
+              <th scope="col" className="p-3 text-left">
+                Total Points
+              </th>
+              {driversWithPoints.map((driver) => (
+                <td className="p-3 text-center text-gray-100" key={driver}>
+                  {racePointsByDriver[driver].total}
+                </td>
+              ))}
+            </tr>
+            {races.map((race) => (
+              <tr
+                key={race.id}
+                className="border-b border-gray-700 odd:bg-gray-800 even:bg-gray-700"
+              >
+                <th key={race.id} scope="col" className="p-3 text-left">
+                  {race.country}
+                </th>
+                {driversWithPoints.map((driver) => {
+                  const { completedRaceIds } = racePointsByDriver[driver]
+                  if (completedRaceIds.includes(race.id)) {
+                    return (
+                      <td
+                        key={`${driver}-${race.id}`}
+                        className="p-3 text-center text-gray-100"
+                      >
+                        {driverPointsByRace[race.id][driver]}
+                      </td>
+                    )
+                  }
+
+                  return (
+                    <td
+                      className="p-3 text-center text-gray-100"
+                      key={`${driver}-${race.id}`}
+                    >
+                      {null}
+                    </td>
+                  )
+                })}
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
@@ -143,24 +159,23 @@ const Constructor = ({
               >
                 Driver
               </th>
-              {Object.values(raceColumnByIndex).map((race) => (
+              <th scope="col" className="px-6 py-3 font-normal text-center">
+                Total Points
+              </th>
+              {races.map((race) => (
                 <th
-                  key={race}
+                  key={race.id}
                   scope="col"
                   className="px-6 py-3 font-normal text-center"
                 >
-                  {race}
+                  {race.country}
                 </th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {drivers.map((driver) => {
-              const { pointsByRace, total } = racePointsByDriver[driver]
-              // minus 1 to account for total points column
-              const numExtraColumns =
-                Object.keys(raceColumnByIndex).length - pointsByRace.length - 1
-              const extraColumns = new Array(numExtraColumns).fill(0)
+            {driversWithPoints.map((driver) => {
+              const { completedRaceIds, total } = racePointsByDriver[driver]
               return (
                 <tr
                   key={driver}
@@ -173,20 +188,27 @@ const Constructor = ({
                     {driver}
                   </th>
                   <td className="px-6 py-4 text-center">{total}</td>
-                  {pointsByRace.map((pointValue, index) => (
-                    <td
-                      className="px-6 py-4 text-center"
-                      key={`${driver}-${pointValue}-${index}`}
-                    >
-                      {pointValue}
-                    </td>
-                  ))}
-                  {extraColumns.map((_, index) => (
-                    <td
-                      className="px-6 py-4 text-center"
-                      key={`empty-${driver}-${index}`}
-                    />
-                  ))}
+                  {races.map((race) => {
+                    if (completedRaceIds.includes(race.id)) {
+                      return (
+                        <td
+                          className="px-6 py-4 text-center"
+                          key={`${driver}-${race.id}`}
+                        >
+                          {driverPointsByRace[race.id][driver]}
+                        </td>
+                      )
+                    }
+
+                    return (
+                      <td
+                        className="px-6 py-4 text-center"
+                        key={`${driver}-${race.id}`}
+                      >
+                        {null}
+                      </td>
+                    )
+                  })}
                 </tr>
               )
             })}
@@ -236,18 +258,26 @@ const Constructor = ({
                     fontSize: '24px',
                   }}
                 />
-                <Line
-                  type="monotone"
-                  dataKey={drivers[0]}
-                  stroke={primaryColor}
-                  strokeWidth={3}
-                />
-                <Line
-                  type="monotone"
-                  dataKey={drivers[1]}
-                  stroke={secondaryColor}
-                  strokeWidth={3}
-                />
+                {driversWithPoints.map((driver, index) => {
+                  const colorIndex = index + 1
+                  const mod3 = colorIndex % 3
+                  const mod2 = colorIndex % 2
+                  return (
+                    <Line
+                      key={driver}
+                      type="monotone"
+                      dataKey={driver}
+                      stroke={
+                        !mod3
+                          ? tertiaryColor
+                          : !mod2
+                          ? secondaryColor
+                          : primaryColor
+                      }
+                      strokeWidth={5}
+                    />
+                  )
+                })}
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -258,10 +288,17 @@ const Constructor = ({
 }
 
 export async function getStaticPaths() {
+  const { data: constructors } = await supabase
+    .from('constructor')
+    .select('id, name, season(year)')
+    .eq('season.year', 2022)
+
   return {
-    paths: CONSTRUCTOR_NAMES.map((constructor) => ({
+    paths: constructors.map((constructor) => ({
       params: {
-        name: encodeURIComponent(normalizeConstructorName(constructor)),
+        name: encodeURIComponent(
+          `${constructor.id}-${normalizeConstructorName(constructor.name)}`
+        ),
       },
     })),
     fallback: false,
@@ -269,80 +306,103 @@ export async function getStaticPaths() {
 }
 
 export async function getStaticProps({ params }) {
-  const constructorName = decodeURIComponent(params.name)
-  google.options({ auth: googleAuth })
+  const constructorNameParam = decodeURIComponent(params.name)
+  const constructorId = constructorNameParam.split('-')[0]
 
-  const racePointsData = await sheets.spreadsheets.get({
-    ranges: ["'RACE POINTS'!A1:AA17"],
-    spreadsheetId: process.env.SPREADSHEET_ID,
-    includeGridData: true,
-  })
+  const { data: constructor } = await supabase
+    .from('constructor')
+    .select('id, name, team_principal, season(id, year)')
+    .eq('season.year', 2022)
+    .eq('id', constructorId)
+    .limit(1)
+    .single()
 
-  const racePoints = racePointsData.data.sheets[0].data[0].rowData.map((row) =>
-    row.values.map((value) => value.formattedValue || null).filter(Boolean)
-  )
+  const makeName = (driver) => `${driver.first_name} ${driver.last_name}`
 
-  const raceColumnByIndex = racePoints
-    .slice(0, 1)[0]
-    .slice(3)
-    .reduce(
-      (memo, item, index) =>
-        Object.assign({}, memo, {
-          [index]: item,
-        }),
-      {}
+  const { data: races } = await supabase
+    .from('race')
+    .select('id, location, country, start_date, season(year)')
+    .eq('season.year', 2022)
+    .order('start_date', { ascending: true })
+
+  const racesById = indexBy('id')(races)
+
+  const { data: driverRaceResults } = await supabase
+    .from('driver_race_result')
+    .select(
+      `
+      id,
+      finish_position_points,
+      grid_difference_points,
+      driver(
+        id,
+        abbreviation,
+        first_name,
+        last_name
+      ),
+      race!inner(
+        id,
+        location,
+        season!inner(
+          id,
+          year
+        )
+      )`
     )
+    .eq('race.season.year', constructor.season.year)
+    .eq('constructor_id', constructor.id)
+    .order('race_id', { ascending: true })
 
-  const constructorRacePoints = racePoints.filter(
-    (row) => normalizeConstructorName(row[0]) === constructorName
-  )
-  const drivers = constructorRacePoints.map((row) => row[2])
-
-  const racePointsByDriver = constructorRacePoints.reduce((memo, item) => {
-    const [_constructor, _principal, driver, totalPoints, ...pointsByRace] =
-      item
-    const driverTotalPoints = toNum(totalPoints)
-
-    return Object.assign({}, memo, {
-      [driver]: {
-        total: driverTotalPoints,
-        pointsByRace,
-      },
-      total: (memo.total || 0) + driverTotalPoints,
-    })
+  const racePointsByDriver = driverRaceResults.reduce((memo, item) => {
+    const driverName = makeName(item.driver)
+    const current = memo[driverName]
+    const finishAndGridPoints =
+      item.finish_position_points + item.grid_difference_points
+    if (current) {
+      memo[driverName] = {
+        total: current.total + finishAndGridPoints,
+        completedRaceIds: current.completedRaceIds.concat(item.race.id),
+      }
+    } else {
+      memo[driverName] = {
+        total: finishAndGridPoints,
+        completedRaceIds: [item.race.id],
+      }
+    }
+    return memo
   }, {})
 
-  const totalPointsByRace = Object.values(racePointsByDriver)
-    .filter((item) => item.pointsByRace)
-    .reduce((memo, driver) => {
-      if (!memo.length) {
-        return driver.pointsByRace
+  const driverPointsByRace = driverRaceResults.reduce((memo, item) => {
+    const driverName = `${item.driver.first_name} ${item.driver.last_name}`
+    if (memo[item.race.id]) {
+      memo[item.race.id][driverName] = item.finish_position_points
+    } else {
+      memo[item.race.id] = {
+        [driverName]: item.finish_position_points,
       }
-      return memo.map(
-        (points, index) => toNum(points) + toNum(driver.pointsByRace[index])
-      )
-    }, [])
+    }
+    return memo
+  }, {})
 
-  const pointsByDriverChartData = Object.values(raceColumnByIndex)
-    .filter((_race, index) => index > 0)
-    .reduce((memo, race, index) => {
-      const [driverA, driverB] = drivers
-      const driverAPointsByRace =
-        racePointsByDriver[driverA].pointsByRace[index]
-      const driverBPointsByRace =
-        racePointsByDriver[driverB].pointsByRace[index]
+  const pointsByDriverChartData = Object.entries(driverPointsByRace).map(
+    ([raceId, drivers]) => ({
+      race: racesById[raceId].country,
+      ...drivers,
+    })
+  )
 
-      if (driverAPointsByRace && driverBPointsByRace) {
-        memo.push({
-          race,
-          [driverA]: driverAPointsByRace,
-          [driverB]: driverBPointsByRace,
-        })
-      }
-      return memo
-    }, [])
+  const totalPoints = sum(
+    Object.keys(racePointsByDriver).map(
+      (driver) => racePointsByDriver[driver].total
+    )
+  )
 
-  if (!constructorRacePoints.length) {
+  const driversWithPoints = Object.entries(racePointsByDriver)
+    .map(([driver, { total }]) => ({ driver, total }))
+    .sort((a, b) => b.total - a.total)
+    .map(({ driver }) => driver)
+
+  if (!constructor) {
     return {
       notFound: true,
     }
@@ -350,12 +410,12 @@ export async function getStaticProps({ params }) {
 
   return {
     props: {
-      constructorName: constructorRacePoints[0][0],
-      drivers,
-      teamPrincipal: constructorRacePoints.map((row) => row[1])[0],
+      races,
+      constructor,
+      totalPoints,
+      driverPointsByRace,
+      driversWithPoints,
       racePointsByDriver,
-      totalPointsByRace,
-      raceColumnByIndex,
       pointsByDriverChartData,
       chartsEnabled: process.env.CHARTS_ENABLED === 'true',
     },
