@@ -1,3 +1,3 @@
 # F1 Fantasy 2022
 
-Small node script to update personal F1 Fantasy standings for 2022 season.
+Formula 1 Fantasy League: https://fate-of-the-eight.vercel.app/
