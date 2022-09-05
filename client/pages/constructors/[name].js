@@ -374,11 +374,13 @@ export async function getStaticProps({ params }) {
 
   const driverPointsByRace = driverRaceResults.reduce((memo, item) => {
     const driverName = `${item.driver.first_name} ${item.driver.last_name}`
+    const totalPoints =
+      item.finish_position_points + item.grid_difference_points
     if (memo[item.race.id]) {
-      memo[item.race.id][driverName] = item.finish_position_points
+      memo[item.race.id][driverName] = totalPoints
     } else {
       memo[item.race.id] = {
-        [driverName]: item.finish_position_points,
+        [driverName]: totalPoints,
       }
     }
     return memo
