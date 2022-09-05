@@ -1,6 +1,3 @@
-// import { CONSTRUCTOR_NAMES } from 'constants/index'
-// import { normalizeConstructorName } from 'helpers/cars'
-
 const constructorRoutes = [
   '1-turbo-team-racing',
   '5-look-at-this-hornergraph',
