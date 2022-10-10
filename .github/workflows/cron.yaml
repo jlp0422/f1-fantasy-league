@@ -1,8 +1,7 @@
 name: "Revalidate pages"
 on:
-  push
-  # schedule:
-  # - cron: "0 6 * * MON"
+  schedule:
+  - cron: "0 6 * * MON"
 
 jobs:
   revalidate-pages:
