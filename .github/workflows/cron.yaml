@@ -8,5 +8,8 @@ jobs:
   revalidate-pages:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v2.1.0
       - name: Revalidate pages so Supabase doesn't shut down
-        run: yarn revalidate
+        run: |
+          yarn
+          yarn revalidate
