@@ -1,0 +1,11 @@
+name: "Revalidate pages"
+on:
+  schedule:
+  - cron: "0 6 * * MON"
+
+jobs:
+  revalidate-pages:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Revalidate pages so Supabase doesn't shut down
+        run: yarn revalidate
