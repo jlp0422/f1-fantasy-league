@@ -10,6 +10,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2.1.0
       - name: Revalidate pages so Supabase doesn't shut down
+        env:
+          REVALIDATE_TOKEN: ${{ secrets.REVALIDATE_TOKEN }}
         run: |
           yarn
-          yarn revalidate
+          node revalidate.js "$REVALIDATE_TOKEN"
