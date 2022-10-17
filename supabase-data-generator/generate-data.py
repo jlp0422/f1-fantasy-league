@@ -43,7 +43,7 @@ race_ids_by_round_number = {
     22: 62 # | 62 | Abu Dhabi Grand Prix      |
 }
 
-# fastf1.Cache.enable_cache('cache')
+fastf1.Cache.enable_cache('cache')
 schedule = fastf1.get_event_schedule(year, include_testing=False)
 
 now = datetime.now()
