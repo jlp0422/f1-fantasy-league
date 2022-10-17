@@ -1,5 +1,6 @@
 import requests
 import fastf1
+import os
 from datetime import datetime
 
 year = 2022
@@ -40,6 +41,9 @@ race_ids_by_round_number = {
     22: 62 # | 62 | Abu Dhabi Grand Prix      |
 }
 
+reval_token = os.environ["REVALIDATE_TOKEN"]
+
+print("**** reval token ******", reval_token)
 
 fastf1.Cache.enable_cache('cache')
 schedule = fastf1.get_event_schedule(year, include_testing=False)
