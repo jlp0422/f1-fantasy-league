@@ -27,7 +27,8 @@ points_map = {
     "20.0": 1,
 }
 
-api_key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFndnRnbWR2YnZqbm1sb29hZ2xsIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NTc4NTAzNzMsImV4cCI6MTk3MzQyNjM3M30.hpPZolMMWM5XVQnogL4dMwTbf50gp_IQ-lm3Kvt3pIk" # get from github secrets
+revalidate_token = os.environ["REVALIDATE_TOKEN"]
+api_key = os.environ["SUPABASE_SERVICE_ROLE_KEY"]
 api_base_url = "https://agvtgmdvbvjnmlooagll.supabase.co/rest/v1"
 headers = {
     "apikey": api_key,
@@ -35,17 +36,14 @@ headers = {
 }
 
 race_ids_by_round_number = {
+		18: 58,
     19: 59, # | 59 | United States Grand Prix  |
     20: 60, # | 60 | Mexico City Grand Prix    |
     21: 61, # | 61 | São Paulo Grand Prix      |
     22: 62 # | 62 | Abu Dhabi Grand Prix      |
 }
 
-reval_token = os.environ["REVALIDATE_TOKEN"]
-
-print("**** reval token ******", reval_token)
-
-fastf1.Cache.enable_cache('cache')
+# fastf1.Cache.enable_cache('cache')
 schedule = fastf1.get_event_schedule(year, include_testing=False)
 
 now = datetime.now()
