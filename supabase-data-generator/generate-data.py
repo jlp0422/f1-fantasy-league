@@ -38,7 +38,6 @@ get_headers = {
 post_headers = get_headers.copy()
 post_headers["Content-Type"] = "application/json"
 
-
 race_ids_by_round_number = {
 		18: 58,
     19: 59, # | 59 | United States Grand Prix  |
@@ -47,6 +46,31 @@ race_ids_by_round_number = {
     22: 62 # | 62 | Abu Dhabi Grand Prix      |
 }
 
+def get_most_recent_event(schedule):
+	now = datetime.now()
+	old_events = schedule[schedule['Session5Date'] < now]
+	return old_events.iloc[-1]
+
+
+def get_driver_id_by_driver_number():
+	driver_information = requests.request("GET", f'{api_base_url}/driver?select=id,number', headers=get_headers)
+	driver_data = driver_information.json()
+	driver_dict = {  driver["number"]: driver["id"] for driver in driver_data }
+	return driver_dict
+
+
+def get_constructor_id_by_driver_id():
+	constructor_driver_information = requests.request("GET", f'{api_base_url}/constructor_driver?select=*', headers=get_headers)
+	driver_constructor_data = constructor_driver_information.json()
+
+	constructor_id_by_driver_id = {}
+	for drivers in driver_constructor_data:
+			constructor_id_by_driver_id[drivers["driver_one_id"]] = drivers["constructor_id"]
+			constructor_id_by_driver_id[drivers["driver_two_id"]] = drivers["constructor_id"]
+
+	return constructor_id_by_driver_id
+
+
 def revalidate_pages():
 		revalidate_response = requests.request("GET", f'https://fate-of-the-eight.vercel.app/api/revalidate?secret={revalidate_token}')
 		if revalidate_response.ok:
@@ -54,16 +78,34 @@ def revalidate_pages():
 		else:
 			print(f'Revalidation failed. Reason={revalidate_response.reason}, Error={revalidate_response.raise_for_status()}')
 
+
+def create_row_data(rowInfo, most_recent_race_id):
+	data = {
+			"finish_position": int(rowInfo["Position"]),
+			"finish_position_points": int(rowInfo["Points"]),
+			"grid_difference": 0,
+			"grid_difference_points": 0,
+			"is_dnf": rowInfo["is_dnf"],
+			"race_id": most_recent_race_id,
+			"constructor_id": None if rowInfo["constructor_id"] == 'null' else rowInfo["constructor_id"],
+			"driver_id": rowInfo["driver_id"]
+	}
+	return data
+
+
+def get_existing_race_data(race_id):
+	race_data_raw = requests.request('GET', f'{api_base_url}/driver_race_result?race_id=eq.{race_id}&select=id', headers=get_headers)
+	race_data = race_data_raw.json()
+	return race_data
+
+
 def do_the_update():
 	fastf1.Cache.enable_cache('cache')
 	schedule = fastf1.get_event_schedule(year, include_testing=False)
 
-	now = datetime.now()
-	old_events = schedule[schedule['Session5Date'] < now]
-	most_recent_event = old_events.iloc[-1]
-	most_recent_round_number = race_ids_by_round_number[most_recent_event["RoundNumber"]]
-
-	existing_data = requests.request('GET', f'{api_base_url}/driver_race_result?race_id=eq.{most_recent_round_number}&select=id', headers=get_headers).json()
+	most_recent_event = get_most_recent_event(schedule)
+	most_recent_race_id = race_ids_by_round_number[most_recent_event["RoundNumber"]]
+	existing_data = get_existing_race_data(most_recent_race_id)
 
 	if len(existing_data) > 0:
 		print("exiting data exists, no update needed...")
@@ -72,18 +114,8 @@ def do_the_update():
 	session = fastf1.get_session(year, most_recent_event["Location"], 'R')
 	session.load(telemetry=False, laps=False, weather=False)
 
-	driver_information = requests.request("GET", f'{api_base_url}/driver?select=id,number', headers=get_headers)
-	driver_data = driver_information.json()
-	driver_id_by_driver_number = {  driver["number"]: driver["id"] for driver in driver_data }
-
-	constructor_driver_information = requests.request("GET", f'{api_base_url}/constructor_driver?select=*', headers=get_headers)
-	driver_constructor_data = constructor_driver_information.json()
-
-	constructor_id_by_driver_id = {}
-
-	for drivers in driver_constructor_data:
-			constructor_id_by_driver_id[drivers["driver_one_id"]] = drivers["constructor_id"]
-			constructor_id_by_driver_id[drivers["driver_two_id"]] = drivers["constructor_id"]
+	driver_id_by_driver_number = get_driver_id_by_driver_number()
+	constructor_id_by_driver_id = get_constructor_id_by_driver_id()
 
 	# session includes GridPosition, use to calculate grid diff for points
 	df = session.results[['DriverNumber', 'Abbreviation', 'Position', 'Status']]
@@ -95,9 +127,6 @@ def do_the_update():
 					return False
 			return True
 
-	# check is_dnf field
-	# if True, set Points to -1
-	# if False, do nothing
 	def dnf_points(row):
 			if row["is_dnf"] is True:
 					return -1
@@ -119,16 +148,7 @@ def do_the_update():
 	update_row_data = []
 
 	for _, row in df.iterrows():
-			row_dict = {
-					"finish_position": int(row["Position"]),
-					"finish_position_points": int(row["Points"]),
-					"grid_difference": 0,
-					"grid_difference_points": 0,
-					"is_dnf": row["is_dnf"],
-					"race_id": race_ids_by_round_number[most_recent_event["RoundNumber"]],
-					"constructor_id": None if row["constructor_id"] == 'null' else row["constructor_id"],
-					"driver_id": row["driver_id"]
-			}
+			row_dict = create_row_data(row, most_recent_race_id)
 			update_row_data.append(row_dict)
 
 	print(update_row_data)
