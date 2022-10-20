@@ -127,6 +127,7 @@ def get_existing_race_data(race_id):
 
 
 def do_the_update():
+    os.mkdir("cache")
     fastf1.Cache.enable_cache("cache")
     schedule = fastf1.get_event_schedule(year, include_testing=False)
 
