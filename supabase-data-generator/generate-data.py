@@ -108,7 +108,8 @@ def do_the_update():
 	existing_data = get_existing_race_data(most_recent_race_id)
 
 	if len(existing_data) > 0:
-		print("exiting data exists, no update needed...")
+		print(f'Found existing data for RaceId={most_recent_race_id}, no update needed...')
+		print('Revalidating anyway...')
 		return revalidate_pages()
 
 	session = fastf1.get_session(year, most_recent_event["Location"], 'R')
