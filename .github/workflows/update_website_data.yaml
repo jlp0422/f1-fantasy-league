@@ -1,6 +1,5 @@
 name: "Update Website Data"
 on:
-  push:
   schedule:
   - cron: "0 10 * * MON"
 
