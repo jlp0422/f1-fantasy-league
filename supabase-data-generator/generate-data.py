@@ -3,6 +3,8 @@ import fastf1
 import os
 from datetime import datetime
 import json
+import sendgrid
+from sendgrid.helpers.mail import *
 
 year = 2022
 points_map = {
@@ -30,6 +32,7 @@ points_map = {
 
 revalidate_token = os.environ["REVALIDATE_TOKEN"]
 api_key = os.environ["SUPABASE_SERVICE_ROLE_KEY"]
+sendgrid_api_key = os.environ["SENDGRID_API_KEY"]
 api_base_url = "https://agvtgmdvbvjnmlooagll.supabase.co/rest/v1"
 get_headers = {"apikey": api_key, "Authorization": f"Bearer {api_key}"}
 post_headers = get_headers.copy()
@@ -126,6 +129,22 @@ def get_existing_race_data(race_id):
     return race_data
 
 
+def format_for_email(driver_id_by_driver_number, update_row_data, df):
+    driver_id_by_driver_number_keys = list(driver_id_by_driver_number.keys())
+    driver_id_by_driver_number_values = list(driver_id_by_driver_number.values())
+    string = ""
+    for d in update_row_data:
+        position = driver_id_by_driver_number_values.index(d["driver_id"])
+        driver_number = str(driver_id_by_driver_number_keys[position])
+        driver_abbrev = df.loc[df["DriverNumber"] == driver_number]["Abbreviation"][0]
+        string = string + f'{str(d["finish_position"])}) Number: {driver_abbrev}\n'
+    from_email = Email("f1fantasy2022@em5638.m.jeremyphilipson.com")
+    to_email = To("jeremyphilipson@gmail.com")
+    subject = "Race standings update"
+    content = Content("text/plain", string)
+    return Mail(from_email, to_email, subject, content)
+
+
 def do_the_update():
     os.mkdir("cache")
     fastf1.Cache.enable_cache("cache")
@@ -188,6 +207,12 @@ def do_the_update():
 
     if insert_rows.status_code == 201:
         revalidate_pages()
+        sg = sendgrid.SendGridAPIClient(api_key=sendgrid_api_key)
+        mail = format_for_email(driver_id_by_driver_number, update_row_data, df)
+        response = sg.client.mail.send.post(request_body=mail.get())
+        print(response.status_code)
+        print(response.body)
+        print(response.headers)
     else:
         print(
             f"Row insertion not successful. Reason={insert_rows.reason}, Error={insert_rows.raise_for_status()}"
