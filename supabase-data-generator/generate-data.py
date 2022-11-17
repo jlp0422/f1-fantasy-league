@@ -81,6 +81,7 @@ def get_constructor_id_by_driver_id():
 
 
 def revalidate_pages():
+    # maybe add season query params
     revalidate_response = requests.request(
         "GET",
         f"https://fate-of-the-eight.vercel.app/api/revalidate?secret={revalidate_token}",
