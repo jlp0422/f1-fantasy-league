@@ -8,11 +8,11 @@ import headerLogo from '../public/fate-eight.png'
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false)
-  const { pathname } = useRouter()
+  const { pathname, query } = useRouter()
   const routes = [
-    { href: '/', title: 'Standings' },
-    { href: '/constructors', title: 'Constructors' },
-    { href: '/race-points', title: 'Points by Race' },
+    { href: `/${query.season}/standings`, title: 'Standings' },
+    { href: `/${query.season}/constructors`, title: 'Constructors' },
+    { href: `/${query.season}/race-points`, title: 'Points by Race' },
   ]
 
   return (
@@ -49,10 +49,10 @@ const Header = () => {
           id="mobile-menu"
         >
           <ul className="flex flex-col mt-6 md:flex-row md:space-x-8 md:mt-0 md:text-sm md:font-medium">
-            {routes.map(({ href, title }) => {
+            {query.season ? routes.map(({ href, title }) => {
               const isActiveRoute = pathname === href
               return (
-                <li key={href}>
+                <li key={`${href}-${title}`}>
                   <Link href={href}>
                     <a
                       className={`font-secondary uppercase block px-3 py-2 border-b md:border-0 md:p-0 text-lg lg:text-xl md:hover:text-white hover:bg-gray-700 hover:text-gray-200 md:hover:bg-transparent border-gray-700 ${
@@ -65,7 +65,7 @@ const Header = () => {
                   </Link>
                 </li>
               )
-            })}
+            }) : null}
           </ul>
         </div>
       </div>

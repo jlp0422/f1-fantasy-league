@@ -291,7 +291,6 @@ export async function getStaticPaths() {
   const { data: constructors } = await supabase
     .from('constructor')
     .select('id, name, season(year)')
-    .eq('season.year', 2022)
 
   return {
     paths: constructors.map((constructor) => ({
@@ -299,6 +298,7 @@ export async function getStaticPaths() {
         name: encodeURIComponent(
           `${constructor.id}-${normalizeConstructorName(constructor.name)}`
         ),
+        season: constructor.season.year.toString()
       },
     })),
     fallback: false,
@@ -312,7 +312,7 @@ export async function getStaticProps({ params }) {
   const { data: constructor } = await supabase
     .from('constructor')
     .select('id, name, team_principal, season(id, year)')
-    .eq('season.year', 2022)
+    .eq('season.year', params.season)
     .eq('id', constructorId)
     .limit(1)
     .single()
@@ -322,7 +322,7 @@ export async function getStaticProps({ params }) {
   const { data: races } = await supabase
     .from('race')
     .select('id, location, country, start_date, season(year)')
-    .eq('season.year', 2022)
+    .eq('season.year', params.season)
     .order('start_date', { ascending: true })
 
   const racesById = indexBy('id')(races)

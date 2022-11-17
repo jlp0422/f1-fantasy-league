@@ -3,7 +3,7 @@ import Layout from 'components/Layout'
 import { normalizeConstructorName } from 'helpers/cars'
 import { supabase } from 'lib/database'
 
-const HomePage = ({ constructors }) => {
+const ConstructorsPage = ({ constructors }) => {
   return (
     <Layout documentTitle="Constructors">
       <div className="grid grid-cols-1 gap-y-8 gap-x-4 justify-items-center sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -34,12 +34,24 @@ const HomePage = ({ constructors }) => {
   )
 }
 
+export async function getStaticPaths() {
+  const { data } = await supabase.from('season').select('*')
+
+  return {
+    paths: data.map((season) => ({
+      params: {
+        season: season.year.toString(),
+      },
+    })),
+    fallback: false,
+  }
+}
+
 export async function getStaticProps() {
   const { data: constructors } = await supabase
     .from('constructor')
     .select('id, name')
     .order('name')
-
 
   return {
     props: {
@@ -48,4 +60,4 @@ export async function getStaticProps() {
   }
 }
 
-export default HomePage
+export default ConstructorsPage

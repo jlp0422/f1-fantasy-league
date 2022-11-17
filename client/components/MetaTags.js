@@ -4,7 +4,7 @@ import { useRouter } from 'next/router'
 const MetaTags = ({
   documentTitle,
   metaImageUrl = 'https://res.cloudinary.com/jlp0422/image/upload/b_rgb:000000,c_scale,w_2500/v1653181121/f1-fantasy-2022/logo.png',
-  description = 'Standings for Fate of the Eight F1 Fantasy 2022',
+  description = 'Standings for Fate of the Eight F1 Fantasy',
 }) => {
   const { asPath } = useRouter()
   const contentUrl = `https://fate-of-the-eight.vercel.app${asPath}`

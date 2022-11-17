@@ -110,7 +110,20 @@ const RacePoints = ({
   )
 }
 
-export async function getStaticProps() {
+export async function getStaticPaths() {
+  const { data } = await supabase.from('season').select('*')
+
+  return {
+    paths: data.map((season) => ({
+      params: {
+        season: season.year.toString(),
+      },
+    })),
+    fallback: false,
+  }
+}
+
+export async function getStaticProps({ params }) {
   const { data: totalPointsByConstructorByRace } = await supabase
     .rpc('total_points_by_constructor_by_race')
     .select('*')
@@ -142,7 +155,7 @@ export async function getStaticProps() {
   const { data: races } = await supabase
     .from('race')
     .select('id, location, country, start_date, season(year)')
-    .eq('season.year', 2022)
+    .eq('season.year', params.season)
     .order('start_date', { ascending: true })
 
   const { data: constructors } = await supabase
