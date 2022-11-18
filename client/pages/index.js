@@ -3,17 +3,18 @@ import { sortArray } from 'helpers/utils'
 import { supabase } from 'lib/database'
 import Link from 'next/link'
 
+const seasonColors = {
+  2022: {
+    bg: 'bg-cyan-600',
+    hover: 'hover:bg-cyan-800',
+  },
+  2023: {
+    bg: 'bg-orange-600',
+    hover: 'hover:bg-orange-800',
+  },
+}
+
 const HomePage = ({ seasons }) => {
-  const seasonColors = {
-    2022: {
-      bg: 'bg-cyan-600',
-      hover: 'hover:bg-cyan-800',
-    },
-    2023: {
-      bg: 'bg-orange-600',
-      hover: 'hover:bg-orange-800',
-    },
-  }
   return (
     <Layout documentTitle="Home" fullWidth>
       <div className="flex flex-col">
