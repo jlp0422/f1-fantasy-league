@@ -17,7 +17,7 @@ const seasonColors = {
 const HomePage = ({ seasons }) => {
   return (
     <Layout documentTitle="Home" fullWidth>
-      <div className="flex flex-col">
+      <div className="flex flex-col h-full">
         {seasons.map((season) => {
           const color = seasonColors[season.year]
           return (

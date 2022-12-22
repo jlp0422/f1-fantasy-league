@@ -6,6 +6,14 @@ import { useRouter } from 'next/router'
 import { useState } from 'react'
 import headerLogo from '../public/fate-eight.png'
 
+const checkIfRoutesAreEqual = (pathname, href) => {
+  const splitPath = pathname.split('/')
+  const splitHref = href.split('/')
+  const pathEnd = splitPath[splitPath.length - 1]
+  const hrefEnd = splitHref[splitHref.length - 1]
+  return pathEnd === hrefEnd
+}
+
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false)
   const { pathname, query } = useRouter()
@@ -53,7 +61,7 @@ const Header = () => {
           {query.season ? (
             <ul className="flex flex-col mt-6 md:flex-row md:space-x-8 md:mt-0 md:text-sm md:font-medium">
               {routes.map(({ href, title }) => {
-                const isActiveRoute = pathname === href
+                const isActiveRoute = checkIfRoutesAreEqual(pathname, href)
                 return (
                   <li key={`${href}-${title}`}>
                     <Link href={href}>
