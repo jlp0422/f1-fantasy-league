@@ -1,5 +1,5 @@
 import Image from 'next/image'
-import { normalizeConstructorName } from 'helpers/cars'
+import { getCloudinaryNumberUrl } from 'helpers/cars'
 
 const SIZES = {
   xsmall: 'w-12 h-12',
@@ -21,13 +21,16 @@ const getDimensions = (size) => {
   }
 }
 
-const CarNumber = ({ constructor, size }) => {
-  const constructorCarNumberUrl = normalizeConstructorName(constructor)
+const CarNumber = ({ constructorName, size }) => {
   const widthHeight = getDimensions(size)
+  const carImageUrl = getCloudinaryNumberUrl(constructorName, {
+    format: 'webp',
+    resize: `/c_scale,w_${widthHeight * 2.5}`,
+  })
   return (
     <Image
-      src={`/numbers/${constructorCarNumberUrl}.png`}
-      alt={`${constructor} Car Number`}
+      src={carImageUrl}
+      alt={`${constructorName} Car Number`}
       width={widthHeight}
       height={widthHeight}
       className={`${SIZES[size]}`}

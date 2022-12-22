@@ -1,40 +1,54 @@
-import ConstructorStandingRow from 'components/ConstructorStandingRow'
 import Layout from 'components/Layout'
+import { sortArray } from 'helpers/utils'
 import { supabase } from 'lib/database'
+import Link from 'next/link'
 
-const Standings = ({ standings }) => {
+const seasonColors = {
+  2022: {
+    bg: 'bg-cyan-600',
+    hover: 'hover:bg-cyan-800',
+  },
+  2023: {
+    bg: 'bg-orange-600',
+    hover: 'hover:bg-orange-800',
+  },
+}
+
+const HomePage = ({ seasons }) => {
   return (
-    <Layout
-      documentTitle="Standings"
-      description="Overall season standings for all Constructors"
-      fullWidth
-    >
-      <ol className="w-auto mb-4 text-lg font-medium text-white">
-        {standings.map(({ id, name, team_principal, total_points }) => (
-          <ConstructorStandingRow
-            key={id}
-            principal={team_principal}
-            points={total_points}
-            constructor={name}
-            id={id}
-          />
-        ))}
-      </ol>
+    <Layout documentTitle="Home" fullWidth>
+      <div className="flex flex-col h-full">
+        {seasons.map((season) => {
+          const color = seasonColors[season.year]
+          return (
+            <Link
+              key={season.id}
+              href={{
+                pathname: '/[season]/standings',
+                query: { season: season.year },
+              }}
+            >
+              <a className={`py-14 ${color.bg} ${color.hover}`}>
+                <h2 className="px-4 font-bold text-center text-gray-100 uppercase text-7xl font-primary">
+                  {season.year}
+                </h2>
+              </a>
+            </Link>
+          )
+        })}
+      </div>
     </Layout>
   )
 }
 
 export async function getStaticProps() {
-  const { data: standings } = await supabase
-    .rpc('sum_constructor_points')
-    .select('id, name, team_principal, total_points')
-    .order('total_points', { ascending: false })
+  const { data: seasons } = await supabase.from('season').select('*')
 
   return {
     props: {
-      standings,
+      seasons: sortArray(seasons, (a, b) => b.year - a.year),
     },
   }
 }
 
-export default Standings
+export default HomePage

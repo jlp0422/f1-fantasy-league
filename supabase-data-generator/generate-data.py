@@ -6,7 +6,6 @@ import json
 import sendgrid
 from sendgrid.helpers.mail import *
 
-year = 2022
 points_map = {
     "1.0": 20,
     "2.0": 19,
@@ -33,6 +32,7 @@ points_map = {
 revalidate_token = os.environ["REVALIDATE_TOKEN"]
 api_key = os.environ["SUPABASE_SERVICE_ROLE_KEY"]
 sendgrid_api_key = os.environ["SENDGRID_API_KEY"]
+season = os.environ["SEASON"]
 api_base_url = "https://agvtgmdvbvjnmlooagll.supabase.co/rest/v1"
 get_headers = {"apikey": api_key, "Authorization": f"Bearer {api_key}"}
 post_headers = get_headers.copy()
@@ -83,7 +83,7 @@ def get_constructor_id_by_driver_id():
 def revalidate_pages():
     revalidate_response = requests.request(
         "GET",
-        f"https://fate-of-the-eight.vercel.app/api/revalidate?secret={revalidate_token}",
+        f"https://fate-of-the-eight.vercel.app/api/revalidate?secret={revalidate_token}&season={season}",
     )
     if revalidate_response.ok:
         print("Revalidation successful!")
@@ -148,7 +148,7 @@ def format_for_email(driver_id_by_driver_number, update_row_data, df):
 def do_the_update():
     os.mkdir("cache")
     fastf1.Cache.enable_cache("cache")
-    schedule = fastf1.get_event_schedule(year, include_testing=False)
+    schedule = fastf1.get_event_schedule(season, include_testing=False)
 
     most_recent_event = get_most_recent_event(schedule)
     most_recent_race_id = race_ids_by_round_number[most_recent_event["RoundNumber"]]
@@ -161,7 +161,7 @@ def do_the_update():
         print("Revalidating anyway...")
         return revalidate_pages()
 
-    session = fastf1.get_session(year, most_recent_event["Location"], "R")
+    session = fastf1.get_session(season, most_recent_event["Location"], "R")
     session.load(telemetry=False, laps=False, weather=False)
 
     driver_id_by_driver_number = get_driver_id_by_driver_number()

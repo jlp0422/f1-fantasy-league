@@ -1,17 +1,4 @@
-const constructorRoutes = [
-  '1-turbo-team-racing',
-  '5-look-at-this-hornergraph',
-  '3-once-campeonatos',
-  '4-guenthers-angels',
-  '2-winning-formula',
-  '6-zak-brown-band',
-  '7-teamnosleep',
-  '8-team-auzhous',
-]
-
-const routes = constructorRoutes.map(
-  (constructorUrl) => `/constructors/${constructorUrl}`
-)
+import { normalizeConstructorName } from 'helpers/cars'
 
 export default async function handler(req, res) {
   // Check for secret to confirm this is a valid request
@@ -20,12 +7,26 @@ export default async function handler(req, res) {
   }
 
   try {
-    await res.unstable_revalidate('/')
-    await res.unstable_revalidate('/race-points')
-    await Promise.all(routes.map((route) => res.unstable_revalidate(route)))
+    const season = req.query.season
+    const resp = await fetch(
+      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/constructor?season.year=eq.${season}&select=id,name,season(year)`,
+      {
+        headers: {
+          apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
+        },
+      }
+    )
+    const data = await resp.json()
+    const constructorRoutes = data
+      .map(({ id, name }) => `${id}-${normalizeConstructorName(name)}`)
+      .map((url) => `/${season}/constructors/${url}`)
+    await res.revalidate(`/${season}/standings`)
+    await res.revalidate(`/${season}/race-points`)
+    await Promise.all(constructorRoutes.map((route) => res.revalidate(route)))
     return res.json({ revalidated: true })
   } catch (err) {
-    console.log('** error', err)
+    console.error('** error', err)
     // If there was an error, Next.js will continue
     // to show the last successfully generated page
     return res.status(500).send('Error revalidating')

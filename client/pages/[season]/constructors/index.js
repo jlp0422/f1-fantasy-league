@@ -1,9 +1,9 @@
 import ConstructorLink from 'components/ConstructorLink'
 import Layout from 'components/Layout'
-import { normalizeConstructorName } from 'helpers/cars'
+import { normalizeConstructorName, getCloudinaryCarUrl } from 'helpers/cars'
 import { supabase } from 'lib/database'
 
-const HomePage = ({ constructors }) => {
+const ConstructorsPage = ({ constructors }) => {
   return (
     <Layout documentTitle="Constructors">
       <div className="grid grid-cols-1 gap-y-8 gap-x-4 justify-items-center sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -19,7 +19,9 @@ const HomePage = ({ constructors }) => {
                 <div
                   className="bg-contain rounded-lg h-72 w-72 shadow-inset-black-6"
                   style={{
-                    backgroundImage: `url('/cars/${normalized}.webp')`,
+                    backgroundImage: `url(${getCloudinaryCarUrl(normalized, {
+                      format: 'webp',
+                    })})`,
                   }}
                 />
                 <h2 className="absolute px-4 text-4xl font-bold text-center text-gray-100 uppercase font-primary">
@@ -34,12 +36,25 @@ const HomePage = ({ constructors }) => {
   )
 }
 
-export async function getStaticProps() {
+export async function getStaticPaths() {
+  const { data } = await supabase.from('season').select('*')
+
+  return {
+    paths: data.map((season) => ({
+      params: {
+        season: season.year.toString(),
+      },
+    })),
+    fallback: false,
+  }
+}
+
+export async function getStaticProps({ params }) {
   const { data: constructors } = await supabase
     .from('constructor')
-    .select('id, name')
+    .select('id, name, season!inner(year)')
+    .eq('season.year', params.season)
     .order('name')
-
 
   return {
     props: {
@@ -48,4 +63,4 @@ export async function getStaticProps() {
   }
 }
 
-export default HomePage
+export default ConstructorsPage

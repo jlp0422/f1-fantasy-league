@@ -19,5 +19,20 @@ export const rgbDataURL = (r, g, b) =>
     triplet(0, r, g) + triplet(b, 255, 255)
   }/yH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==`
 
-export const getCloudinaryCarUrl = (constructorName) =>
-  `https://res.cloudinary.com/jlp0422/image/upload/v1652746266/f1-fantasy-2022/cars/${constructorName}.jpg`
+export const getCloudinaryCarUrl = (
+  constructorName,
+  { format = 'jpg', resize = '' } = {}
+) => {
+  const baseUrl = 'https://res.cloudinary.com/jlp0422/image/upload'
+  const path = '/v1652746266/f1-fantasy-2022/cars'
+  return `${baseUrl}${resize}${path}/${constructorName}.${format}`
+}
+
+export const getCloudinaryNumberUrl = (
+  constructorName,
+  { format = 'jpg', resize = '' } = {}
+) => {
+  const baseUrl = 'https://res.cloudinary.com/jlp0422/image/upload'
+  const path = '/v1652746271/f1-fantasy-2022/numbers'
+  return `${baseUrl}${resize}${path}/${constructorName}.${format}`
+}

@@ -42,26 +42,29 @@ const Constructor = ({
     },
   ]
 
-  const constructorCarImageUrl = normalizeConstructorName(constructor.name)
+  const normalized = normalizeConstructorName(constructor.name)
   const {
     primary: primaryColor,
     secondary: secondaryColor,
     tertiary: tertiaryColor,
-  } = COLORS_BY_CONSTRUCTOR[constructorCarImageUrl]
-  const imagePath = `/cars/${constructorCarImageUrl}.webp`
+  } = COLORS_BY_CONSTRUCTOR[normalized]
 
   return (
     <Layout
       documentTitle={constructor.name}
       description={`Constructor information for ${constructor.name}`}
-      metaImageUrl={getCloudinaryCarUrl(constructorCarImageUrl)}
+      metaImageUrl={getCloudinaryCarUrl(normalized)}
     >
       <div
         className="bg-cover bg-center w-screen absolute h-80 sm:h-[336px] left-0 top-[64px] sm:top-[72px] shadow-inset-black-7"
-        style={{ backgroundImage: `url(${imagePath})` }}
+        style={{
+          backgroundImage: `url(${getCloudinaryCarUrl(normalized, {
+            format: 'webp',
+          })})`,
+        }}
       />
       <div className="relative flex flex-col items-center sm:flex-row">
-        <CarImage constructor={constructor.name} size="large" />
+        <CarImage constructorName={normalized} size="large" />
         <div className="mx-4 my-2 text-center sm:mx-8 sm:text-left">
           {data.map(({ value, label }, index) => {
             const fontSizeClass =
@@ -291,7 +294,6 @@ export async function getStaticPaths() {
   const { data: constructors } = await supabase
     .from('constructor')
     .select('id, name, season(year)')
-    .eq('season.year', 2022)
 
   return {
     paths: constructors.map((constructor) => ({
@@ -299,6 +301,7 @@ export async function getStaticPaths() {
         name: encodeURIComponent(
           `${constructor.id}-${normalizeConstructorName(constructor.name)}`
         ),
+        season: constructor.season.year.toString(),
       },
     })),
     fallback: false,
@@ -311,8 +314,8 @@ export async function getStaticProps({ params }) {
 
   const { data: constructor } = await supabase
     .from('constructor')
-    .select('id, name, team_principal, season(id, year)')
-    .eq('season.year', 2022)
+    .select('id, name, team_principal, season!inner(id, year)')
+    .eq('season.year', params.season)
     .eq('id', constructorId)
     .limit(1)
     .single()
@@ -321,8 +324,8 @@ export async function getStaticProps({ params }) {
 
   const { data: races } = await supabase
     .from('race')
-    .select('id, location, country, start_date, season(year)')
-    .eq('season.year', 2022)
+    .select('id, location, country, start_date, season!inner(year)')
+    .eq('season.year', params.season)
     .order('start_date', { ascending: true })
 
   const racesById = indexBy('id')(races)
