@@ -1,4 +1,4 @@
-import { normalizeConstructorName, rgbDataURL } from 'helpers/cars'
+import { getCloudinaryCarUrl, rgbDataURL } from 'helpers/cars'
 import { COLORS_BY_CONSTRUCTOR } from 'constants/index'
 import Image from 'next/image'
 import hexRgb from 'hex-rgb'
@@ -23,17 +23,20 @@ const getDimensions = (size) => {
   }
 }
 
-const CarImage = ({ constructor, size }) => {
-  const constructorCarImageUrl = normalizeConstructorName(constructor)
+const CarImage = ({ constructorName, size }) => {
   const widthHeight = getDimensions(size)
-  const { primary } = COLORS_BY_CONSTRUCTOR[constructorCarImageUrl]
+  const carImageUrl = getCloudinaryCarUrl(constructorName, {
+    format: 'webp',
+    resize: `/c_scale,w_${widthHeight * 2.5}`,
+  })
+  const { primary } = COLORS_BY_CONSTRUCTOR[constructorName]
   const { red, blue, green } = hexRgb(primary)
 
   return (
     <Image
       priority
-      src={`/cars/${constructorCarImageUrl}.webp`}
-      alt={`${constructor} Car Livery`}
+      src={carImageUrl}
+      alt={`${constructorName} Car Livery`}
       width={widthHeight}
       height={widthHeight}
       className={`rounded-lg shadow-lg ${SIZES[size]}`}

@@ -66,7 +66,7 @@ const RacePointsTable = ({
                       className="relative w-10 h-10 p-2 rounded-full sm:w-14 sm:h-14 sm:p-3"
                       style={{ backgroundColor: numberBackground }}
                     >
-                      <CarNumber constructor={constructor.name} size="small" />
+                      <CarNumber constructorName={normalized} size="small" />
                     </a>
                   </ConstructorLink>
                   <ConstructorLink

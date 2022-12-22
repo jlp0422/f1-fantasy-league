@@ -17,7 +17,7 @@ const ConstructorStandingRow = ({ constructor, principal, points, id }) => {
             className="relative min-w-[48px] min-h-[48px] w-12 h-12 p-2 rounded-full sm:w-20 sm:h-20 sm:p-4"
             style={{ backgroundColor: numberBackground }}
           >
-            <CarNumber constructor={constructor} size="small" />
+            <CarNumber constructorName={normalized} size="small" />
           </div>
           <div className="flex flex-col ml-1 truncate sm:ml-4">
             <ConstructorLink normalizedConstructor={normalized} constructorId={id}>

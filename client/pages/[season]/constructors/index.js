@@ -1,6 +1,6 @@
 import ConstructorLink from 'components/ConstructorLink'
 import Layout from 'components/Layout'
-import { normalizeConstructorName } from 'helpers/cars'
+import { normalizeConstructorName, getCloudinaryCarUrl } from 'helpers/cars'
 import { supabase } from 'lib/database'
 
 const ConstructorsPage = ({ constructors }) => {
@@ -19,7 +19,9 @@ const ConstructorsPage = ({ constructors }) => {
                 <div
                   className="bg-contain rounded-lg h-72 w-72 shadow-inset-black-6"
                   style={{
-                    backgroundImage: `url('/cars/${normalized}.webp')`,
+                    backgroundImage: `url(${getCloudinaryCarUrl(normalized, {
+                      format: 'webp',
+                    })})`,
                   }}
                 />
                 <h2 className="absolute px-4 text-4xl font-bold text-center text-gray-100 uppercase font-primary">
@@ -56,7 +58,7 @@ export async function getStaticProps({ params }) {
 
   return {
     props: {
-      constructors
+      constructors,
     },
   }
 }
