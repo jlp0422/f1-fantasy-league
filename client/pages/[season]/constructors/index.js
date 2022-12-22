@@ -47,15 +47,16 @@ export async function getStaticPaths() {
   }
 }
 
-export async function getStaticProps() {
+export async function getStaticProps({ params }) {
   const { data: constructors } = await supabase
     .from('constructor')
-    .select('id, name')
+    .select('id, name, season!inner(year)')
+    .eq('season.year', params.season)
     .order('name')
 
   return {
     props: {
-      constructors,
+      constructors
     },
   }
 }

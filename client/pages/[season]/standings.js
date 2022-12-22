@@ -39,7 +39,7 @@ export async function getStaticPaths() {
 
 export async function getStaticProps({ params }) {
   const { data: standings } = await supabase
-    .rpc('sum_constructor_points_by_season', { seasonYear: params.season })
+    .rpc('sum_constructor_points_by_season', { season: params.season })
     .select('id, name, team_principal, total_points')
     .order('total_points', { ascending: false })
 

@@ -311,7 +311,7 @@ export async function getStaticProps({ params }) {
 
   const { data: constructor } = await supabase
     .from('constructor')
-    .select('id, name, team_principal, season(id, year)')
+    .select('id, name, team_principal, season!inner(id, year)')
     .eq('season.year', params.season)
     .eq('id', constructorId)
     .limit(1)
@@ -321,7 +321,7 @@ export async function getStaticProps({ params }) {
 
   const { data: races } = await supabase
     .from('race')
-    .select('id, location, country, start_date, season(year)')
+    .select('id, location, country, start_date, season!inner(year)')
     .eq('season.year', params.season)
     .order('start_date', { ascending: true })
 
