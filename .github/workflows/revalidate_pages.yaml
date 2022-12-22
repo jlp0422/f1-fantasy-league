@@ -1,6 +1,7 @@
 name: "Revalidate pages"
 on:
   workflow_dispatch:
+  push:
   schedule:
   - cron: "0 10 * * THU"
 
