@@ -21,18 +21,20 @@ const Header = () => {
       style={{ backgroundColor: '#171420' }}
     >
       <div className="flex flex-wrap items-center justify-between mx-auto max-w-7xl">
-        <button
-          data-collapse-toggle="mobile-menu"
-          type="button"
-          className="absolute inline-flex items-center p-2 text-sm text-gray-400 rounded-lg md:hidden focus:outline-none focus:ring-2 hover:bg-gray-700 focus:ring-gray-600 xs:top-4 sm:top-4"
-          style={isOpen ? { top: 11 } : {}}
-          aria-controls="mobile-menu"
-          aria-expanded="false"
-          onClick={() => setIsOpen((open) => !open)}
-        >
-          <span className="sr-only">Open main menu</span>
-          {isOpen ? <Dismiss /> : <Hamburger />}
-        </button>
+        {query.season ? (
+          <button
+            data-collapse-toggle="mobile-menu"
+            type="button"
+            className="absolute inline-flex items-center p-2 text-sm text-gray-400 rounded-lg md:hidden focus:outline-none focus:ring-2 hover:bg-gray-700 focus:ring-gray-600 xs:top-4 sm:top-4"
+            style={isOpen ? { top: 16 } : {}}
+            aria-controls="mobile-menu"
+            aria-expanded="false"
+            onClick={() => setIsOpen((open) => !open)}
+          >
+            <span className="sr-only">Open main menu</span>
+            {isOpen ? <Dismiss /> : <Hamburger />}
+          </button>
+        ) : null}
         <div className="flex items-center justify-center mx-auto md:w-auto md:flex-1 md:justify-start">
           <Link href="/">
             <a className="leading-[0rem] max-w-[200px] xs:max-w-[300px] sm:max-w-[450px]">
@@ -48,25 +50,27 @@ const Header = () => {
           className={`${isOpen ? 'block' : 'hidden'} w-full md:block md:w-auto`}
           id="mobile-menu"
         >
-          <ul className="flex flex-col mt-6 md:flex-row md:space-x-8 md:mt-0 md:text-sm md:font-medium">
-            {query.season ? routes.map(({ href, title }) => {
-              const isActiveRoute = pathname === href
-              return (
-                <li key={`${href}-${title}`}>
-                  <Link href={href}>
-                    <a
-                      className={`font-secondary uppercase block px-3 py-2 border-b md:border-0 md:p-0 text-lg lg:text-xl md:hover:text-white hover:bg-gray-700 hover:text-gray-200 md:hover:bg-transparent border-gray-700 ${
-                        isActiveRoute ? 'text-white' : 'text-gray-400'
-                      }`}
-                      onClick={() => setIsOpen((open) => !open)}
-                    >
-                      {title}
-                    </a>
-                  </Link>
-                </li>
-              )
-            }) : null}
-          </ul>
+          {query.season ? (
+            <ul className="flex flex-col mt-6 md:flex-row md:space-x-8 md:mt-0 md:text-sm md:font-medium">
+              {routes.map(({ href, title }) => {
+                const isActiveRoute = pathname === href
+                return (
+                  <li key={`${href}-${title}`}>
+                    <Link href={href}>
+                      <a
+                        className={`font-secondary uppercase block px-3 py-2 border-b md:border-0 md:p-0 text-lg lg:text-xl md:hover:text-white hover:bg-gray-700 hover:text-gray-200 md:hover:bg-transparent border-gray-700 ${
+                          isActiveRoute ? 'text-white' : 'text-gray-400'
+                        }`}
+                        onClick={() => setIsOpen((open) => !open)}
+                      >
+                        {title}
+                      </a>
+                    </Link>
+                  </li>
+                )
+              })}
+            </ul>
+          ) : null}
         </div>
       </div>
     </nav>
