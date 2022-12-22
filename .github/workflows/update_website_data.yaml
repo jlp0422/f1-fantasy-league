@@ -1,8 +1,8 @@
 name: "Update Website Data"
 on:
   workflow_dispatch:
-  schedule:
-  - cron: "0 10 * * MON"
+  # schedule:
+  # - cron: "0 10 * * MON"
 
 jobs:
   update-website-data:
