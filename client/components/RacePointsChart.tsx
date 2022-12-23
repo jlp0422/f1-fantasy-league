@@ -25,7 +25,7 @@ interface Props {
   setSelectedChartConstructors: (
     val: string[] | ((existing: string[]) => string[])
   ) => void
-  cumulativePointsByConstructor: Record<string, string | number>[]
+  cumulativePointsByConstructor: Record<string, any>[]
   constructors: Constructor[]
   chartLines: string[]
 }

@@ -1,5 +1,6 @@
 import { Constructor } from '@/types/Constructor'
 import { Season } from '@/types/Season'
+import { ConstructorWithSeason } from '@/types/Unions'
 import ConstructorLink from 'components/ConstructorLink'
 import Layout from 'components/Layout'
 import { getCloudinaryCarUrl, normalizeConstructorName } from 'helpers/cars'
@@ -44,10 +45,12 @@ const ConstructorsPage = ({ constructors }: Props) => {
 }
 
 export async function getStaticPaths() {
-  const { data: seasons } = await supabase.from('season').select('*')
+  const { data: seasons } = (await supabase.from('season').select('*')) as {
+    data: Season[]
+  }
 
   return {
-    paths: (seasons as Season[]).map((season) => ({
+    paths: seasons.map((season) => ({
       params: {
         season: season.year.toString(),
       },
@@ -57,11 +60,11 @@ export async function getStaticPaths() {
 }
 
 export async function getStaticProps({ params }: GetStaticPropsContext) {
-  const { data: constructors } = await supabase
+  const { data: constructors } = (await supabase
     .from('constructor')
     .select('id, name, season!inner(year)')
     .eq('season.year', params?.season)
-    .order('name')
+    .order('name')) as { data: ConstructorWithSeason[] }
 
   return {
     props: {

@@ -9,7 +9,7 @@ interface Colors {
   hover: string
 }
 
-const seasonColors: Record<number, Colors> = {
+const seasonColors: Record<string, Colors> = {
   2022: {
     bg: 'bg-cyan-600',
     hover: 'hover:bg-cyan-800',
@@ -52,11 +52,13 @@ const HomePage = ({ seasons }: Props) => {
 }
 
 export async function getStaticProps() {
-  const { data: seasons } = await supabase.from('season').select('*')
+  const { data: seasons } = (await supabase.from('season').select('*')) as {
+    data: Season[]
+  }
 
   return {
     props: {
-      seasons: sortArray(seasons as Season[], (a, b) => b.year - a.year),
+      seasons: sortArray(seasons, (a, b) => b.year - a.year),
     },
   }
 }

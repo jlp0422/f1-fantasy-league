@@ -39,10 +39,12 @@ const Standings = ({ standings }: Props) => {
 }
 
 export async function getStaticPaths() {
-  const { data: seasons } = await supabase.from('season').select('*')
+  const { data: seasons } = (await supabase.from('season').select('*')) as {
+    data: Season[]
+  }
 
   return {
-    paths: (seasons as Season[]).map((season) => ({
+    paths: seasons.map((season) => ({
       params: {
         season: season.year.toString(),
       },
@@ -52,10 +54,10 @@ export async function getStaticPaths() {
 }
 
 export async function getStaticProps({ params }: GetStaticPropsContext) {
-  const { data: standings } = await supabase
+  const { data: standings } = (await supabase
     .rpc('sum_constructor_points_by_season', { season: params?.season })
     .select('id, name, team_principal, total_points')
-    .order('total_points', { ascending: false })
+    .order('total_points', { ascending: false })) as { data: Standing[] }
 
   return {
     props: {

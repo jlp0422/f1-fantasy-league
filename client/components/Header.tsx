@@ -15,7 +15,7 @@ const checkIfRoutesAreEqual = (pathname: string, href: string) => {
 }
 
 const Header = () => {
-  const [isOpen, setIsOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState<boolean>(false)
   const { pathname, query } = useRouter()
   const routes = [
     { href: `/${query.season}/standings`, title: 'Standings' },

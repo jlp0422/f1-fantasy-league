@@ -2,22 +2,15 @@ import CarNumber from '@/components/CarNumber'
 import ConstructorLink from '@/components/ConstructorLink'
 import { COLORS_BY_CONSTRUCTOR } from '@/constants/index'
 import { normalizeConstructorName } from '@/helpers/cars'
+import { ConstructorTotalPoints } from '@/types/ConstructorTotalPoints'
+import { IndexedRacePoints } from '@/types/IndexedRacePoints'
 import { Race } from '@/types/Race'
-
-interface Constructor {
-  id: number
-  name: string
-  total_points: number
-}
 
 interface Props {
   races: Race[]
-  standings: Constructor[]
-  constructorsById: Record<number, Constructor>
-  indexedRacePoints: Record<
-    string,
-    Record<string, Record<'race_points', number>>
-  >
+  standings: ConstructorTotalPoints[]
+  constructorsById: Record<string, ConstructorTotalPoints>
+  indexedRacePoints: IndexedRacePoints
 }
 
 const RacePointsTable = ({

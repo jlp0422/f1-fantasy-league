@@ -1,9 +1,30 @@
-import Layout from 'components/Layout'
-import RacePointsChart from 'components/RacePointsChart'
-import RacePointsTable from 'components/RacePointsTable'
-import { indexBy } from 'helpers/utils'
-import { supabase } from 'lib/database'
+import Layout from '@/components/Layout'
+import RacePointsChart from '@/components/RacePointsChart'
+import RacePointsTable from '@/components/RacePointsTable'
+import { indexBy } from '@/helpers/utils'
+import { supabase } from '@/lib/database'
+import { ConstructorTotalPoints } from '@/types/ConstructorTotalPoints'
+import { IndexedRacePoints } from '@/types/IndexedRacePoints'
+import { Season } from '@/types/Season'
+import { ConstructorWithSeason, RaceWithSeason } from '@/types/Unions'
+import { GetStaticPropsContext } from 'next'
 import { useState } from 'react'
+
+interface TotalPointsByConstructorByRace {
+  constructor_id: number
+  race_id: number
+  total_points: number
+}
+
+interface Props {
+  chartsEnabled: boolean
+  cumulativePointsByConstructor: Record<string, any>[]
+  races: RaceWithSeason[]
+  standings: ConstructorTotalPoints[]
+  constructorsById: Record<string, ConstructorTotalPoints>
+  indexedRacePoints: IndexedRacePoints
+  constructors: ConstructorWithSeason[]
+}
 
 const RacePoints = ({
   chartsEnabled,
@@ -13,12 +34,14 @@ const RacePoints = ({
   constructorsById,
   indexedRacePoints,
   constructors,
-}) => {
+}: Props) => {
   const tabOptions = ['table', 'chart']
-  const [isTabDropdownOpen, setIsTabDropdownOpen] = useState(false)
-  const [activeTab, setActiveTab] = useState('table')
-  const [isChartDropdownOpen, setIsChartDropdownOpen] = useState(false)
-  const [selectedChartConstructors, setSelectedChartConstructors] = useState([])
+  const [isTabDropdownOpen, setIsTabDropdownOpen] = useState<boolean>(false)
+  const [activeTab, setActiveTab] = useState<string>('table')
+  const [isChartDropdownOpen, setIsChartDropdownOpen] = useState<boolean>(false)
+  const [selectedChartConstructors, setSelectedChartConstructors] = useState<
+    string[]
+  >([])
   const chartLines = selectedChartConstructors.length
     ? selectedChartConstructors
     : constructors.map(({ name }) => name)
@@ -111,7 +134,9 @@ const RacePoints = ({
 }
 
 export async function getStaticPaths() {
-  const { data } = await supabase.from('season').select('*')
+  const { data } = (await supabase.from('season').select('*')) as {
+    data: Season[]
+  }
 
   return {
     paths: data.map((season) => ({
@@ -123,13 +148,13 @@ export async function getStaticPaths() {
   }
 }
 
-export async function getStaticProps({ params }) {
-  const { data: totalPointsByConstructorByRace } = await supabase
-    .rpc('total_points_by_constructor_by_race', { season: params.season })
-    .select('*')
+export async function getStaticProps({ params }: GetStaticPropsContext) {
+  const { data: totalPointsByConstructorByRace } = (await supabase
+    .rpc('total_points_by_constructor_by_race', { season: params?.season })
+    .select('*')) as { data: TotalPointsByConstructorByRace[] }
 
   const indexedRacePoints = totalPointsByConstructorByRace.reduce(
-    (memo, item) => {
+    (memo: IndexedRacePoints, item) => {
       const constructorId = item.constructor_id
       const raceId = item.race_id
       const existingRace = memo[raceId]
@@ -152,26 +177,28 @@ export async function getStaticProps({ params }) {
     {}
   )
 
-  const { data: races } = await supabase
+  const { data: races } = (await supabase
     .from('race')
     .select('id, location, country, start_date, season!inner(year)')
-    .eq('season.year', params.season)
-    .order('start_date', { ascending: true })
+    .eq('season.year', params?.season)
+    .order('start_date', { ascending: true })) as { data: RaceWithSeason[] }
 
-  const { data: constructors } = await supabase
+  const { data: constructors } = (await supabase
     .from('constructor')
     .select('id, name, season!inner(year)')
-    .eq('season.year', params.season)
+    .eq('season.year', params?.season)) as { data: ConstructorWithSeason[] }
 
-  const { data: standings } = await supabase
-    .rpc('sum_constructor_points_by_season', { season: params.season })
+  const { data: standings } = (await supabase
+    .rpc('sum_constructor_points_by_season', { season: params?.season })
     .select('id, name, total_points')
-    .order('total_points', { ascending: false })
+    .order('total_points', { ascending: false })) as {
+    data: ConstructorTotalPoints[]
+  }
 
   const constructorsById = indexBy('id')(standings)
 
   const cumulativePointsByConstructor = totalPointsByConstructorByRace.reduce(
-    (memo, item) => {
+    (memo: Record<string, number[]>, item) => {
       const constructorId = item.constructor_id
       const points = item.total_points
       if (memo[constructorId]) {
@@ -186,13 +213,13 @@ export async function getStaticProps({ params }) {
     {}
   )
 
-  const chartData = races.reduce((memo, race, index) => {
-    const data = { race: race.country }
-    let hasRaceData = false
+  const chartData = races.reduce((memo: Record<string, any>[], race, index) => {
+    const data: Record<string, any> = { race: race.country }
+    let hasRaceData = true
     constructors.forEach((c) => {
       const cPoints = cumulativePointsByConstructor[c.id][index]
       data[c.name] = cPoints
-      hasRaceData = !isNaN(cPoints)
+      hasRaceData = isNaN(cPoints)
     })
 
     if (hasRaceData) {
