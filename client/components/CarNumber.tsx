@@ -1,5 +1,5 @@
 import Image from 'next/image'
-import { getCloudinaryNumberUrl } from 'helpers/cars'
+import { getCloudinaryNumberUrl } from '@/helpers/cars'
 
 const SIZES = {
   xsmall: 'w-12 h-12',
@@ -8,7 +8,9 @@ const SIZES = {
   large: 'w-72 h-72',
 }
 
-const getDimensions = (size) => {
+type Size = 'xsmall' | 'small' | 'medium' | 'large'
+
+const getDimensions = (size: Size) => {
   switch (size) {
     case 'xsmall':
       return 48
@@ -21,7 +23,12 @@ const getDimensions = (size) => {
   }
 }
 
-const CarNumber = ({ constructorName, size }) => {
+interface Props {
+  size: Size
+  constructorName: string
+}
+
+const CarNumber = ({ constructorName, size }: Props) => {
   const widthHeight = getDimensions(size)
   const carImageUrl = getCloudinaryNumberUrl(constructorName, {
     format: 'webp',

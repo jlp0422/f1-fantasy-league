@@ -1,7 +1,17 @@
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 
-const ConstructorLink = ({ normalizedConstructor, constructorId, children }) => {
+interface Props {
+  normalizedConstructor: string
+  constructorId: string
+  children: any
+}
+
+const ConstructorLink = ({
+  normalizedConstructor,
+  constructorId,
+  children,
+}: Props) => {
   const router = useRouter()
   return (
     <Link
@@ -9,7 +19,7 @@ const ConstructorLink = ({ normalizedConstructor, constructorId, children }) => 
         pathname: '/[season]/constructors/[name]',
         query: {
           name: `${constructorId}-${encodeURIComponent(normalizedConstructor)}`,
-          season: router.query.season
+          season: router.query.season,
         },
       }}
     >
