@@ -1,6 +1,6 @@
-import Layout from 'components/Layout'
+import Layout from '@/components/Layout'
 import Image from 'next/image'
-import mazepin from '../public/mazepin-500.gif'
+import mazepin from '@/public/mazepin-500.gif'
 
 const Custom500 = () => {
   return (

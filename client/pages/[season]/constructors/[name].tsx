@@ -1,11 +1,20 @@
-import CarImage from 'components/CarImage'
-import TickXAxis from 'components/charts/TickXAxis'
-import TickYAxis from 'components/charts/TickYAxis'
-import Layout from 'components/Layout'
-import { COLORS_BY_CONSTRUCTOR } from 'constants/index'
-import { getCloudinaryCarUrl, normalizeConstructorName } from 'helpers/cars'
-import { indexBy, sum } from 'helpers/utils'
-import { supabase } from 'lib/database'
+import CarImage from '@/components/CarImage'
+import TickXAxis from '@/components/charts/TickXAxis'
+import TickYAxis from '@/components/charts/TickYAxis'
+import Layout from '@/components/Layout'
+import { COLORS_BY_CONSTRUCTOR } from '@/constants/index'
+import { getCloudinaryCarUrl, normalizeConstructorName } from '@/helpers/cars'
+import { indexBy, sum } from '@/helpers/utils'
+import { supabase } from '@/lib/database'
+import { GenericObject } from '@/types/Common'
+import { Driver } from '@/types/Driver'
+import { Race } from '@/types/Race'
+import {
+  ConstructorWithSeason,
+  DriverRaceResultWithJoins,
+  RaceWithSeason,
+} from '@/types/Unions'
+import { GetStaticPropsContext } from 'next'
 import {
   CartesianGrid,
   Legend,
@@ -17,6 +26,24 @@ import {
   YAxis,
 } from 'recharts'
 
+interface DriverPoints {
+  completedRaceIds: number[]
+  total: number
+}
+
+type DriverPointsByRace = Record<string, Record<string, number>>
+
+interface Props {
+  races: RaceWithSeason[]
+  constructor: ConstructorWithSeason
+  totalPoints: number
+  driverPointsByRace: DriverPointsByRace
+  driversWithPoints: string[]
+  racePointsByDriver: Record<string, DriverPoints>
+  pointsByDriverChartData: GenericObject[]
+  chartsEnabled: boolean
+}
+
 const Constructor = ({
   races,
   constructor,
@@ -26,7 +53,7 @@ const Constructor = ({
   racePointsByDriver,
   pointsByDriverChartData,
   chartsEnabled,
-}) => {
+}: Props) => {
   const data = [
     {
       value: constructor.name,
@@ -291,9 +318,9 @@ const Constructor = ({
 }
 
 export async function getStaticPaths() {
-  const { data: constructors } = await supabase
+  const { data: constructors } = (await supabase
     .from('constructor')
-    .select('id, name, season(year)')
+    .select('id, name, season(year)')) as { data: ConstructorWithSeason[] }
 
   return {
     paths: constructors.map((constructor) => ({
@@ -308,29 +335,30 @@ export async function getStaticPaths() {
   }
 }
 
-export async function getStaticProps({ params }) {
-  const constructorNameParam = decodeURIComponent(params.name)
+export async function getStaticProps({ params }: GetStaticPropsContext) {
+  const constructorNameParam = decodeURIComponent(params?.name as string)
   const constructorId = constructorNameParam.split('-')[0]
 
-  const { data: constructor } = await supabase
+  const { data: constructor } = (await supabase
     .from('constructor')
     .select('id, name, team_principal, season!inner(id, year)')
-    .eq('season.year', params.season)
+    .eq('season.year', params?.season)
     .eq('id', constructorId)
     .limit(1)
-    .single()
+    .single()) as { data: ConstructorWithSeason }
 
-  const makeName = (driver) => `${driver.first_name} ${driver.last_name}`
+  const makeName = (driver: Driver) =>
+    `${driver.first_name} ${driver.last_name}`
 
-  const { data: races } = await supabase
+  const { data: races } = (await supabase
     .from('race')
     .select('id, location, country, start_date, season!inner(year)')
-    .eq('season.year', params.season)
-    .order('start_date', { ascending: true })
+    .eq('season.year', params?.season)
+    .order('start_date', { ascending: true })) as { data: Race[] }
 
   const racesById = indexBy('id')(races)
 
-  const { data: driverRaceResults } = await supabase
+  const { data: driverRaceResults } = (await supabase
     .from('driver_race_result')
     .select(
       `
@@ -354,40 +382,48 @@ export async function getStaticProps({ params }) {
     )
     .eq('race.season.year', constructor.season.year)
     .eq('constructor_id', constructor.id)
-    .order('race_id', { ascending: true })
+    .order('race_id', { ascending: true })) as {
+    data: DriverRaceResultWithJoins[]
+  }
 
-  const racePointsByDriver = driverRaceResults.reduce((memo, item) => {
-    const driverName = makeName(item.driver)
-    const current = memo[driverName]
-    const finishAndGridPoints =
-      item.finish_position_points + item.grid_difference_points
-    if (current) {
-      memo[driverName] = {
-        total: current.total + finishAndGridPoints,
-        completedRaceIds: current.completedRaceIds.concat(item.race.id),
+  const racePointsByDriver = driverRaceResults.reduce(
+    (memo: Record<string, DriverPoints>, item: DriverRaceResultWithJoins) => {
+      const driverName = makeName(item.driver)
+      const current = memo[driverName]
+      const finishAndGridPoints =
+        item.finish_position_points + item.grid_difference_points
+      if (current) {
+        memo[driverName] = {
+          total: current.total + finishAndGridPoints,
+          completedRaceIds: current.completedRaceIds.concat(item.race.id),
+        }
+      } else {
+        memo[driverName] = {
+          total: finishAndGridPoints,
+          completedRaceIds: [item.race.id],
+        }
       }
-    } else {
-      memo[driverName] = {
-        total: finishAndGridPoints,
-        completedRaceIds: [item.race.id],
-      }
-    }
-    return memo
-  }, {})
+      return memo
+    },
+    {}
+  )
 
-  const driverPointsByRace = driverRaceResults.reduce((memo, item) => {
-    const driverName = `${item.driver.first_name} ${item.driver.last_name}`
-    const totalPoints =
-      item.finish_position_points + item.grid_difference_points
-    if (memo[item.race.id]) {
-      memo[item.race.id][driverName] = totalPoints
-    } else {
-      memo[item.race.id] = {
-        [driverName]: totalPoints,
+  const driverPointsByRace = driverRaceResults.reduce(
+    (memo: DriverPointsByRace, item: DriverRaceResultWithJoins) => {
+      const driverName = makeName(item.driver)
+      const totalPoints =
+        item.finish_position_points + item.grid_difference_points
+      if (memo[item.race.id]) {
+        memo[item.race.id][driverName] = totalPoints
+      } else {
+        memo[item.race.id] = {
+          [driverName]: totalPoints,
+        }
       }
-    }
-    return memo
-  }, {})
+      return memo
+    },
+    {}
+  )
 
   const pointsByDriverChartData = Object.entries(driverPointsByRace).map(
     ([raceId, drivers]) => ({

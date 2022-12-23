@@ -1,14 +1,23 @@
-import CarNumber from 'components/CarNumber'
-import ConstructorLink from 'components/ConstructorLink'
-import { COLORS_BY_CONSTRUCTOR } from 'constants/index'
-import { normalizeConstructorName } from 'helpers/cars'
+import CarNumber from '@/components/CarNumber'
+import ConstructorLink from '@/components/ConstructorLink'
+import { COLORS_BY_CONSTRUCTOR } from '@/constants/index'
+import { normalizeConstructorName } from '@/helpers/cars'
+import { ConstructorsById, ConstructorTotalPoints, IndexedRacePoints } from '@/types/Common'
+import { Race } from '@/types/Race'
+
+interface Props {
+  races: Race[]
+  standings: ConstructorTotalPoints[]
+  constructorsById: ConstructorsById
+  indexedRacePoints: IndexedRacePoints
+}
 
 const RacePointsTable = ({
   races,
   standings,
   constructorsById,
   indexedRacePoints,
-}) => {
+}: Props) => {
   return (
     <table className="w-full text-base text-left text-gray-300 uppercase bg-gray-800 font-secondary">
       <thead className="bg-gray-700 whitespace-nowrap">
@@ -83,7 +92,6 @@ const RacePointsTable = ({
                 {constructorsById[constructor.id].total_points}
               </td>
               {races.map((race) => (
-                // use optional chaining
                 <td
                   className="px-6 py-4 text-center"
                   key={`${constructor.id}-${race.id}`}

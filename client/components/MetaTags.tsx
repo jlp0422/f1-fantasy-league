@@ -1,11 +1,17 @@
 import Head from 'next/head'
 import { useRouter } from 'next/router'
 
+interface Props {
+  documentTitle: string
+  metaImageUrl?: string
+  description?: string
+}
+
 const MetaTags = ({
   documentTitle,
   metaImageUrl = 'https://res.cloudinary.com/jlp0422/image/upload/b_rgb:000000,c_scale,w_2500/v1653181121/f1-fantasy-2022/logo.png',
   description = 'Standings for Fate of the Eight F1 Fantasy',
-}) => {
+}: Props) => {
   const { asPath } = useRouter()
   const contentUrl = `https://fate-of-the-eight.vercel.app${asPath}`
   const docAndSiteTitle = `${documentTitle} | Fate of the Eight`
@@ -13,10 +19,19 @@ const MetaTags = ({
     <Head>
       <title>{docAndSiteTitle}</title>
       <link rel="icon" href="/favicon/favicon.ico" />
-      <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png"/>
-      <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png" />
-      <link rel="manifest" href="/favicon/site.webmanifest"/>
-
+      <link
+        rel="icon"
+        type="image/png"
+        sizes="32x32"
+        href="/favicon/favicon-32x32.png"
+      />
+      <link
+        rel="icon"
+        type="image/png"
+        sizes="16x16"
+        href="/favicon/favicon-16x16.png"
+      />
+      <link rel="manifest" href="/favicon/site.webmanifest" />
 
       {/* <!-- COMMON TAGS --> */}
       <meta charSet="utf-8" />

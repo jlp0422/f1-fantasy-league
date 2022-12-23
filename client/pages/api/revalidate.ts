@@ -1,6 +1,16 @@
-import { normalizeConstructorName } from 'helpers/cars'
+import type { NextApiRequest, NextApiResponse } from 'next'
+import { normalizeConstructorName } from '@/helpers/cars'
+import { Constructor } from '@/types/Constructor'
 
-export default async function handler(req, res) {
+interface Data {
+  revalidated?: boolean
+  message?: string
+}
+
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse<Data>
+) {
   // Check for secret to confirm this is a valid request
   if (req.query.secret !== process.env.REVALIDATE_TOKEN) {
     return res.status(401).json({ message: 'Invalid token' })
@@ -14,21 +24,21 @@ export default async function handler(req, res) {
         headers: {
           apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
           Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
-        },
+        } as HeadersInit,
       }
     )
-    const data = await resp.json()
+    const data: Constructor[] = await resp.json()
     const constructorRoutes = data
       .map(({ id, name }) => `${id}-${normalizeConstructorName(name)}`)
       .map((url) => `/${season}/constructors/${url}`)
     await res.revalidate(`/${season}/standings`)
     await res.revalidate(`/${season}/race-points`)
     await Promise.all(constructorRoutes.map((route) => res.revalidate(route)))
-    return res.json({ revalidated: true })
+    return res.status(200).json({ revalidated: true })
   } catch (err) {
     console.error('** error', err)
     // If there was an error, Next.js will continue
     // to show the last successfully generated page
-    return res.status(500).send('Error revalidating')
+    return res.status(500).send({ message: 'Error revalidating' })
   }
 }

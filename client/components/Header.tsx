@@ -1,12 +1,12 @@
-import Dismiss from 'components/icons/Dismiss'
-import Hamburger from 'components/icons/Hamburger'
+import Dismiss from '@/components/icons/Dismiss'
+import Hamburger from '@/components/icons/Hamburger'
+import headerLogo from '@/public/fate-eight.png'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useState } from 'react'
-import headerLogo from '../public/fate-eight.png'
 
-const checkIfRoutesAreEqual = (pathname, href) => {
+const checkIfRoutesAreEqual = (pathname: string, href: string) => {
   const splitPath = pathname.split('/')
   const splitHref = href.split('/')
   const pathEnd = splitPath[splitPath.length - 1]
@@ -15,7 +15,7 @@ const checkIfRoutesAreEqual = (pathname, href) => {
 }
 
 const Header = () => {
-  const [isOpen, setIsOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState<boolean>(false)
   const { pathname, query } = useRouter()
   const routes = [
     { href: `/${query.season}/standings`, title: 'Standings' },

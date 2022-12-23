@@ -1,9 +1,21 @@
-import CarNumber from 'components/CarNumber'
-import ConstructorLink from 'components/ConstructorLink'
-import { COLORS_BY_CONSTRUCTOR } from 'constants/index'
-import { normalizeConstructorName } from 'helpers/cars'
+import CarNumber from '@/components/CarNumber'
+import ConstructorLink from '@/components/ConstructorLink'
+import { COLORS_BY_CONSTRUCTOR } from '@/constants/index'
+import { normalizeConstructorName } from '@/helpers/cars'
 
-const ConstructorStandingRow = ({ constructor, principal, points, id }) => {
+interface Props {
+  constructor: string
+  teamPrincipal: string
+  points: number
+  id: number
+}
+
+const ConstructorStandingRow = ({
+  constructor,
+  teamPrincipal,
+  points,
+  id,
+}: Props) => {
   const normalized = normalizeConstructorName(constructor)
   const { numberBackground, numberText } = COLORS_BY_CONSTRUCTOR[normalized]
   return (
@@ -20,7 +32,10 @@ const ConstructorStandingRow = ({ constructor, principal, points, id }) => {
             <CarNumber constructorName={normalized} size="small" />
           </div>
           <div className="flex flex-col ml-1 truncate sm:ml-4">
-            <ConstructorLink normalizedConstructor={normalized} constructorId={id}>
+            <ConstructorLink
+              normalizedConstructor={normalized}
+              constructorId={id}
+            >
               <a>
                 <p
                   className="pr-[2px] text-2xl font-bold tracking-tight uppercase truncate md:tracking-normal sm:text-4xl sm:hover:underline font-primary"
@@ -34,7 +49,7 @@ const ConstructorStandingRow = ({ constructor, principal, points, id }) => {
               className="invisible hidden italic font-semibold uppercase sm:visible sm:block sm:text-lg font-secondary"
               style={{ color: numberText, lineHeight: 1.25 }}
             >
-              Team Principal: {principal}
+              Team Principal: {teamPrincipal}
             </p>
           </div>
         </div>

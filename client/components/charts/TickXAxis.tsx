@@ -1,4 +1,14 @@
-const TickXAxis = ({ x, y, payload }) => {
+interface Props {
+  x?: string,
+  y?: string,
+  payload?: Payload
+}
+
+interface Payload {
+  value: any
+}
+
+const TickXAxis = ({ x, y, payload }: Props) => {
   return (
     <g transform={`translate(${x},${y})`}>
       <text
@@ -10,7 +20,7 @@ const TickXAxis = ({ x, y, payload }) => {
         transform="rotate(-35)"
         className="text-lg font-tertiary"
       >
-        {payload.value}
+        {payload?.value}
       </text>
     </g>
   )

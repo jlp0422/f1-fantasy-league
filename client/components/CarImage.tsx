@@ -1,29 +1,15 @@
-import { getCloudinaryCarUrl, rgbDataURL } from 'helpers/cars'
-import { COLORS_BY_CONSTRUCTOR } from 'constants/index'
-import Image from 'next/image'
+import { COLORS_BY_CONSTRUCTOR } from '@/constants/index'
+import { getCloudinaryCarUrl, getDimensions, rgbDataURL, SIZES } from '@/helpers/cars'
+import { ImageSize } from '@/types/Common'
 import hexRgb from 'hex-rgb'
+import Image from 'next/image'
 
-const SIZES = {
-  xsmall: 'w-12 h-12',
-  small: 'w-24 h-24',
-  medium: 'w-48 h-48',
-  large: 'w-72 h-72',
+interface Props {
+  size: ImageSize
+  constructorName: string
 }
 
-const getDimensions = (size) => {
-  switch (size) {
-    case 'xsmall':
-      return 48
-    case 'small':
-      return 96
-    case 'medium':
-      return 192
-    case 'large':
-      return 288
-  }
-}
-
-const CarImage = ({ constructorName, size }) => {
+const CarImage = ({ constructorName, size }: Props) => {
   const widthHeight = getDimensions(size)
   const carImageUrl = getCloudinaryCarUrl(constructorName, {
     format: 'webp',

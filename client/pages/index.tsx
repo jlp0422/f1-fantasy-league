@@ -1,9 +1,15 @@
-import Layout from 'components/Layout'
-import { sortArray } from 'helpers/utils'
-import { supabase } from 'lib/database'
+import { Season } from '@/types/Season'
+import Layout from '@/components/Layout'
+import { sortArray } from '@/helpers/utils'
+import { supabase } from '@/lib/database'
 import Link from 'next/link'
 
-const seasonColors = {
+interface Colors {
+  bg: string
+  hover: string
+}
+
+const seasonColors: Record<string, Colors> = {
   2022: {
     bg: 'bg-cyan-600',
     hover: 'hover:bg-cyan-800',
@@ -14,7 +20,11 @@ const seasonColors = {
   },
 }
 
-const HomePage = ({ seasons }) => {
+interface Props {
+  seasons: Season[]
+}
+
+const HomePage = ({ seasons }: Props) => {
   return (
     <Layout documentTitle="Home" fullWidth>
       <div className="flex flex-col h-full">
@@ -42,7 +52,9 @@ const HomePage = ({ seasons }) => {
 }
 
 export async function getStaticProps() {
-  const { data: seasons } = await supabase.from('season').select('*')
+  const { data: seasons } = (await supabase.from('season').select('*')) as {
+    data: Season[]
+  }
 
   return {
     props: {
