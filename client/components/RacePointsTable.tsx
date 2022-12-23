@@ -2,14 +2,13 @@ import CarNumber from '@/components/CarNumber'
 import ConstructorLink from '@/components/ConstructorLink'
 import { COLORS_BY_CONSTRUCTOR } from '@/constants/index'
 import { normalizeConstructorName } from '@/helpers/cars'
-import { ConstructorTotalPoints } from '@/types/ConstructorTotalPoints'
-import { IndexedRacePoints } from '@/types/IndexedRacePoints'
+import { ConstructorsById, ConstructorTotalPoints, IndexedRacePoints } from '@/types/Common'
 import { Race } from '@/types/Race'
 
 interface Props {
   races: Race[]
   standings: ConstructorTotalPoints[]
-  constructorsById: Record<string, ConstructorTotalPoints>
+  constructorsById: ConstructorsById
   indexedRacePoints: IndexedRacePoints
 }
 

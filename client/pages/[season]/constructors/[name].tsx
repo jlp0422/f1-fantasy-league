@@ -6,6 +6,7 @@ import { COLORS_BY_CONSTRUCTOR } from '@/constants/index'
 import { getCloudinaryCarUrl, normalizeConstructorName } from '@/helpers/cars'
 import { indexBy, sum } from '@/helpers/utils'
 import { supabase } from '@/lib/database'
+import { GenericObject } from '@/types/Common'
 import { Driver } from '@/types/Driver'
 import { Race } from '@/types/Race'
 import {
@@ -39,7 +40,7 @@ interface Props {
   driverPointsByRace: DriverPointsByRace
   driversWithPoints: string[]
   racePointsByDriver: Record<string, DriverPoints>
-  pointsByDriverChartData: Record<string, any>[]
+  pointsByDriverChartData: GenericObject[]
   chartsEnabled: boolean
 }
 

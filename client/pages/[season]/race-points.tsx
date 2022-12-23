@@ -3,8 +3,12 @@ import RacePointsChart from '@/components/RacePointsChart'
 import RacePointsTable from '@/components/RacePointsTable'
 import { indexBy } from '@/helpers/utils'
 import { supabase } from '@/lib/database'
-import { ConstructorTotalPoints } from '@/types/ConstructorTotalPoints'
-import { IndexedRacePoints } from '@/types/IndexedRacePoints'
+import {
+  ConstructorsById,
+  ConstructorTotalPoints,
+  GenericObject,
+  IndexedRacePoints,
+} from '@/types/Common'
 import { Season } from '@/types/Season'
 import { ConstructorWithSeason, RaceWithSeason } from '@/types/Unions'
 import { GetStaticPropsContext } from 'next'
@@ -18,10 +22,10 @@ interface TotalPointsByConstructorByRace {
 
 interface Props {
   chartsEnabled: boolean
-  cumulativePointsByConstructor: Record<string, any>[]
+  cumulativePointsByConstructor: GenericObject[]
   races: RaceWithSeason[]
   standings: ConstructorTotalPoints[]
-  constructorsById: Record<string, ConstructorTotalPoints>
+  constructorsById: ConstructorsById
   indexedRacePoints: IndexedRacePoints
   constructors: ConstructorWithSeason[]
 }
@@ -213,8 +217,8 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
     {}
   )
 
-  const chartData = races.reduce((memo: Record<string, any>[], race, index) => {
-    const data: Record<string, any> = { race: race.country }
+  const chartData = races.reduce((memo: GenericObject[], race, index) => {
+    const data: GenericObject = { race: race.country }
     let hasRaceData = true
     constructors.forEach((c) => {
       const cPoints = cumulativePointsByConstructor[c.id][index]

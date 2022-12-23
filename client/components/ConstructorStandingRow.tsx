@@ -5,14 +5,14 @@ import { normalizeConstructorName } from '@/helpers/cars'
 
 interface Props {
   constructor: string
-  principal: string
+  teamPrincipal: string
   points: number
   id: number
 }
 
 const ConstructorStandingRow = ({
   constructor,
-  principal,
+  teamPrincipal,
   points,
   id,
 }: Props) => {
@@ -49,7 +49,7 @@ const ConstructorStandingRow = ({
               className="invisible hidden italic font-semibold uppercase sm:visible sm:block sm:text-lg font-secondary"
               style={{ color: numberText, lineHeight: 1.25 }}
             >
-              Team Principal: {principal}
+              Team Principal: {teamPrincipal}
             </p>
           </div>
         </div>

@@ -1,3 +1,5 @@
+import { GenericObject } from "@/types/Common"
+
 export const toNum = (stringNumber: string) => +stringNumber
 
 export const sortArray = (array: any[], sortFn: (a: any, b: any) => any) => {
@@ -9,7 +11,7 @@ export const sortArray = (array: any[], sortFn: (a: any, b: any) => any) => {
 export const sum = (array: number[]): number =>
   array.reduce((sum, number) => (sum += number), 0)
 
-export const indexBy = (key: string) => (array: Record<string, any>[]) =>
+export const indexBy = (key: string) => (array: GenericObject[]) =>
   array.reduce((memo, item) => {
     const itemKey = item[key]
     return Object.assign({}, memo, {

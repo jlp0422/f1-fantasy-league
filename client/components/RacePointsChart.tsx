@@ -4,6 +4,7 @@ import CheckboxEmpty from '@/components/icons/CheckboxEmpty'
 import CheckboxFilled from '@/components/icons/CheckboxFilled'
 import { COLORS_BY_CONSTRUCTOR } from '@/constants/index'
 import { normalizeConstructorName } from '@/helpers/cars'
+import { GenericObject } from '@/types/Common'
 import { Constructor } from '@/types/Constructor'
 import {
   CartesianGrid,
@@ -25,7 +26,7 @@ interface Props {
   setSelectedChartConstructors: (
     val: string[] | ((existing: string[]) => string[])
   ) => void
-  cumulativePointsByConstructor: Record<string, any>[]
+  cumulativePointsByConstructor: GenericObject[]
   constructors: Constructor[]
   chartLines: string[]
 }

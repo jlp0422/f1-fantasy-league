@@ -26,7 +26,7 @@ const Standings = ({ standings }: Props) => {
         {standings.map(({ id, name, team_principal, total_points }) => (
           <ConstructorStandingRow
             key={id}
-            principal={team_principal}
+            teamPrincipal={team_principal}
             points={total_points}
             // this makes no sense
             constructor={name as any}

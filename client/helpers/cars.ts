@@ -1,3 +1,5 @@
+import { ImageSize } from '@/types/Common'
+
 export const normalizeConstructorName = (constructor: string) =>
   constructor
     .toLowerCase()
@@ -37,4 +39,25 @@ export const getCloudinaryNumberUrl = (
   const baseUrl = 'https://res.cloudinary.com/jlp0422/image/upload'
   const path = '/v1652746271/f1-fantasy-2022/numbers'
   return `${baseUrl}${resize}${path}/${constructorName}.${format}`
+}
+
+export const SIZES = {
+  xsmall: 'w-12 h-12',
+  small: 'w-24 h-24',
+  medium: 'w-48 h-48',
+  large: 'w-72 h-72',
+}
+
+export const getDimensions = (size: ImageSize) => {
+  switch (size) {
+    case 'xsmall':
+      return 48
+    case 'small':
+    default:
+      return 96
+    case 'medium':
+      return 192
+    case 'large':
+      return 288
+  }
 }
