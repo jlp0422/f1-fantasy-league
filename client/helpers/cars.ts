@@ -34,7 +34,7 @@ export const getCloudinaryCarUrl = (
 
 export const getCloudinaryNumberUrl = (
   constructorName: string,
-  { format = 'jpg', resize = '' }: CloudinaryOptions
+  { format = 'jpg', resize = '' }: CloudinaryOptions = {}
 ) => {
   const baseUrl = 'https://res.cloudinary.com/jlp0422/image/upload'
   const path = '/v1652746271/f1-fantasy-2022/numbers'
