@@ -6,7 +6,7 @@ import { normalizeConstructorName } from '@/helpers/cars'
 interface Props {
   constructor: string
   principal: string
-  points: string
+  points: number
   id: number
 }
 

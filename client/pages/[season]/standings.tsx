@@ -1,8 +1,21 @@
+import { Season } from '@/types/Season'
 import ConstructorStandingRow from 'components/ConstructorStandingRow'
 import Layout from 'components/Layout'
 import { supabase } from 'lib/database'
+import { GetStaticPropsContext } from 'next'
 
-const Standings = ({ standings }) => {
+interface Standing {
+  id: number
+  name: string
+  team_principal: string
+  total_points: number
+}
+
+interface Props {
+  standings: Standing[]
+}
+
+const Standings = ({ standings }: Props) => {
   return (
     <Layout
       documentTitle="Standings"
@@ -15,7 +28,8 @@ const Standings = ({ standings }) => {
             key={id}
             principal={team_principal}
             points={total_points}
-            constructor={name}
+            // this makes no sense
+            constructor={name as any}
             id={id}
           />
         ))}
@@ -25,10 +39,10 @@ const Standings = ({ standings }) => {
 }
 
 export async function getStaticPaths() {
-  const { data } = await supabase.from('season').select('*')
+  const { data: seasons } = await supabase.from('season').select('*')
 
   return {
-    paths: data.map((season) => ({
+    paths: (seasons as Season[]).map((season) => ({
       params: {
         season: season.year.toString(),
       },
@@ -37,9 +51,9 @@ export async function getStaticPaths() {
   }
 }
 
-export async function getStaticProps({ params }) {
+export async function getStaticProps({ params }: GetStaticPropsContext) {
   const { data: standings } = await supabase
-    .rpc('sum_constructor_points_by_season', { season: params.season })
+    .rpc('sum_constructor_points_by_season', { season: params?.season })
     .select('id, name, team_principal, total_points')
     .order('total_points', { ascending: false })
 
