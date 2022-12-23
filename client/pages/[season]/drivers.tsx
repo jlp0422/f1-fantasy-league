@@ -1,8 +1,19 @@
+import { Constructor } from '@/types/Constructor'
+import { Driver } from '@/types/Driver'
+import { Season } from '@/types/Season'
+import { ConstructorDriverWithJoins } from '@/types/Unions'
 import Layout from 'components/Layout'
 import { supabase } from 'lib/database'
+import { GetStaticPropsContext } from 'next'
 import Image from 'next/image'
 
-const DriversPage = ({ drivers }) => {
+type CustomDriver = Driver & { full_name: string; constructor: Constructor }
+
+interface Props {
+  drivers: CustomDriver[]
+}
+
+const DriversPage = ({ drivers }: Props) => {
   console.log({ drivers })
   if (!drivers) {
     return null
@@ -29,7 +40,9 @@ const DriversPage = ({ drivers }) => {
 }
 
 export async function getStaticPaths() {
-  const { data } = await supabase.from('season').select('*')
+  const { data } = (await supabase.from('season').select('*')) as {
+    data: Season[]
+  }
 
   return {
     paths: data.map((season) => ({
@@ -41,12 +54,12 @@ export async function getStaticPaths() {
   }
 }
 
-const makeName = (driver) => `${driver.first_name} ${driver.last_name}`
+const makeName = (driver: Driver) => `${driver.first_name} ${driver.last_name}`
 
-export async function getStaticProps({ params }) {
+export async function getStaticProps({ params }: GetStaticPropsContext) {
   const driverCols =
     'id, abbreviation, first_name, last_name, number, image_url'
-  const { data: constructorDrivers } = await supabase
+  const { data: constructorDrivers } = (await supabase
     .from('constructor_driver')
     .select(
       `id,
@@ -55,10 +68,12 @@ export async function getStaticProps({ params }) {
       driver_two:driver_two_id(${driverCols}),
       season!inner(year)`
     )
-    .eq('season.year', params.season)
+    .eq('season.year', params?.season)) as {
+    data: ConstructorDriverWithJoins[]
+  }
 
   const drivers = constructorDrivers.reduce(
-    (memo, { driver_one, driver_two, constructor }) => {
+    (memo: CustomDriver[], { driver_one, driver_two, constructor }) => {
       return memo.concat([
         {
           ...driver_one,
