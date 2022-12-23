@@ -1,7 +1,7 @@
 import { Season } from '@/types/Season'
-import ConstructorStandingRow from 'components/ConstructorStandingRow'
-import Layout from 'components/Layout'
-import { supabase } from 'lib/database'
+import ConstructorStandingRow from '@/components/ConstructorStandingRow'
+import Layout from '@/components/Layout'
+import { supabase } from '@/lib/database'
 import { GetStaticPropsContext } from 'next'
 
 interface Standing {

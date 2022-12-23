@@ -1,10 +1,10 @@
 import { Constructor } from '@/types/Constructor'
 import { Season } from '@/types/Season'
 import { ConstructorWithSeason } from '@/types/Unions'
-import ConstructorLink from 'components/ConstructorLink'
-import Layout from 'components/Layout'
-import { getCloudinaryCarUrl, normalizeConstructorName } from 'helpers/cars'
-import { supabase } from 'lib/database'
+import ConstructorLink from '@/components/ConstructorLink'
+import Layout from '@/components/Layout'
+import { getCloudinaryCarUrl, normalizeConstructorName } from '@/helpers/cars'
+import { supabase } from '@/lib/database'
 import { GetStaticPropsContext } from 'next'
 
 interface Props {
