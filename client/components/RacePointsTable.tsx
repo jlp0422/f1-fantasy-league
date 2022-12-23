@@ -26,7 +26,6 @@ const RacePointsTable = ({
   constructorsById,
   indexedRacePoints,
 }: Props) => {
-  console.log({ races, standings, constructorsById, indexedRacePoints })
   return (
     <table className="w-full text-base text-left text-gray-300 uppercase bg-gray-800 font-secondary">
       <thead className="bg-gray-700 whitespace-nowrap">

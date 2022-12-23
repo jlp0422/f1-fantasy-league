@@ -4,7 +4,6 @@ import { COLORS_BY_CONSTRUCTOR } from '@/constants/index'
 import { normalizeConstructorName } from '@/helpers/cars'
 
 interface Props {
-  //TODO make type
   constructor: string
   principal: string
   points: string

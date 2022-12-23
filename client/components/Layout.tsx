@@ -5,7 +5,7 @@ interface Props {
   children: any
   documentTitle: string
   metaImageUrl?: string
-  description: string
+  description?: string
   fullWidth?: boolean
 }
 

@@ -1,4 +1,4 @@
 export interface Season {
   id: number
-  season: number
+  year: number
 }
