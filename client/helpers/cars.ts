@@ -19,11 +19,11 @@ export const rgbDataURL = (r: number, g: number, b: number) =>
     triplet(0, r, g) + triplet(b, 255, 255)
   }/yH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==`
 
-type CloudinaryOptions = Record<'format' | 'resize', string>
+type CloudinaryOptions = Record<string, string>
 
 export const getCloudinaryCarUrl = (
   constructorName: string,
-  { format = 'jpg', resize = '' }: CloudinaryOptions
+  { format = 'jpg', resize = '' }: CloudinaryOptions = {}
 ) => {
   const baseUrl = 'https://res.cloudinary.com/jlp0422/image/upload'
   const path = '/v1652746266/f1-fantasy-2022/cars'

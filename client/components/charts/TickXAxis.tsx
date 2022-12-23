@@ -1,7 +1,7 @@
 interface Props {
-  x: string,
-  y: string,
-  payload: Payload
+  x?: string,
+  y?: string,
+  payload?: Payload
 }
 
 interface Payload {
@@ -20,7 +20,7 @@ const TickXAxis = ({ x, y, payload }: Props) => {
         transform="rotate(-35)"
         className="text-lg font-tertiary"
       >
-        {payload.value}
+        {payload?.value}
       </text>
     </g>
   )

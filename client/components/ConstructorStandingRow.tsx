@@ -8,7 +8,7 @@ interface Props {
   constructor: string
   principal: string
   points: string
-  id: string
+  id: number
 }
 
 const ConstructorStandingRow = ({

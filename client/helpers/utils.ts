@@ -6,7 +6,7 @@ export const sortArray = (array: any[], sortFn: (a: any, b: any) => any) => {
   return copy
 }
 
-export const sum = (array: number[]) =>
+export const sum = (array: number[]): number =>
   array.reduce((sum, number) => (sum += number), 0)
 
 export const indexBy = (key: string) => (array: Record<string, any>[]) =>

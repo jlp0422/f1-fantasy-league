@@ -1,9 +1,10 @@
-import TickXAxis from 'components/charts/TickXAxis'
-import TickYAxis from 'components/charts/TickYAxis'
-import CheckboxEmpty from 'components/icons/CheckboxEmpty'
-import CheckboxFilled from 'components/icons/CheckboxFilled'
-import { COLORS_BY_CONSTRUCTOR } from 'constants/index'
-import { normalizeConstructorName } from 'helpers/cars'
+import TickXAxis from '@/components/charts/TickXAxis'
+import TickYAxis from '@/components/charts/TickYAxis'
+import CheckboxEmpty from '@/components/icons/CheckboxEmpty'
+import CheckboxFilled from '@/components/icons/CheckboxFilled'
+import { COLORS_BY_CONSTRUCTOR } from '@/constants/index'
+import { normalizeConstructorName } from '@/helpers/cars'
+import { Constructor } from '@/types/Constructor'
 import {
   CartesianGrid,
   Legend,
@@ -15,6 +16,20 @@ import {
   YAxis,
 } from 'recharts'
 
+interface Props {
+  setIsChartDropdownOpen: (
+    val: boolean | ((existing: boolean) => boolean)
+  ) => void
+  selectedChartConstructors: string[]
+  isChartDropdownOpen: boolean
+  setSelectedChartConstructors: (
+    val: string[] | ((existing: string[]) => string[])
+  ) => void
+  cumulativePointsByConstructor: Record<string, string | number>[]
+  constructors: Constructor[]
+  chartLines: string[]
+}
+
 const RacePointsChart = ({
   setIsChartDropdownOpen,
   selectedChartConstructors,
@@ -23,14 +38,16 @@ const RacePointsChart = ({
   cumulativePointsByConstructor,
   constructors,
   chartLines,
-}) => {
-  const updateSelectedConstructors = (constructor) => {
+}: Props) => {
+  const updateSelectedConstructors = (constructor: string) => {
     if (selectedChartConstructors.includes(constructor)) {
-      setSelectedChartConstructors((existing) =>
+      setSelectedChartConstructors((existing: string[]) =>
         existing.filter((c) => c !== constructor)
       )
     } else {
-      setSelectedChartConstructors((existing) => existing.concat(constructor))
+      setSelectedChartConstructors((existing: string[]) =>
+        existing.concat(constructor)
+      )
     }
     setIsChartDropdownOpen(false)
   }
@@ -53,7 +70,7 @@ const RacePointsChart = ({
       </h2>
       <div className="relative font-tertiary">
         <button
-          onClick={() => setIsChartDropdownOpen((open) => !open)}
+          onClick={() => setIsChartDropdownOpen((open: boolean) => !open)}
           id="dropdownDefault"
           data-dropdown-toggle="dropdown"
           className="text-white mt-2 my-4 font-medium rounded-lg text-xl px-4 py-2.5 text-center inline-flex items-center bg-gray-600 hover:bg-gray-700"

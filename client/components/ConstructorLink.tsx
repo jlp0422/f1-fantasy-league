@@ -3,7 +3,7 @@ import { useRouter } from 'next/router'
 
 interface Props {
   normalizedConstructor: string
-  constructorId: string
+  constructorId: number
   children: any
 }
 

@@ -1,7 +1,7 @@
 interface Props {
-  x: string
-  y: string
-  payload: Payload
+  x?: string
+  y?: string
+  payload?: Payload
 }
 
 interface Payload {
@@ -19,7 +19,7 @@ const TickYAxis = ({ x, y, payload }: Props) => {
         fill="#fff"
         className="text-lg font-tertiary"
       >
-        {payload.value} pts
+        {payload?.value} pts
       </text>
     </g>
   )
