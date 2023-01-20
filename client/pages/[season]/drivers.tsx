@@ -1,37 +1,39 @@
+import Driver from '@/components/Driver'
 import { Constructor } from '@/types/Constructor'
-import { Driver } from '@/types/Driver'
+import { Driver as DriverType } from '@/types/Driver'
 import { Season } from '@/types/Season'
-import { ConstructorDriverWithJoins } from '@/types/Unions'
+import {
+  ConstructorDriverWithJoins,
+  DriverRaceResultWithRaceAndSeason,
+  RaceWithSeason,
+} from '@/types/Unions'
 import Layout from 'components/Layout'
 import { supabase } from 'lib/database'
 import { GetStaticPropsContext } from 'next'
-import Image from 'next/image'
 
-type CustomDriver = Driver & { full_name: string; constructor: Constructor }
+type CustomDriver = DriverType & { full_name: string; constructor: Constructor }
 
 interface Props {
   drivers: CustomDriver[]
+  resultsByDriverId: Record<string, DriverRaceResultWithRaceAndSeason[]>
+  races: RaceWithSeason[]
 }
 
-const DriversPage = ({ drivers }: Props) => {
-  console.log({ drivers })
+const DriversPage = ({ drivers, resultsByDriverId, races }: Props) => {
+  console.log({ drivers, resultsByDriverId, races })
   if (!drivers) {
     return null
   }
   return (
     <Layout documentTitle="Drivers">
       <div className="flex flex-col">
-        {drivers.map((driver) => {
+        {drivers.slice(0, 1).map((driver) => {
           return (
-            <div key={driver.id}>
-              <p>{driver.full_name}</p>
-              <Image
-                width={100}
-                height={100}
-                src={driver.image_url}
-                alt={driver.full_name}
-              />
-            </div>
+            <Driver
+              key={driver.id}
+              driver={driver}
+              results={resultsByDriverId[driver.id]}
+            />
           )
         })}
       </div>
@@ -54,7 +56,8 @@ export async function getStaticPaths() {
   }
 }
 
-const makeName = (driver: Driver) => `${driver.first_name} ${driver.last_name}`
+const makeName = (driver: DriverType) =>
+  `${driver.first_name} ${driver.last_name}`
 
 export async function getStaticProps({ params }: GetStaticPropsContext) {
   const driverCols =
@@ -71,6 +74,49 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
     .eq('season.year', params?.season)) as {
     data: ConstructorDriverWithJoins[]
   }
+
+  const { data: races } = (await supabase
+    .from('race')
+    .select('id, location, country, start_date, season!inner(year)')
+    .eq('season.year', params?.season)
+    .order('start_date', { ascending: true })) as { data: RaceWithSeason[] }
+
+  const { data: raceResults } = (await supabase
+    .from('driver_race_result')
+    .select(
+      `
+      id,
+      finish_position_points,
+      grid_difference_points,
+      race!inner(
+        id,
+        name,
+        location,
+        start_date,
+        season!inner(
+          id,
+          year
+        )
+      ),
+      driver_id
+    `
+    )
+    .eq('race.season.year', params?.season)) as {
+    data: DriverRaceResultWithRaceAndSeason[]
+  }
+
+  const resultsByDriverId = raceResults?.reduce(
+    (memo: Record<string, DriverRaceResultWithRaceAndSeason[]>, result) => {
+      const driverId = result.driver_id.toString()
+      if (memo[driverId]) {
+        memo[driverId].push(result)
+      } else {
+        memo[driverId] = [result]
+      }
+      return memo
+    },
+    {}
+  )
 
   const drivers = constructorDrivers.reduce(
     (memo: CustomDriver[], { driver_one, driver_two, constructor }) => {
@@ -93,6 +139,8 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
   return {
     props: {
       drivers,
+      races,
+      resultsByDriverId,
     },
   }
 }
