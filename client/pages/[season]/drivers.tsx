@@ -1,4 +1,6 @@
 import Driver from '@/components/Driver'
+import { indexBy } from '@/helpers/utils'
+
 import { Constructor } from '@/types/Constructor'
 import { Driver as DriverType } from '@/types/Driver'
 import { Season } from '@/types/Season'
@@ -16,17 +18,26 @@ type CustomDriver = DriverType & { full_name: string; constructor: Constructor }
 interface Props {
   drivers: CustomDriver[]
   resultsByDriverId: Record<string, DriverRaceResultWithRaceAndSeason[]>
+  // resultsByRaceId: any
   races: RaceWithSeason[]
+  raceResults: any
+  driverRaceResults: any
 }
 
-const DriversPage = ({ drivers, resultsByDriverId, races }: Props) => {
-  console.log({ drivers, resultsByDriverId, races })
+const DriversPage = ({ drivers, resultsByDriverId, races, driverRaceResults }: Props) => {
+  console.log({ drivers, resultsByDriverId, races, driverRaceResults })
   if (!drivers) {
     return null
   }
   return (
-    <Layout documentTitle="Drivers">
-      <div className="flex flex-col">
+    <Layout documentTitle="Drivers" fullWidth>
+      <div className="relative mx-2 mb-4 overflow-x-auto rounded-lg sm:mx-4">
+        {/* <div className="flex flex-col">
+        <div className='flex'>
+        {races.map(race => (
+          <p key={race.id}>{race.country}</p>
+        ))}
+        </div>
         {drivers.slice(0, 1).map((driver) => {
           return (
             <Driver
@@ -36,6 +47,87 @@ const DriversPage = ({ drivers, resultsByDriverId, races }: Props) => {
             />
           )
         })}
+      </div> */}
+        <table className="w-full text-base text-left text-gray-300 uppercase bg-gray-800 font-secondary">
+          <thead className="bg-gray-700 whitespace-nowrap">
+            <tr>
+              <th
+                key="Constructor"
+                scope="col"
+                className="px-6 py-3 sticky invisible hidden sm:table-cell sm:visible sm:w-[310px] sm:min-w-[310px] sm:max-w-[310px] left-0 bg-gray-700"
+              >
+                Driver
+              </th>
+              <th
+                scope="col"
+                className="px-6 py-3 visible table-cell sticky left-0 w-[88px] min-w-[88px] max-w-[88px] bg-gray-700 sm:invisible sm:hidden"
+              >
+                &nbsp;
+              </th>
+              {races.map((race) => (
+                <th
+                  key={race.id}
+                  scope="col"
+                  className="px-6 py-3 font-normal text-center"
+                >
+                  {race.country}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {/* {standings.map((constructor) => {
+          const normalized = normalizeConstructorName(constructor.name)
+          const { numberBackground } = COLORS_BY_CONSTRUCTOR[normalized]
+          return (
+            <tr
+              key={constructor.name}
+              className="text-lg bg-gray-800 border-b border-gray-700 th-child:odd:bg-gray-800 th-child:even:bg-gray-700 sm:hover:bg-gray-600 th-child:sm:hover:bg-gray-600 odd:bg-gray-800 even:bg-gray-700"
+            >
+              <th
+                scope="row"
+                className="sticky w-[88px] min-w-[88px] max-w-[88px] sm:w-[310px] sm:min-w-[310px] sm:max-w-[310px] left-0 "
+              >
+                <div className="flex items-center justify-center gap-3 px-2 py-3 font-semibold text-gray-100 sm:justify-start sm:px-6 sm:py-4 whitespace-nowrap">
+                  <ConstructorLink
+                    normalizedConstructor={normalized}
+                    constructorId={constructor.id}
+                  >
+                    <a
+                      className="relative w-10 h-10 p-2 rounded-full sm:w-14 sm:h-14 sm:p-3"
+                      style={{ backgroundColor: numberBackground }}
+                    >
+                      <CarNumber constructorName={normalized} size="small" />
+                    </a>
+                  </ConstructorLink>
+                  <ConstructorLink
+                    normalizedConstructor={normalized}
+                    constructorId={constructor.id}
+                  >
+                    <a className="invisible hidden sm:block sm:visible sm:hover:text-gray-300">
+                      {constructor.name}
+                    </a>
+                  </ConstructorLink>
+                </div>
+              </th>
+              <td className="px-6 py-4 text-center ">
+                {constructorsById[constructor.id].total_points}
+              </td>
+              {races.map((race) => (
+                <td
+                  className="px-6 py-4 text-center"
+                  key={`${constructor.id}-${race.id}`}
+                >
+                  {indexedRacePoints[race.id]
+                    ? indexedRacePoints[race.id][constructor.id].race_points
+                    : null}
+                </td>
+              ))}
+            </tr>
+          )
+        })} */}
+          </tbody>
+        </table>
       </div>
     </Layout>
   )
@@ -101,22 +193,21 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
       driver_id
     `
     )
-    .eq('race.season.year', params?.season)) as {
+    .eq('race.season.year', params?.season)
+    .order('start_date', { ascending: true, foreignTable: 'race' })) as {
     data: DriverRaceResultWithRaceAndSeason[]
   }
 
-  const resultsByDriverId = raceResults?.reduce(
-    (memo: Record<string, DriverRaceResultWithRaceAndSeason[]>, result) => {
-      const driverId = result.driver_id.toString()
-      if (memo[driverId]) {
-        memo[driverId].push(result)
-      } else {
-        memo[driverId] = [result]
-      }
-      return memo
-    },
-    {}
-  )
+  const resultsByDriverId = raceResults?.reduce((memo: any, result) => {
+    const driverId = result.driver_id.toString()
+    const raceId = result.race.id.toString()
+    if (memo[driverId]) {
+      memo[driverId][raceId] = result
+    } else {
+      memo[driverId] = { [raceId]: result }
+    }
+    return memo
+  }, {})
 
   const drivers = constructorDrivers.reduce(
     (memo: CustomDriver[], { driver_one, driver_two, constructor }) => {
@@ -136,11 +227,23 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
     []
   )
 
+  const driverRaceResults = drivers.map(driver => {
+    const result = { driver, raceResults: [] } as Record<string, any>
+    races.forEach(race => {
+      const driverResult = resultsByDriverId[driver.id][race.id] || null
+      result.raceResults.push(driverResult)
+    })
+    return result
+  })
+
   return {
     props: {
       drivers,
       races,
+      driverRaceResults,
       resultsByDriverId,
+      // resultsByRaceId,
+      raceResults,
     },
   }
 }
