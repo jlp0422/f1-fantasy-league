@@ -25,7 +25,7 @@ interface Props {
 }
 
 const DriversPage = ({ drivers, resultsByDriverId, races, driverRaceResults }: Props) => {
-  console.log({ drivers, resultsByDriverId, races, driverRaceResults })
+  // console.log({ drivers, resultsByDriverId, races, driverRaceResults })
   if (!drivers) {
     return null
   }
@@ -76,12 +76,10 @@ const DriversPage = ({ drivers, resultsByDriverId, races, driverRaceResults }: P
             </tr>
           </thead>
           <tbody>
-            {/* {standings.map((constructor) => {
-          const normalized = normalizeConstructorName(constructor.name)
-          const { numberBackground } = COLORS_BY_CONSTRUCTOR[normalized]
+            {driverRaceResults.map((result: any) => {
           return (
             <tr
-              key={constructor.name}
+              key={result.driver.id}
               className="text-lg bg-gray-800 border-b border-gray-700 th-child:odd:bg-gray-800 th-child:even:bg-gray-700 sm:hover:bg-gray-600 th-child:sm:hover:bg-gray-600 odd:bg-gray-800 even:bg-gray-700"
             >
               <th
@@ -89,43 +87,23 @@ const DriversPage = ({ drivers, resultsByDriverId, races, driverRaceResults }: P
                 className="sticky w-[88px] min-w-[88px] max-w-[88px] sm:w-[310px] sm:min-w-[310px] sm:max-w-[310px] left-0 "
               >
                 <div className="flex items-center justify-center gap-3 px-2 py-3 font-semibold text-gray-100 sm:justify-start sm:px-6 sm:py-4 whitespace-nowrap">
-                  <ConstructorLink
-                    normalizedConstructor={normalized}
-                    constructorId={constructor.id}
-                  >
-                    <a
-                      className="relative w-10 h-10 p-2 rounded-full sm:w-14 sm:h-14 sm:p-3"
-                      style={{ backgroundColor: numberBackground }}
-                    >
-                      <CarNumber constructorName={normalized} size="small" />
-                    </a>
-                  </ConstructorLink>
-                  <ConstructorLink
-                    normalizedConstructor={normalized}
-                    constructorId={constructor.id}
-                  >
-                    <a className="invisible hidden sm:block sm:visible sm:hover:text-gray-300">
-                      {constructor.name}
-                    </a>
-                  </ConstructorLink>
+                {result.driver.full_name}
                 </div>
               </th>
-              <td className="px-6 py-4 text-center ">
+              {/* <td className="px-6 py-4 text-center ">
                 {constructorsById[constructor.id].total_points}
-              </td>
-              {races.map((race) => (
+              </td> */}
+              {result.raceResults.map((raceResult: any) => (
                 <td
                   className="px-6 py-4 text-center"
-                  key={`${constructor.id}-${race.id}`}
+                  key={raceResult?.id}
                 >
-                  {indexedRacePoints[race.id]
-                    ? indexedRacePoints[race.id][constructor.id].race_points
-                    : null}
+                  {raceResult?.grid_difference_points + raceResult?.finish_position_points}
                 </td>
               ))}
             </tr>
           )
-        })} */}
+        })}
           </tbody>
         </table>
       </div>
