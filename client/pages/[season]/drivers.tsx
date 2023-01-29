@@ -7,6 +7,7 @@ import { DriverRaceResultWithJoins, RaceWithSeason } from '@/types/Unions'
 import Layout from 'components/Layout'
 import { supabase } from 'lib/database'
 import { GetStaticPropsContext } from 'next'
+import Image from 'next/image'
 
 type CustomDriver = DriverType & { full_name: string }
 type DriverResult = { driver: CustomDriver } & {
@@ -62,9 +63,17 @@ const DriversPage = ({ drivers, races, driverRaceResults }: Props) => {
                 >
                   <th
                     scope="row"
-                    className="sticky w-[88px] min-w-[88px] max-w-[88px] sm:w-[310px] sm:min-w-[310px] sm:max-w-[310px] left-0 "
+                    className="sticky w-[150px] min-w-[150px] max-w-[150px] sm:w-[310px] sm:min-w-[310px] sm:max-w-[310px] left-0 flex items-center"
                   >
-                    <div className="flex items-center justify-center gap-3 px-2 py-3 font-semibold text-gray-100 sm:justify-start sm:px-6 sm:py-4 whitespace-nowrap">
+                    <div className="invisible hidden sm:visible sm:block sm:h-[75px] sm:w-[75px]">
+                      <Image
+                        width={75}
+                        height={75}
+                        src={result.driver.image_url}
+                        alt={result.driver.full_name}
+                      />
+                    </div>
+                    <div className="flex items-center justify-center gap-3 px-4 py-4 font-semibold text-left text-gray-100 sm:justify-start sm:px-6 sm:py-4 whitespace-nowrap sm:text-center">
                       {result.driver.full_name}
                     </div>
                   </th>
