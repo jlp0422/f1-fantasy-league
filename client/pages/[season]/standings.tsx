@@ -3,6 +3,7 @@ import ConstructorStandingRow from '@/components/ConstructorStandingRow'
 import Layout from '@/components/Layout'
 import { supabase } from '@/lib/database'
 import { GetStaticPropsContext } from 'next'
+import { makeSeasonPaths } from '@/helpers/routes'
 
 interface Standing {
   id: number
@@ -39,18 +40,11 @@ const Standings = ({ standings }: Props) => {
 }
 
 export async function getStaticPaths() {
-  const { data: seasons } = (await supabase.from('season').select('*')) as {
+  const { data } = (await supabase.from('season').select('*')) as {
     data: Season[]
   }
 
-  return {
-    paths: seasons.map((season) => ({
-      params: {
-        season: season.year.toString(),
-      },
-    })),
-    fallback: false,
-  }
+  return makeSeasonPaths(data)
 }
 
 export async function getStaticProps({ params }: GetStaticPropsContext) {

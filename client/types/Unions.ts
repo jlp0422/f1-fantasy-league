@@ -13,6 +13,10 @@ export type ConstructorDriverWithJoins = ConstructorDriver & {
 } & { constructor: Constructor } & { driver_one: Driver } & {
   driver_two: Driver
 }
-export type DriverRaceResultWithJoins = DriverRaceResult & {
+export type DriverRaceResultWithJoins = DriverRaceResultWithRaceAndSeason & {
+  driver: Driver
+}
+
+export type DriverRaceResultWithRaceAndSeason = DriverRaceResult & {
   race: RaceWithSeason
-} & { driver: Driver }
+}
