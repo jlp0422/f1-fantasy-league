@@ -219,11 +219,11 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
 
   const chartData = races.reduce((memo: GenericObject[], race, index) => {
     const data: GenericObject = { race: race.country }
-    let hasRaceData = true
+    let hasRaceData = false
     constructors.forEach((c) => {
       const cPoints = cumulativePointsByConstructor[c.id][index]
       data[c.name] = cPoints
-      hasRaceData = isNaN(cPoints)
+      hasRaceData = !isNaN(cPoints)
     })
 
     if (hasRaceData) {
