@@ -1,12 +1,12 @@
 import { makeSeasonPaths } from '@/helpers/routes'
 import { makeName, sortArray } from '@/helpers/utils'
 
+import Layout from '@/components/Layout'
+import { supabase } from '@/lib/database'
 import { Driver as DriverType } from '@/types/Driver'
 import { DriverRaceResult } from '@/types/DriverRaceResult'
 import { Season } from '@/types/Season'
 import { DriverRaceResultWithJoins, RaceWithSeason } from '@/types/Unions'
-import Layout from 'components/Layout'
-import { supabase } from 'lib/database'
 import { GetStaticPropsContext } from 'next'
 import Image from 'next/image'
 
