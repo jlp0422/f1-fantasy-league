@@ -1,53 +1,31 @@
-import Driver from '@/components/Driver'
-import { indexBy } from '@/helpers/utils'
+import { sortArray } from '@/helpers/utils'
 
-import { Constructor } from '@/types/Constructor'
 import { Driver as DriverType } from '@/types/Driver'
+import { DriverRaceResult } from '@/types/DriverRaceResult'
 import { Season } from '@/types/Season'
-import {
-  ConstructorDriverWithJoins,
-  DriverRaceResultWithRaceAndSeason,
-  RaceWithSeason,
-} from '@/types/Unions'
+import { DriverRaceResultWithJoins, RaceWithSeason } from '@/types/Unions'
 import Layout from 'components/Layout'
 import { supabase } from 'lib/database'
 import { GetStaticPropsContext } from 'next'
 
-type CustomDriver = DriverType & { full_name: string; constructor: Constructor }
+type CustomDriver = DriverType & { full_name: string }
+type DriverResult = { driver: CustomDriver } & {
+  raceResults: (DriverRaceResult & { didNotRace?: boolean })[]
+}
 
 interface Props {
   drivers: CustomDriver[]
-  resultsByDriverId: Record<string, DriverRaceResultWithRaceAndSeason[]>
-  // resultsByRaceId: any
   races: RaceWithSeason[]
-  raceResults: any
-  driverRaceResults: any
+  driverRaceResults: DriverResult[]
 }
 
-const DriversPage = ({ drivers, resultsByDriverId, races, driverRaceResults }: Props) => {
-  // console.log({ drivers, resultsByDriverId, races, driverRaceResults })
+const DriversPage = ({ drivers, races, driverRaceResults }: Props) => {
   if (!drivers) {
     return null
   }
   return (
     <Layout documentTitle="Drivers" fullWidth>
-      <div className="relative mx-2 mb-4 overflow-x-auto rounded-lg sm:mx-4">
-        {/* <div className="flex flex-col">
-        <div className='flex'>
-        {races.map(race => (
-          <p key={race.id}>{race.country}</p>
-        ))}
-        </div>
-        {drivers.slice(0, 1).map((driver) => {
-          return (
-            <Driver
-              key={driver.id}
-              driver={driver}
-              results={resultsByDriverId[driver.id]}
-            />
-          )
-        })}
-      </div> */}
+      <div className="relative mx-2 my-4 overflow-x-auto rounded-lg sm:mx-4">
         <table className="w-full text-base text-left text-gray-300 uppercase bg-gray-800 font-secondary">
           <thead className="bg-gray-700 whitespace-nowrap">
             <tr>
@@ -76,34 +54,40 @@ const DriversPage = ({ drivers, resultsByDriverId, races, driverRaceResults }: P
             </tr>
           </thead>
           <tbody>
-            {driverRaceResults.map((result: any) => {
-          return (
-            <tr
-              key={result.driver.id}
-              className="text-lg bg-gray-800 border-b border-gray-700 th-child:odd:bg-gray-800 th-child:even:bg-gray-700 sm:hover:bg-gray-600 th-child:sm:hover:bg-gray-600 odd:bg-gray-800 even:bg-gray-700"
-            >
-              <th
-                scope="row"
-                className="sticky w-[88px] min-w-[88px] max-w-[88px] sm:w-[310px] sm:min-w-[310px] sm:max-w-[310px] left-0 "
-              >
-                <div className="flex items-center justify-center gap-3 px-2 py-3 font-semibold text-gray-100 sm:justify-start sm:px-6 sm:py-4 whitespace-nowrap">
-                {result.driver.full_name}
-                </div>
-              </th>
-              {/* <td className="px-6 py-4 text-center ">
-                {constructorsById[constructor.id].total_points}
-              </td> */}
-              {result.raceResults.map((raceResult: any) => (
-                <td
-                  className="px-6 py-4 text-center"
-                  key={raceResult?.id}
+            {driverRaceResults.map((result) => {
+              return (
+                <tr
+                  key={result.driver.id}
+                  className="text-lg bg-gray-800 border-b border-gray-700 th-child:odd:bg-gray-800 th-child:even:bg-gray-700 sm:hover:bg-gray-600 th-child:sm:hover:bg-gray-600 odd:bg-gray-800 even:bg-gray-700"
                 >
-                  {raceResult?.grid_difference_points + raceResult?.finish_position_points}
-                </td>
-              ))}
-            </tr>
-          )
-        })}
+                  <th
+                    scope="row"
+                    className="sticky w-[88px] min-w-[88px] max-w-[88px] sm:w-[310px] sm:min-w-[310px] sm:max-w-[310px] left-0 "
+                  >
+                    <div className="flex items-center justify-center gap-3 px-2 py-3 font-semibold text-gray-100 sm:justify-start sm:px-6 sm:py-4 whitespace-nowrap">
+                      {result.driver.full_name}
+                    </div>
+                  </th>
+                  {result.raceResults.map((raceResult, index) => {
+                    if (raceResult.didNotRace) {
+                      return (
+                        <td className="px-6 py-4 text-center" key={index}>
+                          N/A
+                        </td>
+                      )
+                    }
+                    const totalPoints =
+                      raceResult?.grid_difference_points +
+                      raceResult?.finish_position_points
+                    return (
+                      <td className="px-6 py-4 text-center" key={index}>
+                        {totalPoints}
+                      </td>
+                    )
+                  })}
+                </tr>
+              )
+            })}
           </tbody>
         </table>
       </div>
@@ -126,25 +110,11 @@ export async function getStaticPaths() {
   }
 }
 
+// make util function
 const makeName = (driver: DriverType) =>
   `${driver.first_name} ${driver.last_name}`
 
 export async function getStaticProps({ params }: GetStaticPropsContext) {
-  const driverCols =
-    'id, abbreviation, first_name, last_name, number, image_url'
-  const { data: constructorDrivers } = (await supabase
-    .from('constructor_driver')
-    .select(
-      `id,
-      constructor(id, name),
-      driver_one:driver_one_id(${driverCols}),
-      driver_two:driver_two_id(${driverCols}),
-      season!inner(year)`
-    )
-    .eq('season.year', params?.season)) as {
-    data: ConstructorDriverWithJoins[]
-  }
-
   const { data: races } = (await supabase
     .from('race')
     .select('id, location, country, start_date, season!inner(year)')
@@ -168,16 +138,23 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
           year
         )
       ),
-      driver_id
+      driver(
+        id,
+        abbreviation,
+        first_name,
+        last_name,
+        number,
+        image_url
+      )
     `
     )
     .eq('race.season.year', params?.season)
     .order('start_date', { ascending: true, foreignTable: 'race' })) as {
-    data: DriverRaceResultWithRaceAndSeason[]
+    data: DriverRaceResultWithJoins[]
   }
 
   const resultsByDriverId = raceResults?.reduce((memo: any, result) => {
-    const driverId = result.driver_id.toString()
+    const driverId = result.driver.id.toString()
     const raceId = result.race.id.toString()
     if (memo[driverId]) {
       memo[driverId][raceId] = result
@@ -187,28 +164,43 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
     return memo
   }, {})
 
-  const drivers = constructorDrivers.reduce(
-    (memo: CustomDriver[], { driver_one, driver_two, constructor }) => {
+  const uniqueDriversById = raceResults
+    .map((result) => result.driver)
+    .reduce((memo: Record<string, DriverType>, driver) => {
+      if (!memo[driver.id]) {
+        memo[driver.id] = driver
+      }
+      return memo
+    }, {})
+
+  const drivers = Object.values(uniqueDriversById).reduce(
+    (memo: CustomDriver[], driver) => {
       return memo.concat([
         {
-          ...driver_one,
-          full_name: makeName(driver_one),
-          constructor: constructor,
-        },
-        {
-          ...driver_two,
-          full_name: makeName(driver_two),
-          constructor: constructor,
+          ...driver,
+          full_name: makeName(driver),
         },
       ])
     },
     []
   )
 
-  const driverRaceResults = drivers.map(driver => {
-    const result = { driver, raceResults: [] } as Record<string, any>
-    races.forEach(race => {
-      const driverResult = resultsByDriverId[driver.id][race.id] || null
+  const sortedDrivers = sortArray(
+    drivers,
+    (a: CustomDriver, b: CustomDriver) => {
+      if (a.last_name > b.last_name) {
+        return 1
+      }
+      return -1
+    }
+  )
+
+  const driverRaceResults = sortedDrivers.map((driver) => {
+    const result = { driver, raceResults: [] } as DriverResult
+    races.forEach((race) => {
+      const driverResult = resultsByDriverId[driver.id][race.id] || {
+        didNotRace: true,
+      }
       result.raceResults.push(driverResult)
     })
     return result
@@ -216,12 +208,9 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
 
   return {
     props: {
-      drivers,
+      drivers: sortedDrivers,
       races,
       driverRaceResults,
-      resultsByDriverId,
-      // resultsByRaceId,
-      raceResults,
     },
   }
 }
