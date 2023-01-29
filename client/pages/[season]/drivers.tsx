@@ -1,3 +1,4 @@
+import { makeSeasonPaths } from '@/helpers/routes'
 import { makeName, sortArray } from '@/helpers/utils'
 
 import { Driver as DriverType } from '@/types/Driver'
@@ -123,14 +124,7 @@ export async function getStaticPaths() {
     data: Season[]
   }
 
-  return {
-    paths: data.map((season) => ({
-      params: {
-        season: season.year.toString(),
-      },
-    })),
-    fallback: false,
-  }
+  return makeSeasonPaths(data)
 }
 
 export async function getStaticProps({ params }: GetStaticPropsContext) {
