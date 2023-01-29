@@ -371,6 +371,7 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
       race!inner(
         id,
         location,
+        start_date,
         season!inner(
           id,
           year
@@ -379,7 +380,7 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
     )
     .eq('race.season.year', constructor.season.year)
     .eq('constructor_id', constructor.id)
-    .order('race_id', { ascending: true })) as {
+    .order('start_date', { ascending: true, foreignTable: 'race' })) as {
     data: DriverRaceResultWithJoins[]
   }
 
