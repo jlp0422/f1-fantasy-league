@@ -26,7 +26,7 @@ const DriversPage = ({ drivers, races, driverRaceResults }: Props) => {
   }
   return (
     <Layout documentTitle="Drivers" fullWidth>
-      <div className="relative mx-2 my-4 overflow-x-auto rounded-lg sm:mx-4">
+      <div className="relative mx-2 my-4 overflow-x-auto overflow-y-hidden rounded-lg sm:mx-4">
         <table className="w-full text-base text-left text-gray-300 uppercase bg-gray-800 font-secondary">
           <thead className="bg-gray-700 whitespace-nowrap">
             <tr>

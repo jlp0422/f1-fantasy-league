@@ -21,6 +21,7 @@ const Header = () => {
     { href: `/${query.season}/standings`, title: 'Standings' },
     { href: `/${query.season}/constructors`, title: 'Constructors' },
     { href: `/${query.season}/race-points`, title: 'Points by Race' },
+    { href: `/${query.season}/drivers`, title: 'Drivers' },
   ]
 
   return (
