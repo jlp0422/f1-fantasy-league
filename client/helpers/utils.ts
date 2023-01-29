@@ -1,4 +1,5 @@
-import { GenericObject } from "@/types/Common"
+import { GenericObject } from '@/types/Common'
+import { Driver } from '@/types/Driver'
 
 export const toNum = (stringNumber: string) => +stringNumber
 
@@ -18,3 +19,6 @@ export const indexBy = (key: string) => (array: GenericObject[]) =>
       [itemKey]: item,
     })
   }, {})
+
+export const makeName = (driver: Driver) =>
+  `${driver.first_name} ${driver.last_name}`

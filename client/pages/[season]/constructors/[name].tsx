@@ -4,7 +4,7 @@ import TickYAxis from '@/components/charts/TickYAxis'
 import Layout from '@/components/Layout'
 import { COLORS_BY_CONSTRUCTOR } from '@/constants/index'
 import { getCloudinaryCarUrl, normalizeConstructorName } from '@/helpers/cars'
-import { indexBy, sum } from '@/helpers/utils'
+import { indexBy, makeName, sum } from '@/helpers/utils'
 import { supabase } from '@/lib/database'
 import { GenericObject } from '@/types/Common'
 import { Driver } from '@/types/Driver'
@@ -346,9 +346,6 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
     .eq('id', constructorId)
     .limit(1)
     .single()) as { data: ConstructorWithSeason }
-
-  const makeName = (driver: Driver) =>
-    `${driver.first_name} ${driver.last_name}`
 
   const { data: races } = (await supabase
     .from('race')

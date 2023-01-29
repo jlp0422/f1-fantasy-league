@@ -1,4 +1,4 @@
-import { sortArray } from '@/helpers/utils'
+import { makeName, sortArray } from '@/helpers/utils'
 
 import { Driver as DriverType } from '@/types/Driver'
 import { DriverRaceResult } from '@/types/DriverRaceResult'
@@ -10,20 +10,24 @@ import { GetStaticPropsContext } from 'next'
 import Image from 'next/image'
 
 type CustomDriver = DriverType & { full_name: string }
-type DriverResult = { driver: CustomDriver } & {
-  raceResults: (DriverRaceResult & { didNotRace?: boolean })[]
+interface DriverResult {
+  driver: CustomDriver
+  raceResults: (DriverRaceResult & NoRaceResult)[]
+  totalPoints: number
 }
-
+interface NoRaceResult {
+  didNotRace?: boolean
+}
 interface Props {
-  drivers: CustomDriver[]
   races: RaceWithSeason[]
   driverRaceResults: DriverResult[]
 }
 
-const DriversPage = ({ drivers, races, driverRaceResults }: Props) => {
-  if (!drivers) {
+const DriversPage = ({ races, driverRaceResults }: Props) => {
+  if (!driverRaceResults) {
     return null
   }
+
   return (
     <Layout documentTitle="Drivers" fullWidth>
       <div className="relative mx-2 my-4 overflow-x-auto overflow-y-hidden rounded-lg sm:mx-4">
@@ -43,6 +47,13 @@ const DriversPage = ({ drivers, races, driverRaceResults }: Props) => {
               >
                 &nbsp;
               </th>
+              <th
+                key="Total Points"
+                scope="col"
+                className="px-6 py-3 font-normal text-center"
+              >
+                Total Points
+              </th>
               {races.map((race) => (
                 <th
                   key={race.id}
@@ -55,10 +66,10 @@ const DriversPage = ({ drivers, races, driverRaceResults }: Props) => {
             </tr>
           </thead>
           <tbody>
-            {driverRaceResults.map((result) => {
+            {driverRaceResults.map((seasonResult) => {
               return (
                 <tr
-                  key={result.driver.id}
+                  key={seasonResult.driver.id}
                   className="text-lg bg-gray-800 border-b border-gray-700 th-child:odd:bg-gray-800 th-child:even:bg-gray-700 sm:hover:bg-gray-600 th-child:sm:hover:bg-gray-600 odd:bg-gray-800 even:bg-gray-700"
                 >
                   <th
@@ -69,15 +80,18 @@ const DriversPage = ({ drivers, races, driverRaceResults }: Props) => {
                       <Image
                         width={75}
                         height={75}
-                        src={result.driver.image_url}
-                        alt={result.driver.full_name}
+                        src={seasonResult.driver.image_url}
+                        alt={seasonResult.driver.full_name}
                       />
                     </div>
                     <div className="flex items-center justify-center gap-3 px-4 py-4 font-semibold text-left text-gray-100 sm:justify-start sm:px-6 sm:py-4 whitespace-nowrap sm:text-center">
-                      {result.driver.full_name}
+                      {seasonResult.driver.full_name}
                     </div>
                   </th>
-                  {result.raceResults.map((raceResult, index) => {
+                  <td className="px-6 py-4 text-center ">
+                    {seasonResult.totalPoints}
+                  </td>
+                  {seasonResult.raceResults.map((raceResult, index) => {
                     if (raceResult.didNotRace) {
                       return (
                         <td className="px-6 py-4 text-center" key={index}>
@@ -119,10 +133,6 @@ export async function getStaticPaths() {
   }
 }
 
-// make util function
-const makeName = (driver: DriverType) =>
-  `${driver.first_name} ${driver.last_name}`
-
 export async function getStaticProps({ params }: GetStaticPropsContext) {
   const { data: races } = (await supabase
     .from('race')
@@ -162,16 +172,22 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
     data: DriverRaceResultWithJoins[]
   }
 
-  const resultsByDriverId = raceResults?.reduce((memo: any, result) => {
-    const driverId = result.driver.id.toString()
-    const raceId = result.race.id.toString()
-    if (memo[driverId]) {
-      memo[driverId][raceId] = result
-    } else {
-      memo[driverId] = { [raceId]: result }
-    }
-    return memo
-  }, {})
+  const resultsByDriverId = raceResults?.reduce(
+    (
+      memo: Record<string, Record<string, DriverRaceResultWithJoins>>,
+      result
+    ) => {
+      const driverId = result.driver.id.toString()
+      const raceId = result.race.id.toString()
+      if (memo[driverId]) {
+        memo[driverId][raceId] = result
+      } else {
+        memo[driverId] = { [raceId]: result }
+      }
+      return memo
+    },
+    {}
+  )
 
   const uniqueDriversById = raceResults
     .map((result) => result.driver)
@@ -194,32 +210,34 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
     []
   )
 
-  const sortedDrivers = sortArray(
-    drivers,
-    (a: CustomDriver, b: CustomDriver) => {
-      if (a.last_name > b.last_name) {
-        return 1
-      }
-      return -1
-    }
-  )
-
-  const driverRaceResults = sortedDrivers.map((driver) => {
-    const result = { driver, raceResults: [] } as DriverResult
+  const driverRaceResults = drivers.map((driver) => {
+    const result = { driver, raceResults: [], totalPoints: 0 } as DriverResult
     races.forEach((race) => {
-      const driverResult = resultsByDriverId[driver.id][race.id] || {
-        didNotRace: true,
+      const driverResult: DriverRaceResultWithJoins & NoRaceResult =
+        resultsByDriverId[driver.id][race.id] || {
+          didNotRace: true,
+        }
+
+      if (!driverResult.didNotRace) {
+        result.totalPoints =
+          result.totalPoints +
+          driverResult.grid_difference_points +
+          driverResult.finish_position_points
       }
       result.raceResults.push(driverResult)
     })
     return result
   })
 
+  const sortedRaceResults = sortArray(
+    driverRaceResults,
+    (a: DriverResult, b: DriverResult) => b.totalPoints - a.totalPoints
+  )
+
   return {
     props: {
-      drivers: sortedDrivers,
       races,
-      driverRaceResults,
+      driverRaceResults: sortedRaceResults,
     },
   }
 }
