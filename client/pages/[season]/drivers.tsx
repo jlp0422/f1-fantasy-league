@@ -75,7 +75,7 @@ const DriversPage = ({ races, driverRaceResults }: Props) => {
                 >
                   <th
                     scope="row"
-                    className="sticky w-[150px] min-w-[150px] max-w-[150px] sm:w-[310px] sm:min-w-[310px] sm:max-w-[310px] left-0 flex items-center"
+                    className="sticky w-[150px] min-w-[150px] max-w-[150px] sm:w-[310px] sm:min-w-[310px] sm:max-w-[310px] left-0 sm:flex sm:items-center"
                   >
                     <div className="invisible hidden sm:visible sm:block sm:h-[75px] sm:w-[75px]">
                       <Image
@@ -85,7 +85,7 @@ const DriversPage = ({ races, driverRaceResults }: Props) => {
                         alt={seasonResult.driver.full_name}
                       />
                     </div>
-                    <div className="flex items-center justify-center gap-3 px-4 py-4 font-semibold text-left text-gray-100 sm:justify-start sm:px-6 sm:py-4 whitespace-nowrap sm:text-center">
+                    <div className="flex items-center justify-start gap-3 px-4 py-4 font-semibold text-left text-gray-100 sm:justify-center sm:px-6 sm:py-4 whitespace-nowrap sm:text-center">
                       {seasonResult.driver.full_name}
                     </div>
                   </th>
