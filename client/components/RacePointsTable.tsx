@@ -10,6 +10,7 @@ import {
 } from '@/types/Common'
 import { Race } from '@/types/Race'
 import { useState } from 'react'
+import Arrow from '@/components/icons/Arrow'
 
 interface Props {
   races: Race[]
@@ -43,11 +44,11 @@ const RacePointsTable = ({
 
   const renderSortButton = (label: string, sortKey: string) => (
     <button
-      className="flex gap-0.5 uppercase"
+      className="flex gap-0.5 uppercase items-center"
       onClick={() => setSortBy(sortKey)}
     >
       {label}
-      {sortBy === sortKey ? <p className="-rotate-90">&rarr;</p> : null}
+      {sortBy === sortKey ? <Arrow /> : null}
     </button>
   )
 

@@ -10,6 +10,7 @@ import { DriverRaceResultWithJoins, RaceWithSeason } from '@/types/Unions'
 import { GetStaticPropsContext } from 'next'
 import Image from 'next/image'
 import { useState } from 'react'
+import Arrow from '@/components/icons/Arrow'
 
 type CustomDriver = DriverType & { full_name: string }
 interface DriverResult {
@@ -48,11 +49,11 @@ const DriversPage = ({ races, driverRaceResults }: Props) => {
 
   const renderSortButton = (label: string, sortKey: string) => (
     <button
-      className="flex gap-0.5 uppercase"
+      className="flex gap-0.5 uppercase items-center"
       onClick={() => setSortBy(sortKey)}
     >
       {label}
-      {sortBy === sortKey ? <p className="-rotate-90">&rarr;</p> : null}
+      {sortBy === sortKey ? <Arrow /> : null}
     </button>
   )
   return (
