@@ -2,8 +2,14 @@ import CarNumber from '@/components/CarNumber'
 import ConstructorLink from '@/components/ConstructorLink'
 import { COLORS_BY_CONSTRUCTOR } from '@/constants/index'
 import { normalizeConstructorName } from '@/helpers/cars'
-import { ConstructorsById, ConstructorTotalPoints, IndexedRacePoints } from '@/types/Common'
+import { sortArray } from '@/helpers/utils'
+import {
+  ConstructorsById,
+  ConstructorTotalPoints,
+  IndexedRacePoints,
+} from '@/types/Common'
 import { Race } from '@/types/Race'
+import { useState } from 'react'
 
 interface Props {
   races: Race[]
@@ -12,12 +18,39 @@ interface Props {
   indexedRacePoints: IndexedRacePoints
 }
 
+const sortingFns: Record<string, any> = {
+  name: (a: ConstructorTotalPoints, b: ConstructorTotalPoints) =>
+    a.name > b.name ? 1 : -1,
+  points: (a: ConstructorTotalPoints, b: ConstructorTotalPoints) =>
+    b.total_points - a.total_points,
+  default:
+    (raceId: string, indexedRacePoints: IndexedRacePoints) =>
+    (a: ConstructorTotalPoints, b: ConstructorTotalPoints) =>
+      indexedRacePoints[raceId][b.id].race_points -
+      indexedRacePoints[raceId][a.id].race_points,
+}
+
 const RacePointsTable = ({
   races,
   standings,
   constructorsById,
   indexedRacePoints,
 }: Props) => {
+  const [sortBy, setSortBy] = useState<string>('points')
+  const sortFn =
+    sortingFns[sortBy] || sortingFns.default(sortBy, indexedRacePoints)
+  const sortedStandings: ConstructorTotalPoints[] = sortArray(standings, sortFn)
+
+  const renderSortButton = (label: string, sortKey: string) => (
+    <button
+      className="flex gap-0.5 uppercase"
+      onClick={() => setSortBy(sortKey)}
+    >
+      {label}
+      {sortBy === sortKey ? <p className="-rotate-90">&rarr;</p> : null}
+    </button>
+  )
+
   return (
     <table className="w-full text-base text-left text-gray-300 uppercase bg-gray-800 font-secondary">
       <thead className="bg-gray-700 whitespace-nowrap">
@@ -27,7 +60,7 @@ const RacePointsTable = ({
             scope="col"
             className="px-6 py-3 sticky invisible hidden sm:table-cell sm:visible sm:w-[310px] sm:min-w-[310px] sm:max-w-[310px] left-0 bg-gray-700"
           >
-            Constructor
+            {renderSortButton('Constructor', 'name')}
           </th>
           <th
             scope="col"
@@ -40,7 +73,7 @@ const RacePointsTable = ({
             scope="col"
             className="px-6 py-3 font-normal text-center"
           >
-            Total Points
+            {renderSortButton('Total Points', 'points')}
           </th>
           {races.map((race) => (
             <th
@@ -48,13 +81,13 @@ const RacePointsTable = ({
               scope="col"
               className="px-6 py-3 font-normal text-center"
             >
-              {race.country}
+              {renderSortButton(race.country, race.id.toString())}
             </th>
           ))}
         </tr>
       </thead>
       <tbody>
-        {standings.map((constructor) => {
+        {sortedStandings.map((constructor) => {
           const normalized = normalizeConstructorName(constructor.name)
           const { numberBackground } = COLORS_BY_CONSTRUCTOR[normalized]
           return (

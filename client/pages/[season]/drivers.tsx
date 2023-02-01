@@ -1,5 +1,5 @@
 import { makeSeasonPaths } from '@/helpers/routes'
-import { makeName, sortArray } from '@/helpers/utils'
+import { makeName, sortArray, toNum } from '@/helpers/utils'
 
 import Layout from '@/components/Layout'
 import { supabase } from '@/lib/database'
@@ -9,6 +9,7 @@ import { Season } from '@/types/Season'
 import { DriverRaceResultWithJoins, RaceWithSeason } from '@/types/Unions'
 import { GetStaticPropsContext } from 'next'
 import Image from 'next/image'
+import { useState } from 'react'
 
 type CustomDriver = DriverType & { full_name: string }
 interface DriverResult {
@@ -24,11 +25,36 @@ interface Props {
   driverRaceResults: DriverResult[]
 }
 
-const DriversPage = ({ races, driverRaceResults }: Props) => {
-  if (!driverRaceResults) {
-    return null
-  }
+const sortingFns: Record<string, any> = {
+  name: (a: DriverResult, b: DriverResult) =>
+    a.driver.last_name > b.driver.last_name ? 1 : -1,
+  points: (a: DriverResult, b: DriverResult) => b.totalPoints - a.totalPoints,
+  default: (raceIndex: string) => (a: DriverResult, b: DriverResult) => {
+    const aRace = a.raceResults[toNum(raceIndex)]
+    const bRace = b.raceResults[toNum(raceIndex)]
+    const aTotal = aRace.finish_position_points + aRace.grid_difference_points
+    const bTotal = bRace.finish_position_points + bRace.grid_difference_points
+    return bTotal - aTotal
+  },
+}
 
+const DriversPage = ({ races, driverRaceResults }: Props) => {
+  const [sortBy, setSortBy] = useState<string>('points')
+  const sortFn = sortingFns[sortBy] || sortingFns.default(sortBy)
+  const sortedDriverRaceResults: DriverResult[] = sortArray(
+    driverRaceResults,
+    sortFn
+  )
+
+  const renderSortButton = (label: string, sortKey: string) => (
+    <button
+      className="flex gap-0.5 uppercase"
+      onClick={() => setSortBy(sortKey)}
+    >
+      {label}
+      {sortBy === sortKey ? <p className="-rotate-90">&rarr;</p> : null}
+    </button>
+  )
   return (
     <Layout documentTitle="Drivers" fullWidth>
       <div className="relative mx-2 my-4 overflow-x-auto overflow-y-hidden rounded-lg sm:mx-4">
@@ -40,7 +66,7 @@ const DriversPage = ({ races, driverRaceResults }: Props) => {
                 scope="col"
                 className="px-6 py-3 sticky invisible hidden sm:table-cell sm:visible sm:w-[310px] sm:min-w-[310px] sm:max-w-[310px] left-0 bg-gray-700"
               >
-                Driver
+                {renderSortButton('Driver', 'name')}
               </th>
               <th
                 scope="col"
@@ -53,21 +79,21 @@ const DriversPage = ({ races, driverRaceResults }: Props) => {
                 scope="col"
                 className="px-6 py-3 font-normal text-center"
               >
-                Total Points
+                {renderSortButton('Total Points', 'points')}
               </th>
-              {races.map((race) => (
+              {races.map((race, index) => (
                 <th
                   key={race.id}
                   scope="col"
                   className="px-6 py-3 font-normal text-center"
                 >
-                  {race.country}
+                  {renderSortButton(race.country, index.toString())}
                 </th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {driverRaceResults.map((seasonResult) => {
+            {sortedDriverRaceResults.map((seasonResult) => {
               return (
                 <tr
                   key={seasonResult.driver.id}
