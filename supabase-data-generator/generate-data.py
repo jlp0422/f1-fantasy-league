@@ -166,25 +166,17 @@ def do_the_update():
     schedule = fastf1.get_event_schedule(int(season), include_testing=False)
 
     season_id = get_season_id(season)
-    print(f"season_id={str(season_id)}")
-
     most_recent_event = get_most_recent_event(schedule)
-    print(f"most_recent_event={str(most_recent_event)}")
-
     race_ids_by_round_number = get_race_ids_by_round_number(season_id)
-    print(f"race_ids_by_round_number={str(race_ids_by_round_number)}")
-
     most_recent_race_id = race_ids_by_round_number[most_recent_event["RoundNumber"]]
-    print(f"most_recent_race_id={str(most_recent_race_id)}")
-
     existing_data = get_existing_race_data(most_recent_race_id)
 
-    # if len(existing_data) > 0:
-    #     print(
-    #         f"Found existing data for RaceId={most_recent_race_id}, no update needed..."
-    #     )
-    #     print("Revalidating anyway...")
-    #     return revalidate_pages()
+    if len(existing_data) > 0:
+        print(
+            f"Found existing data for RaceId={most_recent_race_id}, no update needed..."
+        )
+        print("Revalidating anyway...")
+        return revalidate_pages()
 
     session = fastf1.get_session(int(season), most_recent_event["Location"], "R")
     session.load(telemetry=False, laps=False, weather=False)
@@ -236,25 +228,25 @@ def do_the_update():
     update_row_data = get_data_to_update_rows(df, most_recent_race_id)
     print(f"Updating rows with data={update_row_data}")
 
-    # insert_rows = requests.request(
-    #     "POST",
-    #     f"{api_base_url}/driver_race_result",
-    #     headers=post_headers,
-    #     data=json.dumps(update_row_data),
-    # )
+    insert_rows = requests.request(
+        "POST",
+        f"{api_base_url}/driver_race_result",
+        headers=post_headers,
+        data=json.dumps(update_row_data),
+    )
 
-    # if insert_rows.status_code == 201:
-    #     revalidate_pages()
-    #     sg = sendgrid.SendGridAPIClient(api_key=sendgrid_api_key)
-    #     mail = format_for_email(driver_id_by_driver_number, update_row_data, df)
-    #     response = sg.client.mail.send.post(request_body=mail.get())
-    #     print(response.status_code)
-    #     print(response.body)
-    #     print(response.headers)
-    # else:
-    #     print(
-    #         f"Row insertion not successful. Reason={insert_rows.reason}, Error={insert_rows.raise_for_status()}"
-    #     )
+    if insert_rows.status_code == 201:
+        revalidate_pages()
+        sg = sendgrid.SendGridAPIClient(api_key=sendgrid_api_key)
+        mail = format_for_email(driver_id_by_driver_number, update_row_data, df)
+        response = sg.client.mail.send.post(request_body=mail.get())
+        print(response.status_code)
+        print(response.body)
+        print(response.headers)
+    else:
+        print(
+            f"Row insertion not successful. Reason={insert_rows.reason}, Error={insert_rows.raise_for_status()}"
+        )
 
 
 do_the_update()
