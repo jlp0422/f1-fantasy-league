@@ -30,12 +30,6 @@ points_map = {
     "20.0": 1,
 }
 
-
-class Method(Enum):
-    GET = "GET"
-    POST = "POST"
-
-
 revalidate_token = os.environ["REVALIDATE_TOKEN"]
 api_key = os.environ["SUPABASE_SERVICE_ROLE_KEY"]
 sendgrid_api_key = os.environ["SENDGRID_API_KEY"]
@@ -44,11 +38,13 @@ api_base_url = "https://agvtgmdvbvjnmlooagll.supabase.co/rest/v1"
 get_headers = {"apikey": api_key, "Authorization": f"Bearer {api_key}"}
 post_headers = get_headers.copy()
 post_headers["Content-Type"] = "application/json"
+GET = "GET"
+POST = "POST"
 
 
 def get_race_ids_by_round_number(season_id):
     races = requests.request(
-        Method.GET.name,
+        GET,
         f"{api_base_url}/race?select=id,round_number&season_id=eq.{season_id}",
         headers=get_headers,
     )
@@ -59,7 +55,7 @@ def get_race_ids_by_round_number(season_id):
 
 def get_season_id(szn):
     season_info = requests.request(
-        Method.GET.name,
+        GET,
         f"{api_base_url}/season?select=id&year=eq.{szn}",
         headers=get_headers,
     )
@@ -75,7 +71,7 @@ def get_most_recent_event(schedule):
 
 def get_driver_id_by_driver_number(season_id):
     driver_information = requests.request(
-        Method.GET.name,
+        GET,
         f"{api_base_url}/driver?select=id,number&season_id=eq.{season_id}",
         headers=get_headers,
     )
@@ -86,7 +82,7 @@ def get_driver_id_by_driver_number(season_id):
 
 def get_constructor_id_by_driver_id(season_id):
     constructor_driver_information = requests.request(
-        Method.GET.name,
+        GET,
         f"{api_base_url}/constructor_driver?select=*&season_id=eq.{season_id}",
         headers=get_headers,
     )
@@ -106,7 +102,7 @@ def get_constructor_id_by_driver_id(season_id):
 
 def revalidate_pages():
     revalidate_response = requests.request(
-        Method.GET.name,
+        GET,
         f"https://fate-of-the-eight.vercel.app/api/revalidate?secret={revalidate_token}&season={season}",
     )
     if revalidate_response.ok:
@@ -146,7 +142,7 @@ def get_data_to_update_rows(dataframe, race_id):
 
 def get_existing_race_data(race_id):
     race_data_raw = requests.request(
-        Method.GET.name,
+        GET,
         f"{api_base_url}/driver_race_result?race_id=eq.{race_id}&select=id",
         headers=get_headers,
     )
@@ -246,7 +242,7 @@ def do_the_update():
     print(f"Updating rows with data={update_row_data}")
 
     insert_rows = requests.request(
-        Method.POST.name,
+        POST,
         f"{api_base_url}/driver_race_result",
         headers=post_headers,
         data=json.dumps(update_row_data),
