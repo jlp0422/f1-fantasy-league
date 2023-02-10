@@ -153,7 +153,15 @@ def format_for_email(driver_id_by_driver_number, update_row_data, df):
         position = driver_id_by_driver_number_values.index(d["driver_id"])
         driver_number = str(driver_id_by_driver_number_keys[position])
         driver_abbrev = df.loc[df["DriverNumber"] == driver_number]["Abbreviation"][0]
-        string = string + f'{str(d["finish_position"])}) Number: {driver_abbrev}\n'
+        grid_pos = df.loc[df["DriverNumber"] == driver_number]["GridPosition"][0]
+        is_dnf = d["is_dnf"]
+        finish_pos = d["finish_position"]
+        finish_pos_pts = d["finish_position_points"]
+        grid_diff_pts = d["grid_difference_points"]
+        string = (
+            string
+            + f'{driver_abbrev}: Start: {int(grid_pos)}, Finish: {"DNF" if is_dnf else int(finish_pos)}, Result Pts: {int(finish_pos_pts)}, Grid Diff Pts: {float(grid_diff_pts)}, Total Points: {finish_pos_pts + grid_diff_pts}\n'
+        )
     from_email = Email("f1fantasy2022@em5638.m.jeremyphilipson.com")
     to_email = To("jeremyphilipson@gmail.com")
     subject = "Race standings update"
