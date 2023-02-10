@@ -163,7 +163,7 @@ def format_for_email(driver_id_by_driver_number, update_row_data, df):
 def do_the_update():
     os.mkdir("cache")
     fastf1.Cache.enable_cache("cache")
-    schedule = fastf1.get_event_schedule(season, include_testing=False)
+    schedule = fastf1.get_event_schedule(int(season), include_testing=False)
 
     season_id = get_season_id(season)
     print(f"season_id={str(season_id)}")
@@ -186,7 +186,7 @@ def do_the_update():
     #     print("Revalidating anyway...")
     #     return revalidate_pages()
 
-    session = fastf1.get_session(season, most_recent_event["Location"], "R")
+    session = fastf1.get_session(int(season), most_recent_event["Location"], "R")
     session.load(telemetry=False, laps=False, weather=False)
 
     driver_id_by_driver_number = get_driver_id_by_driver_number(season_id)
