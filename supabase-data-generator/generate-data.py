@@ -1,7 +1,6 @@
 import requests
 import fastf1
 import os
-from enum import Enum
 from datetime import datetime
 import json
 import sendgrid
