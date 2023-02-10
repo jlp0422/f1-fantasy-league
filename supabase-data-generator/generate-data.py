@@ -1,10 +1,11 @@
 import requests
 import fastf1
 import os
+from enum import Enum
 from datetime import datetime
 import json
 import sendgrid
-from sendgrid.helpers.mail import *
+from sendgrid.helpers.mail import To, Email, Content, Mail
 
 points_map = {
     "1.0": 20,
@@ -29,6 +30,12 @@ points_map = {
     "20.0": 1,
 }
 
+
+class Method(Enum):
+    GET = "GET"
+    POST = "POST"
+
+
 revalidate_token = os.environ["REVALIDATE_TOKEN"]
 api_key = os.environ["SUPABASE_SERVICE_ROLE_KEY"]
 sendgrid_api_key = os.environ["SENDGRID_API_KEY"]
@@ -41,7 +48,7 @@ post_headers["Content-Type"] = "application/json"
 
 def get_race_ids_by_round_number(season_id):
     races = requests.request(
-        "GET",
+        Method.GET.name,
         f"{api_base_url}/race?select=id,round_number&season_id=eq.{season_id}",
         headers=get_headers,
     )
@@ -52,7 +59,9 @@ def get_race_ids_by_round_number(season_id):
 
 def get_season_id(szn):
     season_info = requests.request(
-        "GET", f"{api_base_url}/season?select=id&year=eq.{szn}", headers=get_headers
+        Method.GET.name,
+        f"{api_base_url}/season?select=id&year=eq.{szn}",
+        headers=get_headers,
     )
     season_data = season_info.json()
     return season_data[0]["id"]
@@ -66,7 +75,7 @@ def get_most_recent_event(schedule):
 
 def get_driver_id_by_driver_number(season_id):
     driver_information = requests.request(
-        "GET",
+        Method.GET.name,
         f"{api_base_url}/driver?select=id,number&season_id=eq.{season_id}",
         headers=get_headers,
     )
@@ -77,7 +86,7 @@ def get_driver_id_by_driver_number(season_id):
 
 def get_constructor_id_by_driver_id(season_id):
     constructor_driver_information = requests.request(
-        "GET",
+        Method.GET.name,
         f"{api_base_url}/constructor_driver?select=*&season_id=eq.{season_id}",
         headers=get_headers,
     )
@@ -97,7 +106,7 @@ def get_constructor_id_by_driver_id(season_id):
 
 def revalidate_pages():
     revalidate_response = requests.request(
-        "GET",
+        Method.GET.name,
         f"https://fate-of-the-eight.vercel.app/api/revalidate?secret={revalidate_token}&season={season}",
     )
     if revalidate_response.ok:
@@ -137,7 +146,7 @@ def get_data_to_update_rows(dataframe, race_id):
 
 def get_existing_race_data(race_id):
     race_data_raw = requests.request(
-        "GET",
+        Method.GET.name,
         f"{api_base_url}/driver_race_result?race_id=eq.{race_id}&select=id",
         headers=get_headers,
     )
@@ -149,22 +158,22 @@ def format_for_email(driver_id_by_driver_number, update_row_data, df):
     driver_id_by_driver_number_keys = list(driver_id_by_driver_number.keys())
     driver_id_by_driver_number_values = list(driver_id_by_driver_number.values())
     string = ""
-    for d in update_row_data:
-        position = driver_id_by_driver_number_values.index(d["driver_id"])
+    for row in update_row_data:
+        position = driver_id_by_driver_number_values.index(row["driver_id"])
         driver_number = str(driver_id_by_driver_number_keys[position])
-        driver_abbrev = df.loc[df["DriverNumber"] == driver_number]["Abbreviation"][0]
-        grid_pos = df.loc[df["DriverNumber"] == driver_number]["GridPosition"][0]
-        is_dnf = d["is_dnf"]
-        finish_pos = d["finish_position"]
-        finish_pos_pts = d["finish_position_points"]
-        grid_diff_pts = d["grid_difference_points"]
+        df_driver = df.loc[df["DriverNumber"] == driver_number]
+        driver_abbrev = df_driver["Abbreviation"][0]
+        grid_pos = df_driver["GridPosition"][0]
+        finish_pos = row["finish_position"]
+        finish_pos_pts = row["finish_position_points"]
+        grid_diff_pts = row["grid_difference_points"]
         string = (
             string
-            + f'{driver_abbrev}: Start: {int(grid_pos)}, Finish: {"DNF" if is_dnf else int(finish_pos)}, Result Pts: {int(finish_pos_pts)}, Grid Diff Pts: {float(grid_diff_pts)}, Total Points: {finish_pos_pts + grid_diff_pts}\n'
+            + f'{driver_abbrev}: Start: {int(grid_pos)}, Finish: {"DNF" if row["is_dnf"] else int(finish_pos)}, Result Pts: {int(finish_pos_pts)}, Grid Diff Pts: {float(grid_diff_pts)}, Total Points: {finish_pos_pts + grid_diff_pts}\n'
         )
     from_email = Email("f1fantasy2022@em5638.m.jeremyphilipson.com")
     to_email = To("jeremyphilipson@gmail.com")
-    subject = "Race standings update"
+    subject = "Race Standings Update"
     content = Content("text/plain", string)
     return Mail(from_email, to_email, subject, content)
 
@@ -197,21 +206,21 @@ def do_the_update():
         ["DriverNumber", "Abbreviation", "Position", "Status", "GridPosition"]
     ]
 
-    def dnf_check(x):
-        if x.startswith("Finished"):
+    def dnf_check(result):
+        if result.startswith("Finished"):
             return False
-        if x.startswith("+"):
+        if result.startswith("+"):
             return False
         return True
 
     def dnf_points(row):
         return -1 if row["is_dnf"] is True else row["Points"]
 
-    def get_driver_id(x):
-        return driver_id_by_driver_number.get(int(x))
+    def get_driver_id(driver_number):
+        return driver_id_by_driver_number.get(int(driver_number))
 
-    def get_constructor_id(x):
-        return constructor_id_by_driver_id.get(int(x), "null")
+    def get_constructor_id(driver_id):
+        return constructor_id_by_driver_id.get(int(driver_id), "null")
 
     def get_grid_diff(row):
         return row["GridPosition"] - row["Position"]
@@ -237,7 +246,7 @@ def do_the_update():
     print(f"Updating rows with data={update_row_data}")
 
     insert_rows = requests.request(
-        "POST",
+        Method.POST.name,
         f"{api_base_url}/driver_race_result",
         headers=post_headers,
         data=json.dumps(update_row_data),
@@ -253,7 +262,7 @@ def do_the_update():
         )
     else:
         print(
-            f"Row insertion not successful. Reason={insert_rows.reason}, Error={insert_rows.raise_for_status()}"
+            f"Row insertion failed. Reason={insert_rows.reason}, Error={insert_rows.raise_for_status()}"
         )
 
 
