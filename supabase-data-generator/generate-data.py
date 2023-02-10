@@ -109,16 +109,17 @@ def revalidate_pages():
 
 
 def create_row_data(rowInfo, most_recent_race_id):
+    constructor_id = rowInfo["constructor_id"]
+    grid_diff = rowInfo["grid_difference"]
+    grid_diff_points = grid_diff / 2 if grid_diff > 0 else 0
     data = {
         "finish_position": int(rowInfo["Position"]),
         "finish_position_points": int(rowInfo["Points"]),
-        "grid_difference": int(rowInfo["grid_diff_points"] * 2),
-        "grid_difference_points": float(rowInfo["grid_diff_points"]),
+        "grid_difference": int(grid_diff),
+        "grid_difference_points": float(grid_diff_points),
         "is_dnf": rowInfo["is_dnf"],
         "race_id": most_recent_race_id,
-        "constructor_id": None
-        if rowInfo["constructor_id"] == "null"
-        else rowInfo["constructor_id"],
+        "constructor_id": None if constructor_id == "null" else constructor_id,
         "driver_id": rowInfo["driver_id"],
     }
     return data
@@ -204,16 +205,15 @@ def do_the_update():
     def get_constructor_id(x):
         return constructor_id_by_driver_id.get(int(x), "null")
 
-    def get_grid_diff_pts(row):
-        grid_diff = row["GridPosition"] - row["Position"]
-        return grid_diff / 2 if grid_diff > 0 else 0
+    def get_grid_diff(row):
+        return row["GridPosition"] - row["Position"]
 
     df["Points"] = df["Position"].map(lambda x: points_map[str(x)])
     df["is_dnf"] = df["Status"].map(dnf_check)
     df["driver_id"] = df["DriverNumber"].map(get_driver_id)
     df["constructor_id"] = df["driver_id"].map(get_constructor_id)
     df["Points"] = df.apply(dnf_points, axis=1)
-    df["grid_diff_points"] = df.apply(get_grid_diff_pts, axis=1)
+    df["grid_difference"] = df.apply(get_grid_diff, axis=1)
     df[
         [
             "Position",
@@ -221,7 +221,7 @@ def do_the_update():
             "is_dnf",
             "driver_id",
             "constructor_id",
-            "grid_diff_points",
+            "grid_difference",
         ]
     ]
 
