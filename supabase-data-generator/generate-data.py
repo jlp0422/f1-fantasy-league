@@ -248,9 +248,9 @@ def do_the_update():
         sg = sendgrid.SendGridAPIClient(api_key=sendgrid_api_key)
         mail = format_for_email(driver_id_by_driver_number, update_row_data, df)
         response = sg.client.mail.send.post(request_body=mail.get())
-        print(response.status_code)
-        print(response.body)
-        print(response.headers)
+        print(
+            f"SG status_code={response.status_code}, body={response.body}, headers={response.headers}"
+        )
     else:
         print(
             f"Row insertion not successful. Reason={insert_rows.reason}, Error={insert_rows.raise_for_status()}"
