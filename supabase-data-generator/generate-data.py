@@ -209,7 +209,7 @@ def do_the_update():
         return True
 
     def dnf_points(row):
-        return -1 if row["is_dnf"] is True else row["Points"]
+        return -1 if row["is_dnf"] else row["Points"]
 
     def get_driver_id(driver_number):
         return driver_id_by_driver_number.get(int(driver_number))
@@ -218,7 +218,7 @@ def do_the_update():
         return constructor_id_by_driver_id.get(int(driver_id), "null")
 
     def get_grid_diff(row):
-        return row["GridPosition"] - row["Position"]
+        return 0 if row["is_dnf"] else row["GridPosition"] - row["Position"]
 
     df["Points"] = df["Position"].map(lambda x: points_map[str(x)])
     df["is_dnf"] = df["Status"].map(dnf_check)
