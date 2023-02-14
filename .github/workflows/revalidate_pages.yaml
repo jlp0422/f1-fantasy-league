@@ -13,7 +13,7 @@ jobs:
       - name: Revalidate pages so Supabase doesn't shut down
         env:
           REVALIDATE_TOKEN: ${{ secrets.REVALIDATE_TOKEN }}
-          SEASON: 2022
+          SEASON: 2023
         run: |
           yarn
           node revalidate.js "$REVALIDATE_TOKEN" "$SEASON"

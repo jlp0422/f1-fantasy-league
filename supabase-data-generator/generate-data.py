@@ -4,7 +4,7 @@ import os
 from datetime import datetime
 import json
 import sendgrid
-from sendgrid.helpers.mail import *
+from sendgrid.helpers.mail import To, Email, Content, Mail
 
 points_map = {
     "1.0": 20,
@@ -37,14 +37,29 @@ api_base_url = "https://agvtgmdvbvjnmlooagll.supabase.co/rest/v1"
 get_headers = {"apikey": api_key, "Authorization": f"Bearer {api_key}"}
 post_headers = get_headers.copy()
 post_headers["Content-Type"] = "application/json"
+GET = "GET"
+POST = "POST"
 
-race_ids_by_round_number = {
-    18: 58,
-    19: 59,  # | 59 | United States Grand Prix  |
-    20: 60,  # | 60 | Mexico City Grand Prix    |
-    21: 61,  # | 61 | São Paulo Grand Prix      |
-    22: 62,  # | 62 | Abu Dhabi Grand Prix      |
-}
+
+def get_race_ids_by_round_number(season_id):
+    races = requests.request(
+        GET,
+        f"{api_base_url}/race?select=id,round_number&season_id=eq.{season_id}",
+        headers=get_headers,
+    )
+    race_data = races.json()
+    race_info = {race["round_number"]: race["id"] for race in race_data}
+    return race_info
+
+
+def get_season_id(szn):
+    season_info = requests.request(
+        GET,
+        f"{api_base_url}/season?select=id&year=eq.{szn}",
+        headers=get_headers,
+    )
+    season_data = season_info.json()
+    return season_data[0]["id"]
 
 
 def get_most_recent_event(schedule):
@@ -53,18 +68,22 @@ def get_most_recent_event(schedule):
     return old_events.iloc[-1]
 
 
-def get_driver_id_by_driver_number():
+def get_driver_id_by_driver_number(season_id):
     driver_information = requests.request(
-        "GET", f"{api_base_url}/driver?select=id,number", headers=get_headers
+        GET,
+        f"{api_base_url}/driver?select=id,number&season_id=eq.{season_id}",
+        headers=get_headers,
     )
     driver_data = driver_information.json()
     driver_dict = {driver["number"]: driver["id"] for driver in driver_data}
     return driver_dict
 
 
-def get_constructor_id_by_driver_id():
+def get_constructor_id_by_driver_id(season_id):
     constructor_driver_information = requests.request(
-        "GET", f"{api_base_url}/constructor_driver?select=*", headers=get_headers
+        GET,
+        f"{api_base_url}/constructor_driver?select=*&season_id=eq.{season_id}",
+        headers=get_headers,
     )
     driver_constructor_data = constructor_driver_information.json()
 
@@ -82,7 +101,7 @@ def get_constructor_id_by_driver_id():
 
 def revalidate_pages():
     revalidate_response = requests.request(
-        "GET",
+        GET,
         f"https://fate-of-the-eight.vercel.app/api/revalidate?secret={revalidate_token}&season={season}",
     )
     if revalidate_response.ok:
@@ -94,16 +113,17 @@ def revalidate_pages():
 
 
 def create_row_data(rowInfo, most_recent_race_id):
+    constructor_id = rowInfo["constructor_id"]
+    grid_diff = rowInfo["grid_difference"]
+    grid_diff_points = grid_diff / 2 if grid_diff > 0 else 0
     data = {
         "finish_position": int(rowInfo["Position"]),
         "finish_position_points": int(rowInfo["Points"]),
-        "grid_difference": 0,
-        "grid_difference_points": 0,
+        "grid_difference": int(grid_diff),
+        "grid_difference_points": float(grid_diff_points),
         "is_dnf": rowInfo["is_dnf"],
         "race_id": most_recent_race_id,
-        "constructor_id": None
-        if rowInfo["constructor_id"] == "null"
-        else rowInfo["constructor_id"],
+        "constructor_id": None if constructor_id == "null" else constructor_id,
         "driver_id": rowInfo["driver_id"],
     }
     return data
@@ -121,7 +141,7 @@ def get_data_to_update_rows(dataframe, race_id):
 
 def get_existing_race_data(race_id):
     race_data_raw = requests.request(
-        "GET",
+        GET,
         f"{api_base_url}/driver_race_result?race_id=eq.{race_id}&select=id",
         headers=get_headers,
     )
@@ -133,14 +153,22 @@ def format_for_email(driver_id_by_driver_number, update_row_data, df):
     driver_id_by_driver_number_keys = list(driver_id_by_driver_number.keys())
     driver_id_by_driver_number_values = list(driver_id_by_driver_number.values())
     string = ""
-    for d in update_row_data:
-        position = driver_id_by_driver_number_values.index(d["driver_id"])
+    for row in update_row_data:
+        position = driver_id_by_driver_number_values.index(row["driver_id"])
         driver_number = str(driver_id_by_driver_number_keys[position])
-        driver_abbrev = df.loc[df["DriverNumber"] == driver_number]["Abbreviation"][0]
-        string = string + f'{str(d["finish_position"])}) Number: {driver_abbrev}\n'
+        df_driver = df.loc[df["DriverNumber"] == driver_number]
+        driver_abbrev = df_driver["Abbreviation"][0]
+        grid_pos = df_driver["GridPosition"][0]
+        finish_pos = row["finish_position"]
+        finish_pos_pts = row["finish_position_points"]
+        grid_diff_pts = row["grid_difference_points"]
+        string = (
+            string
+            + f'{driver_abbrev}: Start: {int(grid_pos)}, Finish: {"DNF" if row["is_dnf"] else int(finish_pos)}, Result Pts: {int(finish_pos_pts)}, Grid Diff Pts: {float(grid_diff_pts)}, Total Points: {finish_pos_pts + grid_diff_pts}\n'
+        )
     from_email = Email("f1fantasy2022@em5638.m.jeremyphilipson.com")
     to_email = To("jeremyphilipson@gmail.com")
-    subject = "Race standings update"
+    subject = "Race Standings Update"
     content = Content("text/plain", string)
     return Mail(from_email, to_email, subject, content)
 
@@ -148,9 +176,11 @@ def format_for_email(driver_id_by_driver_number, update_row_data, df):
 def do_the_update():
     os.mkdir("cache")
     fastf1.Cache.enable_cache("cache")
-    schedule = fastf1.get_event_schedule(season, include_testing=False)
+    schedule = fastf1.get_event_schedule(int(season), include_testing=False)
 
+    season_id = get_season_id(season)
     most_recent_event = get_most_recent_event(schedule)
+    race_ids_by_round_number = get_race_ids_by_round_number(season_id)
     most_recent_race_id = race_ids_by_round_number[most_recent_event["RoundNumber"]]
     existing_data = get_existing_race_data(most_recent_race_id)
 
@@ -161,45 +191,57 @@ def do_the_update():
         print("Revalidating anyway...")
         return revalidate_pages()
 
-    session = fastf1.get_session(season, most_recent_event["Location"], "R")
+    session = fastf1.get_session(int(season), most_recent_event["Location"], "R")
     session.load(telemetry=False, laps=False, weather=False)
 
-    driver_id_by_driver_number = get_driver_id_by_driver_number()
-    constructor_id_by_driver_id = get_constructor_id_by_driver_id()
+    driver_id_by_driver_number = get_driver_id_by_driver_number(season_id)
+    constructor_id_by_driver_id = get_constructor_id_by_driver_id(season_id)
 
-    # session includes GridPosition, use to calculate grid diff for points
-    df = session.results[["DriverNumber", "Abbreviation", "Position", "Status"]]
+    df = session.results[
+        ["DriverNumber", "Abbreviation", "Position", "Status", "GridPosition"]
+    ]
 
-    def dnf_check(x):
-        if x.startswith("Finished"):
+    def dnf_check(result):
+        if result.startswith("Finished"):
             return False
-        if x.startswith("+"):
+        if result.startswith("+"):
             return False
         return True
 
     def dnf_points(row):
-        if row["is_dnf"] is True:
-            return -1
-        return row["Points"]
+        return -1 if row["is_dnf"] else row["Points"]
 
-    def get_driver_id(x):
-        return driver_id_by_driver_number.get(int(x))
+    def get_driver_id(driver_number):
+        return driver_id_by_driver_number.get(int(driver_number))
 
-    def get_constructor_id(x):
-        return constructor_id_by_driver_id.get(int(x), "null")
+    def get_constructor_id(driver_id):
+        return constructor_id_by_driver_id.get(int(driver_id), "null")
+
+    def get_grid_diff(row):
+        return 0 if row["is_dnf"] else row["GridPosition"] - row["Position"]
 
     df["Points"] = df["Position"].map(lambda x: points_map[str(x)])
     df["is_dnf"] = df["Status"].map(dnf_check)
     df["driver_id"] = df["DriverNumber"].map(get_driver_id)
     df["constructor_id"] = df["driver_id"].map(get_constructor_id)
     df["Points"] = df.apply(dnf_points, axis=1)
-    df[["Position", "Points", "is_dnf", "driver_id", "constructor_id"]]
+    df["grid_difference"] = df.apply(get_grid_diff, axis=1)
+    df[
+        [
+            "Position",
+            "Points",
+            "is_dnf",
+            "driver_id",
+            "constructor_id",
+            "grid_difference",
+        ]
+    ]
 
     update_row_data = get_data_to_update_rows(df, most_recent_race_id)
     print(f"Updating rows with data={update_row_data}")
 
     insert_rows = requests.request(
-        "POST",
+        POST,
         f"{api_base_url}/driver_race_result",
         headers=post_headers,
         data=json.dumps(update_row_data),
@@ -210,12 +252,12 @@ def do_the_update():
         sg = sendgrid.SendGridAPIClient(api_key=sendgrid_api_key)
         mail = format_for_email(driver_id_by_driver_number, update_row_data, df)
         response = sg.client.mail.send.post(request_body=mail.get())
-        print(response.status_code)
-        print(response.body)
-        print(response.headers)
+        print(
+            f"SG status_code={response.status_code}, body={response.body}, headers={response.headers}"
+        )
     else:
         print(
-            f"Row insertion not successful. Reason={insert_rows.reason}, Error={insert_rows.raise_for_status()}"
+            f"Row insertion failed. Reason={insert_rows.reason}, Error={insert_rows.raise_for_status()}"
         )
 
 
