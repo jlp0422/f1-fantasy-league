@@ -37,12 +37,11 @@ const HomePage = ({ seasons }: Props) => {
                 pathname: '/[season]/standings',
                 query: { season: season.year },
               }}
+              className={`py-14 ${color.bg} ${color.hover}`}
             >
-              <a className={`py-14 ${color.bg} ${color.hover}`}>
-                <h2 className="px-4 font-bold text-center text-gray-100 uppercase text-7xl font-primary">
-                  {season.year}
-                </h2>
-              </a>
+              <h2 className="px-4 font-bold text-center text-gray-100 uppercase text-7xl font-primary">
+                {season.year}
+              </h2>
             </Link>
           )
         })}
