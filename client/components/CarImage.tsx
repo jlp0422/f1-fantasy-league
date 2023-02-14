@@ -1,8 +1,13 @@
 import { COLORS_BY_CONSTRUCTOR } from '@/constants/index'
-import { getCloudinaryCarUrl, getDimensions, rgbDataURL, SIZES } from '@/helpers/cars'
+import {
+  getCloudinaryCarUrl,
+  getDimensions,
+  rgbDataURL,
+  SIZES,
+} from '@/helpers/cars'
 import { ImageSize } from '@/types/Common'
 import hexRgb from 'hex-rgb'
-import Image from 'next/image'
+import Image from 'next/legacy/image'
 
 interface Props {
   size: ImageSize

@@ -1,7 +1,7 @@
 import Dismiss from '@/components/icons/Dismiss'
 import Hamburger from '@/components/icons/Hamburger'
 import headerLogo from '@/public/fate-eight.png'
-import Image from 'next/image'
+import Image from 'next/legacy/image'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useState } from 'react'
@@ -47,14 +47,13 @@ const Header = () => {
         <div className="flex items-center justify-center mx-auto md:w-auto md:flex-1 md:justify-start">
           <Link
             href="/"
-            className="leading-[0rem] max-w-[200px] xs:max-w-[300px] sm:max-w-[450px]">
-
+            className="leading-[0rem] max-w-[200px] xs:max-w-[300px] sm:max-w-[450px]"
+          >
             <Image
               layout="intrinsic"
               src={headerLogo}
               alt="Fate of the Eight"
             />
-
           </Link>
         </div>
         <div
@@ -72,20 +71,19 @@ const Header = () => {
                       className={`font-secondary uppercase block px-3 py-2 border-b md:border-0 md:p-0 text-lg lg:text-xl md:hover:text-white hover:bg-gray-700 hover:text-gray-200 md:hover:bg-transparent border-gray-700 ${
                         isActiveRoute ? 'text-white' : 'text-gray-400'
                       }`}
-                      onClick={() => setIsOpen((open) => !open)}>
-
+                      onClick={() => setIsOpen((open) => !open)}
+                    >
                       {title}
-
                     </Link>
                   </li>
-                );
+                )
               })}
             </ul>
           ) : null}
         </div>
       </div>
     </nav>
-  );
+  )
 }
 
 export default Header

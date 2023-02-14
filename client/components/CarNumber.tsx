@@ -1,6 +1,6 @@
 import { getCloudinaryNumberUrl, getDimensions, SIZES } from '@/helpers/cars'
 import { ImageSize } from '@/types/Common'
-import Image from 'next/image'
+import Image from 'next/legacy/image'
 
 interface Props {
   size: ImageSize

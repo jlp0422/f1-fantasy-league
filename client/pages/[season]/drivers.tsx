@@ -8,7 +8,7 @@ import { DriverRaceResult } from '@/types/DriverRaceResult'
 import { Season } from '@/types/Season'
 import { DriverRaceResultWithJoins, RaceWithSeason } from '@/types/Unions'
 import { GetStaticPropsContext } from 'next'
-import Image from 'next/image'
+import Image from 'next/legacy/image'
 import { useState } from 'react'
 import Arrow from '@/components/icons/Arrow'
 

@@ -1,5 +1,5 @@
 import Layout from '@/components/Layout'
-import Image from 'next/image'
+import Image from 'next/legacy/image'
 import max404 from '@/public/max-404.gif'
 
 const Custom404 = () => {
