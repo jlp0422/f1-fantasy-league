@@ -1,6 +1,6 @@
 import { getCloudinaryNumberUrl, getDimensions, SIZES } from '@/helpers/cars'
 import { ImageSize } from '@/types/Common'
-import Image from 'next/legacy/image'
+import Image from 'next/image'
 
 interface Props {
   size: ImageSize
@@ -19,7 +19,7 @@ const CarNumber = ({ constructorName, size }: Props) => {
       alt={`${constructorName} Car Number`}
       width={widthHeight}
       height={widthHeight}
-      className={`${SIZES[size]}`}
+      className={`${SIZES[size]} h-full`}
     />
   )
 }

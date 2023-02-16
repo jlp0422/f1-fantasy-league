@@ -7,7 +7,7 @@ import {
 } from '@/helpers/cars'
 import { ImageSize } from '@/types/Common'
 import hexRgb from 'hex-rgb'
-import Image from 'next/legacy/image'
+import Image from 'next/image'
 
 interface Props {
   size: ImageSize
@@ -30,7 +30,7 @@ const CarImage = ({ constructorName, size }: Props) => {
       alt={`${constructorName} Car Livery`}
       width={widthHeight}
       height={widthHeight}
-      className={`rounded-lg shadow-lg ${SIZES[size]}`}
+      className={`rounded-lg shadow-lg ${SIZES[size]} h-full`}
       placeholder="blur"
       blurDataURL={rgbDataURL(red, green, blue)}
     />
