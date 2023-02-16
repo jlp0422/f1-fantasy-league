@@ -1,7 +1,7 @@
 import Dismiss from '@/components/icons/Dismiss'
 import Hamburger from '@/components/icons/Hamburger'
 import headerLogo from '@/public/fate-eight.png'
-import Image from 'next/legacy/image'
+import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useState } from 'react'
@@ -48,9 +48,10 @@ const Header = () => {
           <Link
             href="/"
             className="leading-[0rem] max-w-[200px] xs:max-w-[300px] sm:max-w-[450px]"
+            passHref
           >
             <Image
-              layout="intrinsic"
+              // layout="intrinsic"
               src={headerLogo}
               alt="Fate of the Eight"
             />

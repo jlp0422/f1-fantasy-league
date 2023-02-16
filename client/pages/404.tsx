@@ -1,5 +1,5 @@
 import Layout from '@/components/Layout'
-import Image from 'next/legacy/image'
+import Image from 'next/image'
 import max404 from '@/public/max-404.gif'
 
 const Custom404 = () => {
@@ -7,7 +7,7 @@ const Custom404 = () => {
     <Layout documentTitle="404" description="404 Page">
       <div className="mx-auto my-0 w-500 h-500">
         <Image
-          layout="fixed"
+          // layout="fixed"
           priority
           width={500}
           height={500}

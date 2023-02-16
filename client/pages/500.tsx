@@ -1,5 +1,5 @@
 import Layout from '@/components/Layout'
-import Image from 'next/legacy/image'
+import Image from 'next/image'
 import mazepin from '@/public/mazepin-500.gif'
 
 const Custom500 = () => {
@@ -7,7 +7,7 @@ const Custom500 = () => {
     <Layout documentTitle="500" description="500 Page">
       <div className="mx-auto my-0 w-500 h-500">
         <Image
-          layout="fixed"
+          // layout="fixed"
           priority
           width={498}
           height={280}

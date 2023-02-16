@@ -38,6 +38,7 @@ const HomePage = ({ seasons }: Props) => {
                 query: { season: season.year },
               }}
               className={`py-14 ${color.bg} ${color.hover}`}
+              passHref
             >
               <h2 className="px-4 font-bold text-center text-gray-100 uppercase text-7xl font-primary">
                 {season.year}

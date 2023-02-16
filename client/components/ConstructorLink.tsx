@@ -22,7 +22,7 @@ const ConstructorLink = ({
           season: router.query.season,
         },
       }}
-      legacyBehavior>
+      >
       {children}
     </Link>
   );
