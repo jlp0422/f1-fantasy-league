@@ -22,10 +22,10 @@ const ConstructorLink = ({
           season: router.query.season,
         },
       }}
-      >
+    >
       {children}
     </Link>
-  );
+  )
 }
 
 export default ConstructorLink
