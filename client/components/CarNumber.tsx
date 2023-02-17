@@ -19,7 +19,7 @@ const CarNumber = ({ constructorName, size }: Props) => {
       alt={`${constructorName} Car Number`}
       width={widthHeight}
       height={widthHeight}
-      className={`${SIZES[size]}`}
+      className={`${SIZES[size]} h-full`}
     />
   )
 }

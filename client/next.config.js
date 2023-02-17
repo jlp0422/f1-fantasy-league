@@ -10,7 +10,7 @@ module.exports = {
   async redirects() {
     return [
       {
-        source: '/:season',
+        source: '/:season(\\d{1,})',
         destination: '/:season/standings',
         permanent: true,
       },

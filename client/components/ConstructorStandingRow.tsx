@@ -36,14 +36,12 @@ const ConstructorStandingRow = ({
               normalizedConstructor={normalized}
               constructorId={id}
             >
-              <a>
                 <p
                   className="pr-[2px] text-2xl font-bold tracking-tight uppercase truncate md:tracking-normal sm:text-4xl sm:hover:underline font-primary"
                   style={{ color: numberText }}
                 >
                   {constructor}
                 </p>
-              </a>
             </ConstructorLink>
             <p
               className="invisible hidden italic font-semibold uppercase sm:visible sm:block sm:text-lg font-secondary"

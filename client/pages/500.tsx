@@ -7,7 +7,6 @@ const Custom500 = () => {
     <Layout documentTitle="500" description="500 Page">
       <div className="mx-auto my-0 w-500 h-500">
         <Image
-          layout="fixed"
           priority
           width={498}
           height={280}

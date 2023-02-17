@@ -24,7 +24,7 @@ const ConstructorsPage = ({ constructors }: Props) => {
               constructorId={constructor.id}
               key={constructor.id}
             >
-              <a className="relative flex flex-col items-center justify-center sm:div-children:hover:shadow-inset-black-7">
+              <div className="relative flex flex-col items-center justify-center sm:div-children:hover:shadow-inset-black-7">
                 <div
                   className="bg-contain rounded-lg h-72 w-72 shadow-inset-black-6"
                   style={{
@@ -36,7 +36,7 @@ const ConstructorsPage = ({ constructors }: Props) => {
                 <h2 className="absolute px-4 text-4xl font-bold text-center text-gray-100 uppercase font-primary">
                   {constructor.name}
                 </h2>
-              </a>
+              </div>
             </ConstructorLink>
           )
         })}

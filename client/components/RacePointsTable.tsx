@@ -105,20 +105,20 @@ const RacePointsTable = ({
                     normalizedConstructor={normalized}
                     constructorId={constructor.id}
                   >
-                    <a
+                    <div
                       className="relative w-10 h-10 p-2 rounded-full sm:w-14 sm:h-14 sm:p-3"
                       style={{ backgroundColor: numberBackground }}
                     >
                       <CarNumber constructorName={normalized} size="small" />
-                    </a>
+                    </div>
                   </ConstructorLink>
                   <ConstructorLink
                     normalizedConstructor={normalized}
                     constructorId={constructor.id}
                   >
-                    <a className="invisible hidden sm:block sm:visible sm:hover:text-gray-300">
+                    <div className="invisible hidden sm:block sm:visible sm:hover:text-gray-300">
                       {constructor.name}
-                    </a>
+                    </div>
                   </ConstructorLink>
                 </div>
               </th>

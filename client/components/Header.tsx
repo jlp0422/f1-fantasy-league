@@ -45,14 +45,12 @@ const Header = () => {
           </button>
         ) : null}
         <div className="flex items-center justify-center mx-auto md:w-auto md:flex-1 md:justify-start">
-          <Link href="/">
-            <a className="leading-[0rem] max-w-[200px] xs:max-w-[300px] sm:max-w-[450px]">
-              <Image
-                layout="intrinsic"
-                src={headerLogo}
-                alt="Fate of the Eight"
-              />
-            </a>
+          <Link
+            href="/"
+            className="leading-[0rem] max-w-[200px] xs:max-w-[300px] sm:max-w-[450px]"
+            passHref
+          >
+            <Image src={headerLogo} alt="Fate of the Eight" />
           </Link>
         </div>
         <div
@@ -65,15 +63,14 @@ const Header = () => {
                 const isActiveRoute = checkIfRoutesAreEqual(pathname, href)
                 return (
                   <li key={`${href}-${title}`}>
-                    <Link href={href}>
-                      <a
-                        className={`font-secondary uppercase block px-3 py-2 border-b md:border-0 md:p-0 text-lg lg:text-xl md:hover:text-white hover:bg-gray-700 hover:text-gray-200 md:hover:bg-transparent border-gray-700 ${
-                          isActiveRoute ? 'text-white' : 'text-gray-400'
-                        }`}
-                        onClick={() => setIsOpen((open) => !open)}
-                      >
-                        {title}
-                      </a>
+                    <Link
+                      href={href}
+                      className={`font-secondary uppercase block px-3 py-2 border-b md:border-0 md:p-0 text-lg lg:text-xl md:hover:text-white hover:bg-gray-700 hover:text-gray-200 md:hover:bg-transparent border-gray-700 ${
+                        isActiveRoute ? 'text-white' : 'text-gray-400'
+                      }`}
+                      onClick={() => setIsOpen((open) => !open)}
+                    >
+                      {title}
                     </Link>
                   </li>
                 )
