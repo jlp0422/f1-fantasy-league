@@ -9,7 +9,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "format": "yarn pretty-quick"
+    "format": "yarn pretty-quick",
+    "prepare": "cd ../ && husky install ./client/.husky"
   },
   "dependencies": {
     "@supabase/supabase-js": "^1.35.4",
@@ -29,6 +30,8 @@
     "eslint": "8.14.0",
     "eslint-config-next": "^13.1.6",
     "eslint-config-prettier": "^8.5.0",
+    "husky": "^8.0.3",
+    "lint-staged": "^13.1.2",
     "postcss": "^8.4.13",
     "prettier": "^2.8.4",
     "pretty-quick": "^3.1.3",
