@@ -13,6 +13,7 @@ const CarNumber = ({ constructorName, size }: Props) => {
     format: 'webp',
     resize: `/c_scale,w_${widthHeight * 2.5}`,
   })
+
   return (
     <Image
       src={carImageUrl}

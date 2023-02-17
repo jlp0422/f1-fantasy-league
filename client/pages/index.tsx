@@ -26,8 +26,8 @@ interface Props {
 
 const HomePage = ({ seasons }: Props) => {
   return (
-    <Layout documentTitle="Home" fullWidth>
-      <div className="flex flex-col h-full">
+    <Layout documentTitle='Home' fullWidth>
+      <div className='flex flex-col h-full'>
         {seasons.map((season) => {
           const color = seasonColors[season.year]
           return (
@@ -40,7 +40,7 @@ const HomePage = ({ seasons }: Props) => {
               className={`py-14 ${color.bg} ${color.hover}`}
               passHref
             >
-              <h2 className="px-4 font-bold text-center text-gray-100 uppercase text-7xl font-primary">
+              <h2 className='px-4 font-bold text-center text-gray-100 uppercase text-7xl font-primary'>
                 {season.year}
               </h2>
             </Link>

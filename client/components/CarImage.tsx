@@ -3,7 +3,7 @@ import {
   getCloudinaryCarUrl,
   getDimensions,
   rgbDataURL,
-  SIZES
+  SIZES,
 } from '@/helpers/cars'
 import { ImageSize } from '@/types/Common'
 import hexRgb from 'hex-rgb'
@@ -34,7 +34,7 @@ const CarImage = ({ constructorName, size }: Props) => {
       width={widthHeight}
       height={widthHeight}
       className={`rounded-lg shadow-lg ${SIZES[size]} h-full`}
-      placeholder="blur"
+      placeholder='blur'
       blurDataURL={rgbDataURL(red, green, blue)}
     />
   )

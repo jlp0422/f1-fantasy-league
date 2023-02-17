@@ -1,6 +1,6 @@
 interface Props {
-  x?: string,
-  y?: string,
+  x?: string
+  y?: string
   payload?: Payload
 }
 
@@ -15,10 +15,10 @@ const TickXAxis = ({ x, y, payload }: Props) => {
         x={0}
         y={0}
         dy={16}
-        textAnchor="end"
-        fill="#fff"
-        transform="rotate(-35)"
-        className="text-lg font-tertiary"
+        textAnchor='end'
+        fill='#fff'
+        transform='rotate(-35)'
+        className='text-lg font-tertiary'
       >
         {payload?.value}
       </text>

@@ -15,9 +15,9 @@ const TickYAxis = ({ x, y, payload }: Props) => {
         x={0}
         y={0}
         dy={6}
-        textAnchor="end"
-        fill="#fff"
-        className="text-lg font-tertiary"
+        textAnchor='end'
+        fill='#fff'
+        className='text-lg font-tertiary'
       >
         {payload?.value} pts
       </text>

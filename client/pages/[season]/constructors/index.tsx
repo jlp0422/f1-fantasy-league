@@ -14,8 +14,8 @@ interface Props {
 
 const ConstructorsPage = ({ constructors }: Props) => {
   return (
-    <Layout documentTitle="Constructors">
-      <div className="grid grid-cols-1 gap-y-8 gap-x-4 justify-items-center sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    <Layout documentTitle='Constructors'>
+      <div className='grid grid-cols-1 gap-y-8 gap-x-4 justify-items-center sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'>
         {constructors.map((constructor) => {
           const normalized = normalizeConstructorName(constructor.name)
           return (
@@ -24,16 +24,16 @@ const ConstructorsPage = ({ constructors }: Props) => {
               constructorId={constructor.id}
               key={constructor.id}
             >
-              <div className="relative flex flex-col items-center justify-center sm:div-children:hover:shadow-inset-black-7">
+              <div className='relative flex flex-col items-center justify-center sm:div-children:hover:shadow-inset-black-7'>
                 <div
-                  className="bg-contain rounded-lg h-72 w-72 shadow-inset-black-6"
+                  className='bg-contain rounded-lg h-72 w-72 shadow-inset-black-6'
                   style={{
                     backgroundImage: `url(${getCloudinaryCarUrl(normalized, {
                       format: 'webp',
                     })})`,
                   }}
                 />
-                <h2 className="absolute px-4 text-4xl font-bold text-center text-gray-100 uppercase font-primary">
+                <h2 className='absolute px-4 text-4xl font-bold text-center text-gray-100 uppercase font-primary'>
                   {constructor.name}
                 </h2>
               </div>

@@ -19,11 +19,11 @@ interface Props {
 const Standings = ({ standings }: Props) => {
   return (
     <Layout
-      documentTitle="Standings"
-      description="Overall season standings for all Constructors"
+      documentTitle='Standings'
+      description='Overall season standings for all Constructors'
       fullWidth
     >
-      <ol className="w-auto mb-4 text-lg font-medium text-white">
+      <ol className='w-auto mb-4 text-lg font-medium text-white'>
         {standings.map(({ id, name, team_principal, total_points }) => (
           <ConstructorStandingRow
             key={id}
