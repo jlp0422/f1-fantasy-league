@@ -50,11 +50,7 @@ const Header = () => {
             className="leading-[0rem] max-w-[200px] xs:max-w-[300px] sm:max-w-[450px]"
             passHref
           >
-            <Image
-              // layout="intrinsic"
-              src={headerLogo}
-              alt="Fate of the Eight"
-            />
+            <Image src={headerLogo} alt="Fate of the Eight" />
           </Link>
         </div>
         <div

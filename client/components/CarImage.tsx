@@ -20,6 +20,7 @@ const CarImage = ({ constructorName, size }: Props) => {
     format: 'webp',
     resize: `/c_scale,w_${widthHeight * 2.5}`,
   })
+  // refactor to use season as a param
   const { primary } = COLORS_BY_CONSTRUCTOR[constructorName]
   const { red, blue, green } = hexRgb(primary)
 
