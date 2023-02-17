@@ -11,7 +11,7 @@
     "lint": "next lint",
     "format": "yarn pretty-quick"
   },
-  "dsependencies": {
+  "dependencies": {
     "@supabase/supabase-js": "^1.35.4",
     "@types/node": "^18.11.17",
     "@types/react": "^18.0.26",
