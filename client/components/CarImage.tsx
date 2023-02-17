@@ -3,11 +3,12 @@ import {
   getCloudinaryCarUrl,
   getDimensions,
   rgbDataURL,
-  SIZES,
+  SIZES
 } from '@/helpers/cars'
 import { ImageSize } from '@/types/Common'
 import hexRgb from 'hex-rgb'
 import Image from 'next/image'
+import { useRouter } from 'next/router'
 
 interface Props {
   size: ImageSize
@@ -15,13 +16,14 @@ interface Props {
 }
 
 const CarImage = ({ constructorName, size }: Props) => {
+  const { query } = useRouter()
+  const season = query.season as string
   const widthHeight = getDimensions(size)
   const carImageUrl = getCloudinaryCarUrl(constructorName, {
     format: 'webp',
     resize: `/c_scale,w_${widthHeight * 2.5}`,
   })
-  // refactor to use season as a param
-  const { primary } = COLORS_BY_CONSTRUCTOR[constructorName]
+  const { primary } = COLORS_BY_CONSTRUCTOR[season][constructorName]
   const { red, blue, green } = hexRgb(primary)
 
   return (

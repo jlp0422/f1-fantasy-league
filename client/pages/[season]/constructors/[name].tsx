@@ -7,14 +7,14 @@ import { getCloudinaryCarUrl, normalizeConstructorName } from '@/helpers/cars'
 import { indexBy, makeName, sum } from '@/helpers/utils'
 import { supabase } from '@/lib/database'
 import { GenericObject } from '@/types/Common'
-import { Driver } from '@/types/Driver'
 import { Race } from '@/types/Race'
 import {
   ConstructorWithSeason,
   DriverRaceResultWithJoins,
-  RaceWithSeason,
+  RaceWithSeason
 } from '@/types/Unions'
 import { GetStaticPropsContext } from 'next'
+import { useRouter } from 'next/router'
 import {
   CartesianGrid,
   Legend,
@@ -23,7 +23,7 @@ import {
   ResponsiveContainer,
   Tooltip,
   XAxis,
-  YAxis,
+  YAxis
 } from 'recharts'
 
 interface DriverPoints {
@@ -54,6 +54,8 @@ const Constructor = ({
   pointsByDriverChartData,
   chartsEnabled,
 }: Props) => {
+  const { query } = useRouter()
+  const season = query.season as string
   const data = [
     {
       value: constructor.name,
@@ -74,7 +76,7 @@ const Constructor = ({
     primary: primaryColor,
     secondary: secondaryColor,
     tertiary: tertiaryColor,
-  } = COLORS_BY_CONSTRUCTOR[normalized]
+  } = COLORS_BY_CONSTRUCTOR[season][normalized]
 
   return (
     <Layout

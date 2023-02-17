@@ -2,6 +2,7 @@ import CarNumber from '@/components/CarNumber'
 import ConstructorLink from '@/components/ConstructorLink'
 import { COLORS_BY_CONSTRUCTOR } from '@/constants/index'
 import { normalizeConstructorName } from '@/helpers/cars'
+import { useRouter } from 'next/router'
 
 interface Props {
   constructor: string
@@ -16,8 +17,11 @@ const ConstructorStandingRow = ({
   points,
   id,
 }: Props) => {
+  const { query } = useRouter()
+  const season = query.season as string
   const normalized = normalizeConstructorName(constructor)
-  const { numberBackground, numberText } = COLORS_BY_CONSTRUCTOR[normalized]
+  const { numberBackground, numberText } =
+    COLORS_BY_CONSTRUCTOR[season][normalized]
   return (
     <li
       className="w-full pr-3 pl-1 py-3 sm:px-8 sm:py-2.5 border-b border-gray-600"
@@ -36,12 +40,12 @@ const ConstructorStandingRow = ({
               normalizedConstructor={normalized}
               constructorId={id}
             >
-                <p
-                  className="pr-[2px] text-2xl font-bold tracking-tight uppercase truncate md:tracking-normal sm:text-4xl sm:hover:underline font-primary"
-                  style={{ color: numberText }}
-                >
-                  {constructor}
-                </p>
+              <p
+                className="pr-[2px] text-2xl font-bold tracking-tight uppercase truncate md:tracking-normal sm:text-4xl sm:hover:underline font-primary"
+                style={{ color: numberText }}
+              >
+                {constructor}
+              </p>
             </ConstructorLink>
             <p
               className="invisible hidden italic font-semibold uppercase sm:visible sm:block sm:text-lg font-secondary"
