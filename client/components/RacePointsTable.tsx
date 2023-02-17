@@ -1,16 +1,17 @@
 import CarNumber from '@/components/CarNumber'
 import ConstructorLink from '@/components/ConstructorLink'
+import Arrow from '@/components/icons/Arrow'
 import { COLORS_BY_CONSTRUCTOR } from '@/constants/index'
 import { normalizeConstructorName } from '@/helpers/cars'
 import { sortArray } from '@/helpers/utils'
 import {
   ConstructorsById,
   ConstructorTotalPoints,
-  IndexedRacePoints,
+  IndexedRacePoints
 } from '@/types/Common'
 import { Race } from '@/types/Race'
+import { useRouter } from 'next/router'
 import { useState } from 'react'
-import Arrow from '@/components/icons/Arrow'
 
 interface Props {
   races: Race[]
@@ -37,6 +38,8 @@ const RacePointsTable = ({
   constructorsById,
   indexedRacePoints,
 }: Props) => {
+  const { query } = useRouter()
+  const season = query.season as string
   const [sortBy, setSortBy] = useState<string>('points')
   const sortFn =
     sortingFns[sortBy] || sortingFns.default(sortBy, indexedRacePoints)
@@ -90,7 +93,7 @@ const RacePointsTable = ({
       <tbody>
         {sortedStandings.map((constructor) => {
           const normalized = normalizeConstructorName(constructor.name)
-          const { numberBackground } = COLORS_BY_CONSTRUCTOR[normalized]
+          const { numberBackground } = COLORS_BY_CONSTRUCTOR[season][normalized]
           return (
             <tr
               key={constructor.name}

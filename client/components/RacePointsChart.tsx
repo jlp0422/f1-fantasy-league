@@ -6,6 +6,7 @@ import { COLORS_BY_CONSTRUCTOR } from '@/constants/index'
 import { normalizeConstructorName } from '@/helpers/cars'
 import { GenericObject } from '@/types/Common'
 import { Constructor } from '@/types/Constructor'
+import { useRouter } from 'next/router'
 import {
   CartesianGrid,
   Legend,
@@ -14,7 +15,7 @@ import {
   ResponsiveContainer,
   Tooltip,
   XAxis,
-  YAxis,
+  YAxis
 } from 'recharts'
 
 interface Props {
@@ -40,6 +41,8 @@ const RacePointsChart = ({
   constructors,
   chartLines,
 }: Props) => {
+  const { query } = useRouter()
+  const season = query.season as string
   const updateSelectedConstructors = (constructor: string) => {
     if (selectedChartConstructors.includes(constructor)) {
       setSelectedChartConstructors((existing: string[]) =>
@@ -175,7 +178,7 @@ const RacePointsChart = ({
             />
             {chartLines.map((constructor) => {
               const normalized = normalizeConstructorName(constructor)
-              const { primary } = COLORS_BY_CONSTRUCTOR[normalized]
+              const { primary } = COLORS_BY_CONSTRUCTOR[season][normalized]
               return (
                 <Line
                   key={constructor}
