@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "dotenv": "^16.0.0",
+    "next-axiom": "^0.17.0",
     "node-fetch": "^3.2.3"
   }
 }

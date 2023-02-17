@@ -1,4 +1,6 @@
-module.exports = {
+const { withAxiom } = require('next-axiom');
+
+module.exports = withAxiom({
   images: {
     domains: [
       'res.cloudinary.com',
@@ -17,3 +19,4 @@ module.exports = {
     ]
   },
 }
+)
