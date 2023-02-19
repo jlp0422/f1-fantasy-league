@@ -26,39 +26,39 @@ const Header = () => {
 
   return (
     <nav
-      className="relative z-10 px-2 py-6 bg-gray-800 border-gray-200 md:px-8"
+      className='relative z-10 px-2 py-6 bg-gray-800 border-gray-200 md:px-8'
       style={{ backgroundColor: '#171420' }}
     >
-      <div className="flex flex-wrap items-center justify-between mx-auto max-w-7xl">
+      <div className='flex flex-wrap items-center justify-between mx-auto max-w-7xl'>
         {query.season ? (
           <button
-            data-collapse-toggle="mobile-menu"
-            type="button"
-            className="absolute inline-flex items-center p-2 text-sm text-gray-400 rounded-lg md:hidden focus:outline-none focus:ring-2 hover:bg-gray-700 focus:ring-gray-600 xs:top-4 sm:top-4"
+            data-collapse-toggle='mobile-menu'
+            type='button'
+            className='absolute inline-flex items-center p-2 text-sm text-gray-400 rounded-lg md:hidden focus:outline-none focus:ring-2 hover:bg-gray-700 focus:ring-gray-600 xs:top-4 sm:top-4'
             style={isOpen ? { top: 16 } : {}}
-            aria-controls="mobile-menu"
-            aria-expanded="false"
+            aria-controls='mobile-menu'
+            aria-expanded='false'
             onClick={() => setIsOpen((open) => !open)}
           >
-            <span className="sr-only">Open main menu</span>
+            <span className='sr-only'>Open main menu</span>
             {isOpen ? <Dismiss /> : <Hamburger />}
           </button>
         ) : null}
-        <div className="flex items-center justify-center mx-auto md:w-auto md:flex-1 md:justify-start">
+        <div className='flex items-center justify-center mx-auto md:w-auto md:flex-1 md:justify-start'>
           <Link
-            href="/"
-            className="leading-[0rem] max-w-[200px] xs:max-w-[300px] sm:max-w-[450px]"
+            href='/'
+            className='leading-[0rem] max-w-[200px] xs:max-w-[300px] sm:max-w-[450px]'
             passHref
           >
-            <Image src={headerLogo} alt="Fate of the Eight" />
+            <Image src={headerLogo} alt='Fate of the Eight' />
           </Link>
         </div>
         <div
           className={`${isOpen ? 'block' : 'hidden'} w-full md:block md:w-auto`}
-          id="mobile-menu"
+          id='mobile-menu'
         >
           {query.season ? (
-            <ul className="flex flex-col mt-6 md:flex-row md:space-x-8 md:mt-0 md:text-sm md:font-medium">
+            <ul className='flex flex-col mt-6 md:flex-row md:space-x-8 md:mt-0 md:text-sm md:font-medium'>
               {routes.map(({ href, title }) => {
                 const isActiveRoute = checkIfRoutesAreEqual(pathname, href)
                 return (

@@ -4,6 +4,11 @@ import TickYAxis from '@/components/charts/TickYAxis'
 import Layout from '@/components/Layout'
 import { COLORS_BY_CONSTRUCTOR } from '@/constants/index'
 import { getCloudinaryCarUrl, normalizeConstructorName } from '@/helpers/cars'
+import {
+  constructorColumns,
+  driverRaceResultColumns,
+  raceColumns,
+} from '@/helpers/supabase'
 import { indexBy, makeName, sum } from '@/helpers/utils'
 import { supabase } from '@/lib/database'
 import { GenericObject } from '@/types/Common'
@@ -11,7 +16,7 @@ import { Race } from '@/types/Race'
 import {
   ConstructorWithSeason,
   DriverRaceResultWithJoins,
-  RaceWithSeason
+  RaceWithSeason,
 } from '@/types/Unions'
 import { GetStaticPropsContext } from 'next'
 import { useRouter } from 'next/router'
@@ -23,7 +28,7 @@ import {
   ResponsiveContainer,
   Tooltip,
   XAxis,
-  YAxis
+  YAxis,
 } from 'recharts'
 
 interface DriverPoints {
@@ -85,27 +90,27 @@ const Constructor = ({
       metaImageUrl={getCloudinaryCarUrl(normalized)}
     >
       <div
-        className="bg-cover bg-center w-screen absolute h-80 sm:h-[336px] left-0 top-[64px] sm:top-[72px] shadow-inset-black-7"
+        className='bg-cover bg-center w-screen absolute h-80 sm:h-[336px] left-0 top-[64px] sm:top-[72px] shadow-inset-black-7'
         style={{
           backgroundImage: `url(${getCloudinaryCarUrl(normalized, {
             format: 'webp',
           })})`,
         }}
       />
-      <div className="relative flex flex-col items-center sm:flex-row">
-        <CarImage constructorName={normalized} size="large" />
-        <div className="mx-4 my-2 text-center sm:mx-8 sm:text-left">
+      <div className='relative flex flex-col items-center sm:flex-row'>
+        <CarImage constructorName={normalized} size='large' />
+        <div className='mx-4 my-2 text-center sm:mx-8 sm:text-left'>
           {data.map(({ value, label }, index) => {
             const fontSizeClass =
               index > 0 ? 'text-4xl lg:text-5xl' : 'text-5xl lg:text-6xl'
             return (
-              <div key={label} className="flex flex-col mt-4 lg:mt-2">
+              <div key={label} className='flex flex-col mt-4 lg:mt-2'>
                 <h2
                   className={`font-bold tracking-normal font-primary uppercase sm:text-gray-200 marker:text-gray-900 ${fontSizeClass}`}
                 >
                   {value}
                 </h2>
-                <p className="text-2xl leading-none tracking-wide text-gray-600 font-tertiary sm:text-gray-300">
+                <p className='text-2xl leading-none tracking-wide text-gray-600 font-tertiary sm:text-gray-300'>
                   {label}
                 </p>
               </div>
@@ -115,18 +120,18 @@ const Constructor = ({
       </div>
 
       {/* mobile points table */}
-      <div className="relative visible block my-4 overflow-x-auto rounded-lg shadow-md md:hidden md:invisible">
-        <table className="w-full text-base text-left text-gray-300 bg-gray-800 font-secondary">
-          <thead className="uppercase bg-gray-700">
+      <div className='relative visible block my-4 overflow-x-auto rounded-lg shadow-md md:hidden md:invisible'>
+        <table className='w-full text-base text-left text-gray-300 bg-gray-800 font-secondary'>
+          <thead className='uppercase bg-gray-700'>
             <tr>
-              <th scope="col" className="p-3">
+              <th scope='col' className='p-3'>
                 &nbsp;
               </th>
               {driversWithPoints.map((driver) => (
                 <th
                   key={driver}
-                  scope="col"
-                  className="p-3 text-center text-gray-100"
+                  scope='col'
+                  className='p-3 text-center text-gray-100'
                 >
                   {driver}
                 </th>
@@ -134,12 +139,12 @@ const Constructor = ({
             </tr>
           </thead>
           <tbody>
-            <tr className="border-b border-gray-700 odd:bg-gray-800 even:bg-gray-700">
-              <th scope="col" className="p-3 text-left">
+            <tr className='border-b border-gray-700 odd:bg-gray-800 even:bg-gray-700'>
+              <th scope='col' className='p-3 text-left'>
                 Total Points
               </th>
               {driversWithPoints.map((driver) => (
-                <td className="p-3 text-center text-gray-100" key={driver}>
+                <td className='p-3 text-center text-gray-100' key={driver}>
                   {racePointsByDriver[driver].total}
                 </td>
               ))}
@@ -147,9 +152,9 @@ const Constructor = ({
             {races.map((race) => (
               <tr
                 key={race.id}
-                className="border-b border-gray-700 odd:bg-gray-800 even:bg-gray-700"
+                className='border-b border-gray-700 odd:bg-gray-800 even:bg-gray-700'
               >
-                <th key={race.id} scope="col" className="p-3 text-left">
+                <th key={race.id} scope='col' className='p-3 text-left'>
                   {race.country}
                 </th>
                 {driversWithPoints.map((driver) => {
@@ -158,7 +163,7 @@ const Constructor = ({
                     return (
                       <td
                         key={`${driver}-${race.id}`}
-                        className="p-3 text-center text-gray-100"
+                        className='p-3 text-center text-gray-100'
                       >
                         {driverPointsByRace[race.id][driver]}
                       </td>
@@ -167,7 +172,7 @@ const Constructor = ({
 
                   return (
                     <td
-                      className="p-3 text-center text-gray-100"
+                      className='p-3 text-center text-gray-100'
                       key={`${driver}-${race.id}`}
                     >
                       {null}
@@ -181,24 +186,24 @@ const Constructor = ({
       </div>
 
       {/* desktop points table */}
-      <div className="relative invisible hidden my-10 overflow-x-auto rounded-lg shadow-md md:block md:visible">
-        <table className="w-full text-base text-left text-gray-300 uppercase bg-gray-800 font-secondary">
-          <thead className="bg-gray-700 whitespace-nowrap">
+      <div className='relative invisible hidden my-10 overflow-x-auto rounded-lg shadow-md md:block md:visible'>
+        <table className='w-full text-base text-left text-gray-300 uppercase bg-gray-800 font-secondary'>
+          <thead className='bg-gray-700 whitespace-nowrap'>
             <tr>
               <th
-                scope="col"
-                className="px-6 py-3 font-normal sticky w-44 min-w-[176px] max-w-[176px] left-0 bg-gray-700"
+                scope='col'
+                className='px-6 py-3 font-normal sticky w-44 min-w-[176px] max-w-[176px] left-0 bg-gray-700'
               >
                 Driver
               </th>
-              <th scope="col" className="px-6 py-3 font-normal text-center">
+              <th scope='col' className='px-6 py-3 font-normal text-center'>
                 Total Points
               </th>
               {races.map((race) => (
                 <th
                   key={race.id}
-                  scope="col"
-                  className="px-6 py-3 font-normal text-center"
+                  scope='col'
+                  className='px-6 py-3 font-normal text-center'
                 >
                   {race.country}
                 </th>
@@ -211,20 +216,20 @@ const Constructor = ({
               return (
                 <tr
                   key={driver}
-                  className="text-base font-semibold text-gray-100 border-b border-gray-700 bg-gray-50 hover:bg-gray-600 odd:bg-gray-800 even:bg-gray-700 th-child:odd:bg-gray-800 th-child:even:bg-gray-700 th-child:hover:bg-gray-600"
+                  className='text-base font-semibold text-gray-100 border-b border-gray-700 bg-gray-50 hover:bg-gray-600 odd:bg-gray-800 even:bg-gray-700 th-child:odd:bg-gray-800 th-child:even:bg-gray-700 th-child:hover:bg-gray-600'
                 >
                   <th
-                    scope="row"
-                    className="px-6 py-4 whitespace-nowrap sticky w-44 min-w-[176px] max-w-[176px] left-0 "
+                    scope='row'
+                    className='px-6 py-4 whitespace-nowrap sticky w-44 min-w-[176px] max-w-[176px] left-0 '
                   >
                     {driver}
                   </th>
-                  <td className="px-6 py-4 text-center">{total}</td>
+                  <td className='px-6 py-4 text-center'>{total}</td>
                   {races.map((race) => {
                     if (completedRaceIds.includes(race.id)) {
                       return (
                         <td
-                          className="px-6 py-4 text-center"
+                          className='px-6 py-4 text-center'
                           key={`${driver}-${race.id}`}
                         >
                           {driverPointsByRace[race.id][driver]}
@@ -234,7 +239,7 @@ const Constructor = ({
 
                     return (
                       <td
-                        className="px-6 py-4 text-center"
+                        className='px-6 py-4 text-center'
                         key={`${driver}-${race.id}`}
                       >
                         {null}
@@ -250,19 +255,19 @@ const Constructor = ({
 
       {/* charts */}
       {chartsEnabled && (
-        <div className="invisible hidden sm:visible sm:block">
-          <h2 className="text-xl font-bold tracking-tight text-gray-900 font-secondary md:text-2xl lg:text-3xl">
+        <div className='invisible hidden sm:visible sm:block'>
+          <h2 className='text-xl font-bold tracking-tight text-gray-900 font-secondary md:text-2xl lg:text-3xl'>
             Driver Points by Race
           </h2>
-          <div className="w-full mt-4 rounded-lg bg-slate-600 h-500">
+          <div className='w-full mt-4 rounded-lg bg-slate-600 h-500'>
             <ResponsiveContainer>
               <LineChart
                 data={pointsByDriverChartData}
                 margin={{ top: 30, right: 30, bottom: 30, left: 10 }}
               >
-                <CartesianGrid stroke="#ccc" strokeDasharray="4 4" />
+                <CartesianGrid stroke='#ccc' strokeDasharray='4 4' />
                 <XAxis
-                  dataKey="race"
+                  dataKey='race'
                   padding={{ left: 10, right: 0 }}
                   tick={<TickXAxis />}
                   axisLine={{ stroke: '#ccc' }}
@@ -297,7 +302,7 @@ const Constructor = ({
                   return (
                     <Line
                       key={driver}
-                      type="monotone"
+                      type='monotone'
                       dataKey={driver}
                       stroke={
                         !mod3
@@ -322,7 +327,7 @@ const Constructor = ({
 export async function getStaticPaths() {
   const { data: constructors } = (await supabase
     .from('constructor')
-    .select('id, name, season(year)')) as { data: ConstructorWithSeason[] }
+    .select(constructorColumns)) as { data: ConstructorWithSeason[] }
 
   return {
     paths: constructors.map((constructor) => ({
@@ -343,7 +348,7 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
 
   const { data: constructor } = (await supabase
     .from('constructor')
-    .select('id, name, team_principal, season!inner(id, year)')
+    .select(constructorColumns)
     .eq('season.year', params?.season)
     .eq('id', constructorId)
     .limit(1)
@@ -351,7 +356,7 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
 
   const { data: races } = (await supabase
     .from('race')
-    .select('id, location, country, start_date, season!inner(year)')
+    .select(raceColumns)
     .eq('season.year', params?.season)
     .order('start_date', { ascending: true })) as { data: Race[] }
 
@@ -359,27 +364,7 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
 
   const { data: driverRaceResults } = (await supabase
     .from('driver_race_result')
-    .select(
-      `
-      id,
-      finish_position_points,
-      grid_difference_points,
-      driver(
-        id,
-        abbreviation,
-        first_name,
-        last_name
-      ),
-      race!inner(
-        id,
-        location,
-        start_date,
-        season!inner(
-          id,
-          year
-        )
-      )`
-    )
+    .select(driverRaceResultColumns)
     .eq('race.season.year', constructor.season.year)
     .eq('constructor_id', constructor.id)
     .order('start_date', { ascending: true, foreignTable: 'race' })) as {
