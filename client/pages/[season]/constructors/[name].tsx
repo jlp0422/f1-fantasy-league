@@ -130,15 +130,19 @@ const Constructor = ({
               <th scope='col' className='p-3'>
                 &nbsp;
               </th>
-              {driversWithPoints.map((driver) => (
-                <th
-                  key={driver}
-                  scope='col'
-                  className='p-3 text-center text-gray-100'
-                >
-                  {driver}
-                </th>
-              ))}
+              {driversWithPoints.map((driver) => {
+                const isCurrentDriver = currentDriverNames.includes(driver)
+                return (
+                  <th
+                    key={driver}
+                    scope='col'
+                    className='p-3 text-center text-gray-100'
+                  >
+                    {driver}
+                    {isCurrentDriver ? '*' : null}
+                  </th>
+                )
+              })}
             </tr>
           </thead>
           <tbody>
