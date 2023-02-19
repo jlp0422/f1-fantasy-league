@@ -7,6 +7,7 @@ import { getCloudinaryCarUrl, normalizeConstructorName } from '@/helpers/cars'
 import { supabase } from '@/lib/database'
 import { GetStaticPropsContext } from 'next'
 import { makeSeasonPaths } from '@/helpers/routes'
+import { constructorColumns } from '@/helpers/supabase'
 
 interface Props {
   constructors: Constructor[]
@@ -56,7 +57,7 @@ export async function getStaticPaths() {
 export async function getStaticProps({ params }: GetStaticPropsContext) {
   const { data: constructors } = (await supabase
     .from('constructor')
-    .select('id, name, season!inner(year)')
+    .select(constructorColumns)
     .eq('season.year', params?.season)
     .order('name')) as { data: ConstructorWithSeason[] }
 

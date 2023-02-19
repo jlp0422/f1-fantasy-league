@@ -4,7 +4,7 @@ import TickYAxis from '@/components/charts/TickYAxis'
 import Layout from '@/components/Layout'
 import { COLORS_BY_CONSTRUCTOR } from '@/constants/index'
 import { getCloudinaryCarUrl, normalizeConstructorName } from '@/helpers/cars'
-import { raceColumns } from '@/helpers/supabase'
+import { constructorColumns, raceColumns } from '@/helpers/supabase'
 import { indexBy, makeName, sum } from '@/helpers/utils'
 import { supabase } from '@/lib/database'
 import { GenericObject } from '@/types/Common'
@@ -323,7 +323,7 @@ const Constructor = ({
 export async function getStaticPaths() {
   const { data: constructors } = (await supabase
     .from('constructor')
-    .select('id, name, season(year)')) as { data: ConstructorWithSeason[] }
+    .select(constructorColumns)) as { data: ConstructorWithSeason[] }
 
   return {
     paths: constructors.map((constructor) => ({
@@ -344,7 +344,7 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
 
   const { data: constructor } = (await supabase
     .from('constructor')
-    .select('id, name, team_principal, season!inner(id, year)')
+    .select(constructorColumns)
     .eq('season.year', params?.season)
     .eq('id', constructorId)
     .limit(1)

@@ -1,7 +1,9 @@
 import { makeSeasonPaths } from '@/helpers/routes'
 import { makeName, sortArray, toNum } from '@/helpers/utils'
 
+import Arrow from '@/components/icons/Arrow'
 import Layout from '@/components/Layout'
+import { raceColumns } from '@/helpers/supabase'
 import { supabase } from '@/lib/database'
 import { Driver as DriverType } from '@/types/Driver'
 import { DriverRaceResult } from '@/types/DriverRaceResult'
@@ -10,8 +12,6 @@ import { DriverRaceResultWithJoins, RaceWithSeason } from '@/types/Unions'
 import { GetStaticPropsContext } from 'next'
 import Image from 'next/image'
 import { useState } from 'react'
-import Arrow from '@/components/icons/Arrow'
-import { raceColumns } from '@/helpers/supabase'
 
 type CustomDriver = DriverType & { full_name: string }
 interface DriverResult {

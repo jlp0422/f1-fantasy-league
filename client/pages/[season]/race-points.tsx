@@ -2,7 +2,7 @@ import Layout from '@/components/Layout'
 import RacePointsChart from '@/components/RacePointsChart'
 import RacePointsTable from '@/components/RacePointsTable'
 import { makeSeasonPaths } from '@/helpers/routes'
-import { raceColumns } from '@/helpers/supabase'
+import { constructorColumns, raceColumns } from '@/helpers/supabase'
 import { indexBy } from '@/helpers/utils'
 import { supabase } from '@/lib/database'
 import {
@@ -184,7 +184,7 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
 
   const { data: constructors } = (await supabase
     .from('constructor')
-    .select('id, name, season!inner(year)')
+    .select(constructorColumns)
     .eq('season.year', params?.season)) as { data: ConstructorWithSeason[] }
 
   const { data: standings } = (await supabase
