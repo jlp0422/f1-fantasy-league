@@ -3,7 +3,7 @@ import { makeName, sortArray, toNum } from '@/helpers/utils'
 
 import Arrow from '@/components/icons/Arrow'
 import Layout from '@/components/Layout'
-import { raceColumns } from '@/helpers/supabase'
+import { driverRaceResultColumns, raceColumns } from '@/helpers/supabase'
 import { supabase } from '@/lib/database'
 import { Driver as DriverType } from '@/types/Driver'
 import { DriverRaceResult } from '@/types/DriverRaceResult'
@@ -166,31 +166,7 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
 
   const { data: raceResults } = (await supabase
     .from('driver_race_result')
-    .select(
-      `
-      id,
-      finish_position_points,
-      grid_difference_points,
-      race!inner(
-        id,
-        name,
-        location,
-        start_date,
-        season!inner(
-          id,
-          year
-        )
-      ),
-      driver(
-        id,
-        abbreviation,
-        first_name,
-        last_name,
-        number,
-        image_url
-      )
-    `
-    )
+    .select(driverRaceResultColumns)
     .eq('race.season.year', params?.season)
     .order('start_date', { ascending: true, foreignTable: 'race' })) as {
     data: DriverRaceResultWithJoins[]

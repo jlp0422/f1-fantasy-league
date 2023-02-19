@@ -4,7 +4,11 @@ import TickYAxis from '@/components/charts/TickYAxis'
 import Layout from '@/components/Layout'
 import { COLORS_BY_CONSTRUCTOR } from '@/constants/index'
 import { getCloudinaryCarUrl, normalizeConstructorName } from '@/helpers/cars'
-import { constructorColumns, raceColumns } from '@/helpers/supabase'
+import {
+  constructorColumns,
+  driverRaceResultColumns,
+  raceColumns,
+} from '@/helpers/supabase'
 import { indexBy, makeName, sum } from '@/helpers/utils'
 import { supabase } from '@/lib/database'
 import { GenericObject } from '@/types/Common'
@@ -360,27 +364,7 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
 
   const { data: driverRaceResults } = (await supabase
     .from('driver_race_result')
-    .select(
-      `
-      id,
-      finish_position_points,
-      grid_difference_points,
-      driver(
-        id,
-        abbreviation,
-        first_name,
-        last_name
-      ),
-      race!inner(
-        id,
-        location,
-        start_date,
-        season!inner(
-          id,
-          year
-        )
-      )`
-    )
+    .select(driverRaceResultColumns)
     .eq('race.season.year', constructor.season.year)
     .eq('constructor_id', constructor.id)
     .order('start_date', { ascending: true, foreignTable: 'race' })) as {
