@@ -233,11 +233,13 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
     return memo
   }, [])
 
-  const maxYAxis = Math.max(
-    ...Object.values(chartData[chartData.length - 1]).filter(
-      (num) => !isNaN(num)
-    )
-  )
+  const maxYAxis = chartData.length
+    ? Math.max(
+        ...Object.values(chartData[chartData.length - 1]).filter(
+          (num) => !isNaN(num)
+        )
+      )
+    : 0
 
   return {
     props: {
