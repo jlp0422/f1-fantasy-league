@@ -11,6 +11,7 @@ import { GetStaticPropsContext } from 'next'
 import Image from 'next/image'
 import { useState } from 'react'
 import Arrow from '@/components/icons/Arrow'
+import { raceColumns } from '@/helpers/supabase'
 
 type CustomDriver = DriverType & { full_name: string }
 interface DriverResult {
@@ -159,7 +160,7 @@ export async function getStaticPaths() {
 export async function getStaticProps({ params }: GetStaticPropsContext) {
   const { data: races } = (await supabase
     .from('race')
-    .select('id, location, country, start_date, season!inner(year)')
+    .select(raceColumns)
     .eq('season.year', params?.season)
     .order('start_date', { ascending: true })) as { data: RaceWithSeason[] }
 
