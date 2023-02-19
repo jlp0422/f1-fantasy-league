@@ -4,6 +4,7 @@ import CheckboxEmpty from '@/components/icons/CheckboxEmpty'
 import CheckboxFilled from '@/components/icons/CheckboxFilled'
 import { COLORS_BY_CONSTRUCTOR } from '@/constants/index'
 import { normalizeConstructorName } from '@/helpers/cars'
+import { sortAlpha, sortArray } from '@/helpers/utils'
 import { GenericObject } from '@/types/Common'
 import { Constructor } from '@/types/Constructor'
 import { useRouter } from 'next/router'
@@ -30,6 +31,7 @@ interface Props {
   cumulativePointsByConstructor: GenericObject[]
   constructors: Constructor[]
   chartLines: string[]
+  maxYAxis: number
 }
 
 const RacePointsChart = ({
@@ -39,6 +41,7 @@ const RacePointsChart = ({
   setSelectedChartConstructors,
   cumulativePointsByConstructor,
   constructors,
+  maxYAxis,
   chartLines,
 }: Props) => {
   const { query } = useRouter()
@@ -46,11 +49,14 @@ const RacePointsChart = ({
   const updateSelectedConstructors = (constructor: string) => {
     if (selectedChartConstructors.includes(constructor)) {
       setSelectedChartConstructors((existing: string[]) =>
-        existing.filter((c) => c !== constructor)
+        sortArray(
+          existing.filter((c) => c !== constructor),
+          sortAlpha
+        )
       )
     } else {
       setSelectedChartConstructors((existing: string[]) =>
-        existing.concat(constructor)
+        sortArray(existing.concat(constructor), sortAlpha)
       )
     }
     setIsChartDropdownOpen(false)
@@ -67,6 +73,7 @@ const RacePointsChart = ({
     }
     return 'All'
   }
+
   return (
     <div>
       <h2 className='text-xl font-bold tracking-tight text-gray-900 font-secondary md:text-2xl lg:text-3xl'>
@@ -152,11 +159,13 @@ const RacePointsChart = ({
             <XAxis
               dataKey='race'
               padding={{ left: 10, right: 0 }}
+              interval={0}
               tick={<TickXAxis />}
               axisLine={{ stroke: '#ccc' }}
               tickLine={{ stroke: '#ccc' }}
             />
             <YAxis
+              domain={[0, maxYAxis + 20]}
               tick={<TickYAxis />}
               axisLine={{ stroke: '#ccc' }}
               tickLine={{ stroke: '#ccc' }}

@@ -278,6 +278,7 @@ const Constructor = ({
                 <XAxis
                   dataKey='race'
                   padding={{ left: 10, right: 0 }}
+                  interval={0}
                   tick={<TickXAxis />}
                   axisLine={{ stroke: '#ccc' }}
                   tickLine={{ stroke: '#ccc' }}
