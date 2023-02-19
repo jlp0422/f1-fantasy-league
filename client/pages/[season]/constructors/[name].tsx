@@ -17,6 +17,7 @@ import {
   ConstructorWithSeason,
   DriverRaceResultWithJoins,
   RaceWithSeason,
+  ConstructorDriverWithJoins,
 } from '@/types/Unions'
 import { GetStaticPropsContext } from 'next'
 import { useRouter } from 'next/router'
@@ -44,6 +45,7 @@ interface Props {
   totalPoints: number
   driverPointsByRace: DriverPointsByRace
   driversWithPoints: string[]
+  currentDriverNames: string[]
   racePointsByDriver: Record<string, DriverPoints>
   pointsByDriverChartData: GenericObject[]
   chartsEnabled: boolean
@@ -57,6 +59,7 @@ const Constructor = ({
   driversWithPoints,
   racePointsByDriver,
   pointsByDriverChartData,
+  currentDriverNames,
   chartsEnabled,
 }: Props) => {
   const { query } = useRouter()
@@ -127,15 +130,19 @@ const Constructor = ({
               <th scope='col' className='p-3'>
                 &nbsp;
               </th>
-              {driversWithPoints.map((driver) => (
-                <th
-                  key={driver}
-                  scope='col'
-                  className='p-3 text-center text-gray-100'
-                >
-                  {driver}
-                </th>
-              ))}
+              {driversWithPoints.map((driver) => {
+                const isCurrentDriver = currentDriverNames.includes(driver)
+                return (
+                  <th
+                    key={driver}
+                    scope='col'
+                    className='p-3 text-center text-gray-100'
+                  >
+                    {driver}
+                    {isCurrentDriver ? '*' : null}
+                  </th>
+                )
+              })}
             </tr>
           </thead>
           <tbody>
@@ -212,6 +219,7 @@ const Constructor = ({
           </thead>
           <tbody>
             {driversWithPoints.map((driver) => {
+              const isCurrentDriver = currentDriverNames.includes(driver)
               const { completedRaceIds, total } = racePointsByDriver[driver]
               return (
                 <tr
@@ -223,6 +231,7 @@ const Constructor = ({
                     className='px-6 py-4 whitespace-nowrap sticky w-44 min-w-[176px] max-w-[176px] left-0 '
                   >
                     {driver}
+                    {isCurrentDriver ? '*' : null}
                   </th>
                   <td className='px-6 py-4 text-center'>{total}</td>
                   {races.map((race) => {
@@ -269,6 +278,7 @@ const Constructor = ({
                 <XAxis
                   dataKey='race'
                   padding={{ left: 10, right: 0 }}
+                  interval={0}
                   tick={<TickXAxis />}
                   axisLine={{ stroke: '#ccc' }}
                   tickLine={{ stroke: '#ccc' }}
@@ -360,6 +370,33 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
     .eq('season.year', params?.season)
     .order('start_date', { ascending: true })) as { data: Race[] }
 
+  const { data: currentDrivers } = (await supabase
+    .from('constructor_driver')
+    .select(
+      `
+      id,
+      driver_one:driver_one_id(
+        id,
+        first_name,
+        last_name
+      ),
+      driver_two:driver_two_id(
+        id,
+        first_name,
+        last_name
+      ),
+      season!inner(year)`
+    )
+    .eq('season.year', params?.season)
+    .eq('constructor_id', constructorId)
+    .limit(1)
+    .single()) as { data: ConstructorDriverWithJoins }
+
+  const currentDriverNames = [
+    makeName(currentDrivers.driver_one),
+    makeName(currentDrivers.driver_two),
+  ]
+
   const racesById = indexBy('id')(races)
 
   const { data: driverRaceResults } = (await supabase
@@ -443,6 +480,7 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
       driversWithPoints,
       racePointsByDriver,
       pointsByDriverChartData,
+      currentDriverNames,
       chartsEnabled: process.env.CHARTS_ENABLED === 'true',
     },
   }

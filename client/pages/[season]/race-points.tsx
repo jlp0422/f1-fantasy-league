@@ -3,7 +3,7 @@ import RacePointsChart from '@/components/RacePointsChart'
 import RacePointsTable from '@/components/RacePointsTable'
 import { makeSeasonPaths } from '@/helpers/routes'
 import { constructorColumns, raceColumns } from '@/helpers/supabase'
-import { indexBy } from '@/helpers/utils'
+import { indexBy, sortAlpha, sortArray } from '@/helpers/utils'
 import { supabase } from '@/lib/database'
 import {
   ConstructorsById,
@@ -30,6 +30,7 @@ interface Props {
   constructorsById: ConstructorsById
   indexedRacePoints: IndexedRacePoints
   constructors: ConstructorWithSeason[]
+  maxYAxis: number
 }
 
 const RacePoints = ({
@@ -39,6 +40,7 @@ const RacePoints = ({
   standings,
   constructorsById,
   indexedRacePoints,
+  maxYAxis,
   constructors,
 }: Props) => {
   const tabOptions = ['table', 'chart']
@@ -48,9 +50,12 @@ const RacePoints = ({
   const [selectedChartConstructors, setSelectedChartConstructors] = useState<
     string[]
   >([])
-  const chartLines = selectedChartConstructors.length
-    ? selectedChartConstructors
-    : constructors.map(({ name }) => name)
+  const chartLines = sortArray(
+    selectedChartConstructors.length
+      ? selectedChartConstructors
+      : constructors.map(({ name }) => name),
+    sortAlpha
+  )
 
   return (
     <Layout
@@ -132,6 +137,7 @@ const RacePoints = ({
             cumulativePointsByConstructor={cumulativePointsByConstructor}
             constructors={constructors}
             chartLines={chartLines}
+            maxYAxis={maxYAxis}
           />
         )}
       </div>
@@ -227,15 +233,28 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
     return memo
   }, [])
 
+  const maxYAxis = chartData.length
+    ? Math.max(
+        ...Object.values(chartData[chartData.length - 1]).filter(
+          (num) => !isNaN(num)
+        )
+      )
+    : 0
+
   return {
     props: {
       chartsEnabled: process.env.CHARTS_ENABLED === 'true',
       cumulativePointsByConstructor: chartData,
+      maxYAxis,
       races,
       standings,
       constructorsById,
       indexedRacePoints,
-      constructors,
+      constructors: sortArray(
+        constructors,
+        (a: ConstructorWithSeason, b: ConstructorWithSeason) =>
+          a.name > b.name ? 1 : -1
+      ),
     },
   }
 }
