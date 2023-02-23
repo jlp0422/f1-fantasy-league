@@ -19,7 +19,7 @@ const CarImage = ({ constructorName, size }: Props) => {
   const { query } = useRouter()
   const season = query.season as string
   const widthHeight = getDimensions(size)
-  const carImageUrl = getCloudinaryCarUrl(constructorName, {
+  const carImageUrl = getCloudinaryCarUrl(constructorName, season, {
     format: 'webp',
     resize: `/c_scale,w_${widthHeight * 2.5}`,
   })

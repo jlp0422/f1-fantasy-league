@@ -90,12 +90,12 @@ const Constructor = ({
     <Layout
       documentTitle={constructor.name}
       description={`Constructor information for ${constructor.name}`}
-      metaImageUrl={getCloudinaryCarUrl(normalized)}
+      metaImageUrl={getCloudinaryCarUrl(normalized, season)}
     >
       <div
         className='bg-cover bg-center w-screen absolute h-80 sm:h-[336px] left-0 top-[64px] sm:top-[72px] shadow-inset-black-7'
         style={{
-          backgroundImage: `url(${getCloudinaryCarUrl(normalized, {
+          backgroundImage: `url(${getCloudinaryCarUrl(normalized, season, {
             format: 'webp',
           })})`,
         }}
