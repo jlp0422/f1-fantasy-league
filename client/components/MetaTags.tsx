@@ -9,7 +9,7 @@ interface Props {
 
 const MetaTags = ({
   documentTitle,
-  metaImageUrl = 'https://res.cloudinary.com/jlp0422/image/upload/b_rgb:000000,c_scale,w_2500/v1653181121/f1-fantasy-2022/logo.png',
+  metaImageUrl = 'https://res.cloudinary.com/jlp0422/image/upload/b_rgb:000000,c_scale,w_2500/v1677193299/f1-fantasy-league/logo.png',
   description = 'Standings for Fate of the Eight F1 Fantasy',
 }: Props) => {
   const { asPath } = useRouter()

@@ -8,12 +8,15 @@ import { supabase } from '@/lib/database'
 import { GetStaticPropsContext } from 'next'
 import { makeSeasonPaths } from '@/helpers/routes'
 import { constructorColumns } from '@/helpers/supabase'
+import { useRouter } from 'next/router'
 
 interface Props {
   constructors: Constructor[]
 }
 
 const ConstructorsPage = ({ constructors }: Props) => {
+  const { query } = useRouter()
+  const season = query.season as string
   return (
     <Layout documentTitle='Constructors'>
       <div className='grid grid-cols-1 gap-y-8 gap-x-4 justify-items-center sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'>
@@ -29,9 +32,13 @@ const ConstructorsPage = ({ constructors }: Props) => {
                 <div
                   className='bg-contain rounded-lg h-72 w-72 shadow-inset-black-6'
                   style={{
-                    backgroundImage: `url(${getCloudinaryCarUrl(normalized, {
-                      format: 'webp',
-                    })})`,
+                    backgroundImage: `url(${getCloudinaryCarUrl(
+                      normalized,
+                      season,
+                      {
+                        format: 'webp',
+                      }
+                    )})`,
                   }}
                 />
                 <h2 className='absolute px-4 text-4xl font-bold text-center text-gray-100 uppercase font-primary'>

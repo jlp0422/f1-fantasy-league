@@ -25,19 +25,21 @@ type CloudinaryOptions = Record<string, string>
 
 export const getCloudinaryCarUrl = (
   constructorName: string,
+  season: string,
   { format = 'jpg', resize = '' }: CloudinaryOptions = {}
 ) => {
   const baseUrl = 'https://res.cloudinary.com/jlp0422/image/upload'
-  const path = '/v1652746266/f1-fantasy-2022/cars'
+  const path = `/v1677193378/f1-fantasy-league/${season}/cars`
   return `${baseUrl}${resize}${path}/${constructorName}.${format}`
 }
 
 export const getCloudinaryNumberUrl = (
   constructorName: string,
+  season: string,
   { format = 'jpg', resize = '' }: CloudinaryOptions = {}
 ) => {
   const baseUrl = 'https://res.cloudinary.com/jlp0422/image/upload'
-  const path = '/v1652746271/f1-fantasy-2022/numbers'
+  const path = `/v1677193392/f1-fantasy-league/${season}/numbers`
   return `${baseUrl}${resize}${path}/${constructorName}.${format}`
 }
 
