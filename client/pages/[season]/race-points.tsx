@@ -222,9 +222,10 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
     const data: GenericObject = { race: race.country }
     let hasRaceData = false
     constructors.forEach((c) => {
-      const cPoints = cumulativePointsByConstructor[c.id][index]
-      data[c.name] = cPoints
-      hasRaceData = !isNaN(cPoints)
+      const cPoints = cumulativePointsByConstructor[c.id]
+      const cPointsRace = cPoints ? cPoints[index] : 0
+      data[c.name] = cPointsRace
+      hasRaceData = !isNaN(cPointsRace)
     })
 
     if (hasRaceData) {
