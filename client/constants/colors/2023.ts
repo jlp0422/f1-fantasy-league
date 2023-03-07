@@ -7,11 +7,11 @@ export const colors_2023 = {
     tertiary: '#e73564',
   },
   'look-at-this-hornergraph': {
-    numberBackground: '#fcf859',
-    numberText: '#3f7f25',
-    primary: '#fcf859',
-    secondary: '#204620',
-    tertiary: '#d9a439',
+    numberBackground: '#E2568B',
+    numberText: '#F2E868',
+    primary: '#E2568B',
+    secondary: '#A93449',
+    tertiary: '#7F184D',
   },
   'piastris-podium': {
     numberBackground: '#f9f4b9',

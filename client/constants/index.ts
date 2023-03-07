@@ -1,5 +1,4 @@
-import { colors_2022 } from './colors/2022'
-import { colors_2023 } from './colors/2023'
+import { colors_2023, colors_2022 } from './colors'
 
 interface Colors {
   numberBackground: string
