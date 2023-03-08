@@ -1,6 +1,7 @@
 const { withAxiom } = require('next-axiom')
 
 module.exports = withAxiom({
+  productionBrowserSourceMaps: true,
   images: {
     domains: [
       'res.cloudinary.com',

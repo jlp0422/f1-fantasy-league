@@ -23,7 +23,6 @@ import {
 import { GetStaticPropsContext } from 'next'
 import { useRouter } from 'next/router'
 import { Tooltip as ReactTooltip } from 'react-tooltip'
-import 'react-tooltip/dist/react-tooltip.css'
 import {
   CartesianGrid,
   Legend,
@@ -65,7 +64,6 @@ const Constructor = ({
   currentDriverNames,
   chartsEnabled,
 }: Props) => {
-  console.log({ pointsByDriverChartData })
   const { query } = useRouter()
   const season = query.season as string
   const data = [

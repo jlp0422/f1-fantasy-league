@@ -12,7 +12,6 @@ import { GetStaticPropsContext } from 'next'
 import Image from 'next/image'
 import { useState } from 'react'
 import { Tooltip as ReactTooltip } from 'react-tooltip'
-import 'react-tooltip/dist/react-tooltip.css'
 
 type CustomDriver = DriverType & { full_name: string }
 interface DriverResult {
