@@ -65,6 +65,7 @@ const Constructor = ({
   currentDriverNames,
   chartsEnabled,
 }: Props) => {
+  console.log({ pointsByDriverChartData })
   const { query } = useRouter()
   const season = query.season as string
   const data = [
@@ -464,7 +465,17 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
   const pointsByDriverChartData = Object.entries(driverPointsByRace).map(
     ([raceId, drivers]) => ({
       race: racesById[raceId].country,
-      ...drivers,
+      ...Object.keys(drivers).reduce(
+        (memo: Record<string, number>, driverName) => {
+          const driver = drivers[driverName]
+          const totalPoints =
+            driver.finish_position_points + driver.grid_difference_points
+          return Object.assign({}, memo, {
+            [driverName]: totalPoints,
+          })
+        },
+        {}
+      ),
     })
   )
 
