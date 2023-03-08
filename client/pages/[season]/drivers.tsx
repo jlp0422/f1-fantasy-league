@@ -1,6 +1,5 @@
 import { makeSeasonPaths } from '@/helpers/routes'
 import { makeName, sortArray, toNum } from '@/helpers/utils'
-
 import Arrow from '@/components/icons/Arrow'
 import Layout from '@/components/Layout'
 import { driverRaceResultColumns, raceColumns } from '@/helpers/supabase'
@@ -12,6 +11,8 @@ import { DriverRaceResultWithJoins, RaceWithSeason } from '@/types/Unions'
 import { GetStaticPropsContext } from 'next'
 import Image from 'next/image'
 import { useState } from 'react'
+import { Tooltip as ReactTooltip } from 'react-tooltip'
+import 'react-tooltip/dist/react-tooltip.css'
 
 type CustomDriver = DriverType & { full_name: string }
 interface DriverResult {
@@ -135,7 +136,12 @@ const DriversPage = ({ races, driverRaceResults }: Props) => {
                       raceResult?.finish_position_points
                     return (
                       <td className='px-6 py-4 text-center' key={index}>
-                        {totalPoints}
+                        <a
+                          data-tooltip-id='points-tooltip'
+                          data-tooltip-content={`Finish Pts: ${raceResult?.finish_position_points}, Grid Pts: ${raceResult?.grid_difference_points}`}
+                        >
+                          {totalPoints}
+                        </a>
                       </td>
                     )
                   })}
@@ -144,6 +150,10 @@ const DriversPage = ({ races, driverRaceResults }: Props) => {
             })}
           </tbody>
         </table>
+        <ReactTooltip
+          id='points-tooltip'
+          className='text-base font-bold font-secondary'
+        />
       </div>
     </Layout>
   )

@@ -12,15 +12,18 @@ import {
 import { indexBy, makeName, sum } from '@/helpers/utils'
 import { supabase } from '@/lib/database'
 import { GenericObject } from '@/types/Common'
+import { DriverRaceResult } from '@/types/DriverRaceResult'
 import { Race } from '@/types/Race'
 import {
+  ConstructorDriverWithJoins,
   ConstructorWithSeason,
   DriverRaceResultWithJoins,
   RaceWithSeason,
-  ConstructorDriverWithJoins,
 } from '@/types/Unions'
 import { GetStaticPropsContext } from 'next'
 import { useRouter } from 'next/router'
+import { Tooltip as ReactTooltip } from 'react-tooltip'
+import 'react-tooltip/dist/react-tooltip.css'
 import {
   CartesianGrid,
   Legend,
@@ -37,7 +40,7 @@ interface DriverPoints {
   total: number
 }
 
-type DriverPointsByRace = Record<string, Record<string, number>>
+type DriverPointsByRace = Record<string, Record<string, DriverRaceResult>>
 
 interface Props {
   races: RaceWithSeason[]
@@ -167,12 +170,14 @@ const Constructor = ({
                 {driversWithPoints.map((driver) => {
                   const { completedRaceIds } = racePointsByDriver[driver]
                   if (completedRaceIds.includes(race.id)) {
+                    const points = driverPointsByRace[race.id][driver]
                     return (
                       <td
                         key={`${driver}-${race.id}`}
                         className='p-3 text-center text-gray-100'
                       >
-                        {driverPointsByRace[race.id][driver]}
+                        {points.finish_position_points +
+                          points.grid_difference_points}
                       </td>
                     )
                   }
@@ -236,12 +241,19 @@ const Constructor = ({
                   <td className='px-6 py-4 text-center'>{total}</td>
                   {races.map((race) => {
                     if (completedRaceIds.includes(race.id)) {
+                      const points = driverPointsByRace[race.id][driver]
                       return (
                         <td
                           className='px-6 py-4 text-center'
                           key={`${driver}-${race.id}`}
                         >
-                          {driverPointsByRace[race.id][driver]}
+                          <a
+                            data-tooltip-id='my-tooltip-id'
+                            data-tooltip-content={`Finish Pts: ${points.finish_position_points}, Grid Pts: ${points.grid_difference_points}`}
+                          >
+                            {points.finish_position_points +
+                              points.grid_difference_points}
+                          </a>
                         </td>
                       )
                     }
@@ -260,6 +272,10 @@ const Constructor = ({
             })}
           </tbody>
         </table>
+        <ReactTooltip
+          id='my-tooltip-id'
+          className='text-base font-bold font-secondary'
+        />
       </div>
 
       {/* charts */}
@@ -433,13 +449,11 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
   const driverPointsByRace = driverRaceResults.reduce(
     (memo: DriverPointsByRace, item: DriverRaceResultWithJoins) => {
       const driverName = makeName(item.driver)
-      const totalPoints =
-        item.finish_position_points + item.grid_difference_points
       if (memo[item.race.id]) {
-        memo[item.race.id][driverName] = totalPoints
+        memo[item.race.id][driverName] = item
       } else {
         memo[item.race.id] = {
-          [driverName]: totalPoints,
+          [driverName]: item,
         }
       }
       return memo
