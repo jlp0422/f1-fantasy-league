@@ -11,7 +11,13 @@ import { DriverRaceResultWithJoins, RaceWithSeason } from '@/types/Unions'
 import { GetStaticPropsContext } from 'next'
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
-import { Tooltip as ReactTooltip } from 'react-tooltip'
+import dynamic from 'next/dynamic'
+// import { Tooltip as ReactTooltip } from 'react-tooltip'
+
+const ReactTooltip = dynamic(
+  () => import('react-tooltip').then((mod) => mod.Tooltip),
+  { ssr: false }
+)
 
 type CustomDriver = DriverType & { full_name: string }
 interface DriverResult {

@@ -21,9 +21,10 @@ import {
   RaceWithSeason,
 } from '@/types/Unions'
 import { GetStaticPropsContext } from 'next'
+import dynamic from 'next/dynamic'
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
-import { Tooltip as ReactTooltip } from 'react-tooltip'
+// import { Tooltip as ReactTooltip } from 'react-tooltip'
 import {
   CartesianGrid,
   Legend,
@@ -34,6 +35,11 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
+
+const ReactTooltip = dynamic(
+  () => import('react-tooltip').then((mod) => mod.Tooltip),
+  { ssr: false }
+)
 
 interface DriverPoints {
   completedRaceIds: number[]
@@ -254,7 +260,7 @@ const Constructor = ({
                           key={`${driver}-${race.id}`}
                         >
                           <a
-                            data-tooltip-id='driver-points-tooltips'
+                            data-tooltip-id='driver-points-tooltip'
                             data-tooltip-content={tooltipString}
                           >
                             {points.finish_position_points +
@@ -280,7 +286,7 @@ const Constructor = ({
         </table>
         {isMounted && (
           <ReactTooltip
-            id='driver-points-tooltips'
+            id='driver-points-tooltip'
             className='text-base font-bold font-secondary'
           />
         )}
