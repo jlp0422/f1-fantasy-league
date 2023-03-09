@@ -22,6 +22,7 @@ import {
 } from '@/types/Unions'
 import { GetStaticPropsContext } from 'next'
 import { useRouter } from 'next/router'
+import { useEffect, useState } from 'react'
 import { Tooltip as ReactTooltip } from 'react-tooltip'
 import {
   CartesianGrid,
@@ -66,6 +67,7 @@ const Constructor = ({
 }: Props) => {
   const { query } = useRouter()
   const season = query.season as string
+  const [isMounted, setIsMounted] = useState<boolean>(false)
   const data = [
     {
       value: constructor.name,
@@ -87,6 +89,10 @@ const Constructor = ({
     secondary: secondaryColor,
     tertiary: tertiaryColor,
   } = COLORS_BY_CONSTRUCTOR[season][normalized]
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   return (
     <Layout
@@ -272,10 +278,12 @@ const Constructor = ({
             })}
           </tbody>
         </table>
-        <ReactTooltip
-          id='driver-points-tooltips'
-          className='text-base font-bold font-secondary'
-        />
+        {isMounted && (
+          <ReactTooltip
+            id='driver-points-tooltips'
+            className='text-base font-bold font-secondary'
+          />
+        )}
       </div>
 
       {/* charts */}

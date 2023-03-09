@@ -10,7 +10,7 @@ import { Season } from '@/types/Season'
 import { DriverRaceResultWithJoins, RaceWithSeason } from '@/types/Unions'
 import { GetStaticPropsContext } from 'next'
 import Image from 'next/image'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Tooltip as ReactTooltip } from 'react-tooltip'
 
 type CustomDriver = DriverType & { full_name: string }
@@ -42,11 +42,16 @@ const sortingFns: Record<string, any> = {
 
 const DriversPage = ({ races, driverRaceResults }: Props) => {
   const [sortBy, setSortBy] = useState<string>('points')
+  const [isMounted, setIsMounted] = useState<boolean>(false)
   const sortFn = sortingFns[sortBy] || sortingFns.default(sortBy)
   const sortedDriverRaceResults: DriverResult[] = sortArray(
     driverRaceResults,
     sortFn
   )
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   const renderSortButton = (label: string, sortKey: string) => (
     <button
@@ -150,10 +155,12 @@ const DriversPage = ({ races, driverRaceResults }: Props) => {
             })}
           </tbody>
         </table>
-        <ReactTooltip
-          id='points-tooltip'
-          className='text-base font-bold font-secondary'
-        />
+        {isMounted && (
+          <ReactTooltip
+            id='points-tooltip'
+            className='text-base font-bold font-secondary'
+          />
+        )}
       </div>
     </Layout>
   )
