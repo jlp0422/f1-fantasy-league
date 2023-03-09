@@ -241,14 +241,15 @@ const Constructor = ({
                   {races.map((race) => {
                     if (completedRaceIds.includes(race.id)) {
                       const points = driverPointsByRace[race.id][driver]
+                      const tooltipString = `Finish Pts: ${points.finish_position_points}, Grid Pts: ${points.grid_difference_points}`
                       return (
                         <td
                           className='px-6 py-4 text-center'
                           key={`${driver}-${race.id}`}
                         >
                           <a
-                            data-tooltip-id='my-tooltip-id'
-                            data-tooltip-content={`Finish Pts: ${points.finish_position_points}, Grid Pts: ${points.grid_difference_points}`}
+                            data-tooltip-id='driver-points-tooltips'
+                            data-tooltip-content={tooltipString}
                           >
                             {points.finish_position_points +
                               points.grid_difference_points}
@@ -272,7 +273,7 @@ const Constructor = ({
           </tbody>
         </table>
         <ReactTooltip
-          id='my-tooltip-id'
+          id='driver-points-tooltips'
           className='text-base font-bold font-secondary'
         />
       </div>

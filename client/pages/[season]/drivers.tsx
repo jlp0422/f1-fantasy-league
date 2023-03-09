@@ -130,6 +130,7 @@ const DriversPage = ({ races, driverRaceResults }: Props) => {
                         </td>
                       )
                     }
+                    const tooltipString = `Finish Pts: ${raceResult?.finish_position_points}, Grid Pts: ${raceResult?.grid_difference_points}`
                     const totalPoints =
                       raceResult?.grid_difference_points +
                       raceResult?.finish_position_points
@@ -137,7 +138,7 @@ const DriversPage = ({ races, driverRaceResults }: Props) => {
                       <td className='px-6 py-4 text-center' key={index}>
                         <a
                           data-tooltip-id='points-tooltip'
-                          data-tooltip-content={`Finish Pts: ${raceResult?.finish_position_points}, Grid Pts: ${raceResult?.grid_difference_points}`}
+                          data-tooltip-content={tooltipString}
                         >
                           {totalPoints}
                         </a>
