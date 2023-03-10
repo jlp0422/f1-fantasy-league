@@ -97,7 +97,7 @@ const Constructor = ({
       metaImageUrl={getCloudinaryCarUrl(normalized, season)}
     >
       <div
-        className='bg-cover bg-center w-screen absolute h-80 sm:h-[336px] left-0 top-[64px] sm:top-[72px] shadow-inset-black-7'
+        className='bg-cover bg-center w-screen absolute h-80 sm:h-[336px] md:h-[336px] left-0 top-[64px] sm:top-[72px] shadow-inset-black-7'
         style={{
           backgroundImage: `url(${getCloudinaryCarUrl(normalized, season, {
             format: 'webp',
@@ -109,7 +109,9 @@ const Constructor = ({
         <div className='mx-4 my-2 text-center sm:mx-8 sm:text-left'>
           {data.map(({ value, label }, index) => {
             const fontSizeClass =
-              index > 0 ? 'text-4xl lg:text-5xl' : 'text-5xl lg:text-6xl'
+              index > 0
+                ? 'text-4xl sm:text-3xl md:text-4xl lg:text-5xl'
+                : 'text-5xl sm:text-4xl md:text-5xl lg:text-6xl'
             return (
               <div key={label} className='flex flex-col mt-4 lg:mt-2'>
                 <h2
@@ -130,7 +132,7 @@ const Constructor = ({
         label='Show Detailed Points'
         checked={showDetail}
         onChange={() => setShowDetail((current) => !current)}
-        className='mt-2 sm:mt-10 md:mt-10'
+        className='mt-2 sm:mt-10'
       />
 
       {/* mobile points table */}
