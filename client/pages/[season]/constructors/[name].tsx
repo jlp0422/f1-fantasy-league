@@ -2,6 +2,7 @@ import CarImage from '@/components/CarImage'
 import TickXAxis from '@/components/charts/TickXAxis'
 import TickYAxis from '@/components/charts/TickYAxis'
 import Layout from '@/components/Layout'
+import Toggle from '@/components/Toggle'
 import { COLORS_BY_CONSTRUCTOR } from '@/constants/index'
 import { getCloudinaryCarUrl, normalizeConstructorName } from '@/helpers/cars'
 import {
@@ -21,10 +22,8 @@ import {
   RaceWithSeason,
 } from '@/types/Unions'
 import { GetStaticPropsContext } from 'next'
-import dynamic from 'next/dynamic'
 import { useRouter } from 'next/router'
-import { useEffect, useState } from 'react'
-// import { Tooltip as ReactTooltip } from 'react-tooltip'
+import { useState } from 'react'
 import {
   CartesianGrid,
   Legend,
@@ -35,11 +34,6 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-
-const ReactTooltip = dynamic(
-  () => import('react-tooltip').then((mod) => mod.Tooltip),
-  { ssr: false }
-)
 
 interface DriverPoints {
   completedRaceIds: number[]
@@ -73,7 +67,7 @@ const Constructor = ({
 }: Props) => {
   const { query } = useRouter()
   const season = query.season as string
-  const [isMounted, setIsMounted] = useState<boolean>(false)
+  const [showDetail, setShowDetail] = useState<boolean>(false)
   const data = [
     {
       value: constructor.name,
@@ -95,10 +89,6 @@ const Constructor = ({
     secondary: secondaryColor,
     tertiary: tertiaryColor,
   } = COLORS_BY_CONSTRUCTOR[season][normalized]
-
-  useEffect(() => {
-    setIsMounted(true)
-  }, [])
 
   return (
     <Layout
@@ -136,8 +126,15 @@ const Constructor = ({
         </div>
       </div>
 
+      <Toggle
+        label='Show Detailed Points'
+        checked={showDetail}
+        onChange={() => setShowDetail((current) => !current)}
+        className='mt-2 sm:mt-10 md:mt-10'
+      />
+
       {/* mobile points table */}
-      <div className='relative visible block my-4 overflow-x-auto rounded-lg shadow-md md:hidden md:invisible'>
+      <div className='relative visible block mb-4 overflow-x-auto rounded-lg shadow-md md:hidden md:invisible'>
         <table className='w-full text-base text-left text-gray-300 bg-gray-800 font-secondary'>
           <thead className='uppercase bg-gray-700'>
             <tr>
@@ -182,6 +179,22 @@ const Constructor = ({
                   const { completedRaceIds } = racePointsByDriver[driver]
                   if (completedRaceIds.includes(race.id)) {
                     const points = driverPointsByRace[race.id][driver]
+                    if (showDetail) {
+                      return (
+                        <td
+                          className='px-3 py-1 text-base font-normal text-center text-gray-100'
+                          key={`${driver}-${race.id}`}
+                        >
+                          <p className='leading-5'>
+                            Finish: {points.finish_position_points}
+                          </p>
+                          <p className='leading-5'>
+                            Grid: {points.grid_difference_points}
+                          </p>
+                        </td>
+                      )
+                    }
+
                     return (
                       <td
                         key={`${driver}-${race.id}`}
@@ -209,7 +222,7 @@ const Constructor = ({
       </div>
 
       {/* desktop points table */}
-      <div className='relative invisible hidden my-10 overflow-x-auto rounded-lg shadow-md md:block md:visible'>
+      <div className='relative invisible hidden mt-1 mb-10 overflow-x-auto rounded-lg shadow-md md:block md:visible'>
         <table className='w-full text-base text-left text-gray-300 uppercase bg-gray-800 font-secondary'>
           <thead className='bg-gray-700 whitespace-nowrap'>
             <tr>
@@ -240,7 +253,7 @@ const Constructor = ({
               return (
                 <tr
                   key={driver}
-                  className='text-base font-semibold text-gray-100 border-b border-gray-700 bg-gray-50 hover:bg-gray-600 odd:bg-gray-800 even:bg-gray-700 th-child:odd:bg-gray-800 th-child:even:bg-gray-700 th-child:hover:bg-gray-600'
+                  className='text-lg font-semibold text-gray-100 border-b border-gray-700 bg-gray-50 hover:bg-gray-600 odd:bg-gray-800 even:bg-gray-700 th-child:odd:bg-gray-800 th-child:even:bg-gray-700 th-child:hover:bg-gray-600'
                 >
                   <th
                     scope='row'
@@ -253,19 +266,30 @@ const Constructor = ({
                   {races.map((race) => {
                     if (completedRaceIds.includes(race.id)) {
                       const points = driverPointsByRace[race.id][driver]
-                      const tooltipString = `Finish Pts: ${points.finish_position_points}, Grid Pts: ${points.grid_difference_points}`
+
+                      if (showDetail) {
+                        return (
+                          <td
+                            className='px-4 py-2 text-base font-normal text-center'
+                            key={`${driver}-${race.id}`}
+                          >
+                            <p className='leading-5'>
+                              Finish: {points.finish_position_points}
+                            </p>
+                            <p className='leading-5'>
+                              Grid: {points.grid_difference_points}
+                            </p>
+                          </td>
+                        )
+                      }
+
                       return (
                         <td
                           className='px-6 py-4 text-center'
                           key={`${driver}-${race.id}`}
                         >
-                          <a
-                            data-tooltip-id='driver-points-tooltip'
-                            data-tooltip-content={tooltipString}
-                          >
-                            {points.finish_position_points +
-                              points.grid_difference_points}
-                          </a>
+                          {points.finish_position_points +
+                            points.grid_difference_points}
                         </td>
                       )
                     }
@@ -284,12 +308,6 @@ const Constructor = ({
             })}
           </tbody>
         </table>
-        {isMounted && (
-          <ReactTooltip
-            id='driver-points-tooltip'
-            className='text-base font-bold font-secondary'
-          />
-        )}
       </div>
 
       {/* charts */}
