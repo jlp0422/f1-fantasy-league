@@ -141,7 +141,10 @@ const DriversPage = ({ races, driverRaceResults }: Props) => {
 
                       if (showDetail) {
                         return (
-                          <td className='p-4 text-base text-center' key={index}>
+                          <td
+                            className='px-4 py-2 text-base text-center'
+                            key={index}
+                          >
                             <p className='leading-5'>
                               Finish: {raceResult?.finish_position_points}
                             </p>
