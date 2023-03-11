@@ -72,14 +72,17 @@ const Constructor = ({
     {
       value: constructor.name,
       label: 'Constructor',
+      classNames: 'text-5xl sm:text-4xl md:text-5xl lg:text-6xl',
     },
     {
       value: constructor.team_principal,
       label: 'Team Principal',
+      classNames: 'text-4xl sm:text-3xl md:text-4xl lg:text-5xl',
     },
     {
       value: totalPoints,
       label: 'Total Points',
+      classNames: 'text-4xl sm:text-3xl md:text-4xl lg:text-5xl',
     },
   ]
 
@@ -107,15 +110,11 @@ const Constructor = ({
       <div className='relative flex flex-col items-center sm:flex-row'>
         <CarImage constructorName={normalized} size='large' />
         <div className='mx-4 my-2 text-center sm:mx-8 sm:text-left'>
-          {data.map(({ value, label }, index) => {
-            const fontSizeClass =
-              index > 0
-                ? 'text-4xl sm:text-3xl md:text-4xl lg:text-5xl'
-                : 'text-5xl sm:text-4xl md:text-5xl lg:text-6xl'
+          {data.map(({ value, label, classNames }) => {
             return (
               <div key={label} className='flex flex-col mt-4 lg:mt-2'>
                 <h2
-                  className={`font-bold tracking-normal font-primary uppercase sm:text-gray-200 marker:text-gray-900 ${fontSizeClass}`}
+                  className={`font-bold tracking-normal font-primary uppercase sm:text-gray-200 marker:text-gray-900 ${classNames}`}
                 >
                   {value}
                 </h2>
