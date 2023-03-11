@@ -129,7 +129,7 @@ const Constructor = ({
       </div>
 
       <Toggle
-        label='Show Detailed Points'
+        label='Detailed Points'
         checked={showDetail}
         onChange={() => setShowDetail((current) => !current)}
         className='mt-2 sm:mt-10'

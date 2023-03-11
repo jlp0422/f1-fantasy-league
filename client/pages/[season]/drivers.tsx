@@ -62,7 +62,7 @@ const DriversPage = ({ races, driverRaceResults }: Props) => {
     <Layout documentTitle='Drivers' fullWidth>
       <div className='mx-2 my-4 sm:mx-4'>
         <Toggle
-          label='Show Detailed Points'
+          label='Detailed Points'
           checked={showDetail}
           onChange={() => setShowDetail((current) => !current)}
           className='mb-1'
