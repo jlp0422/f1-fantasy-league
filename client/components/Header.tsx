@@ -26,7 +26,7 @@ const Header = () => {
 
   return (
     <nav className='relative z-10 px-2 py-6 border-gray-200 md:px-8 bg-fate-black'>
-      <div className='flex flex-wrap items-center justify-between mx-auto max-w-7xl md:mt-0'>
+      <div className='flex flex-wrap items-center justify-between mx-auto max-w-7xl'>
         {query.season ? (
           <button
             data-collapse-toggle='mobile-menu'
