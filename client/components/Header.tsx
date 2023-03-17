@@ -25,13 +25,13 @@ const Header = () => {
   ]
 
   return (
-    <nav className='relative z-10 px-2 py-6 border-gray-200 md:px-8 sm:min-h-[76px] bg-fate-black'>
+    <nav className='relative z-10 px-2 py-6 border-gray-200 md:px-8 bg-fate-black'>
       <div className='flex flex-wrap items-center justify-between mx-auto mt-1 max-w-7xl md:mt-0'>
         {query.season ? (
           <button
             data-collapse-toggle='mobile-menu'
             type='button'
-            className='absolute inline-flex items-center p-2 mt-1 text-sm text-gray-400 rounded-lg md:hidden focus:outline-none focus:ring-2 hover:bg-gray-700 focus:ring-gray-600 xs:top-4 sm:top-4'
+            className='absolute inline-flex items-center p-2 text-sm text-gray-400 rounded-lg md:hidden focus:outline-none focus:ring-2 hover:bg-gray-700 focus:ring-gray-600 xs:top-4 sm:top-4'
             style={isOpen ? { top: 16 } : {}}
             aria-controls='mobile-menu'
             aria-expanded='false'
