@@ -33,6 +33,7 @@ export default async function handler(
       .map((url) => `/${season}/constructors/${url}`)
     await res.revalidate(`/${season}/standings`)
     await res.revalidate(`/${season}/race-points`)
+    await res.revalidate(`/${season}/drivers`)
     await Promise.all(constructorRoutes.map((route) => res.revalidate(route)))
     return res.status(200).json({ revalidated: true })
   } catch (err) {
