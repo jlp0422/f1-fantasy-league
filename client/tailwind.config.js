@@ -6,6 +6,9 @@ module.exports = {
   content: ['./pages/**/*.{js,ts,tsx}', './components/**/*.{js,ts,tsx}'],
   theme: {
     extend: {
+      colors: {
+        'fate-black': '#171420',
+      },
       fontFamily: {
         primary: ['Racing Sans One', ...defaultTheme.fontFamily.sans],
         secondary: ['Saira Condensed', ...defaultTheme.fontFamily.sans],

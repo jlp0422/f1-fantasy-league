@@ -1,9 +1,9 @@
-import { makeSeasonPaths } from '@/helpers/routes'
-import { makeName, sortArray, toNum } from '@/helpers/utils'
-
 import Arrow from '@/components/icons/Arrow'
 import Layout from '@/components/Layout'
+import Toggle from '@/components/Toggle'
+import { makeSeasonPaths } from '@/helpers/routes'
 import { driverRaceResultColumns, raceColumns } from '@/helpers/supabase'
+import { makeName, sortArray, toNum } from '@/helpers/utils'
 import { supabase } from '@/lib/database'
 import { Driver as DriverType } from '@/types/Driver'
 import { DriverRaceResult } from '@/types/DriverRaceResult'
@@ -42,6 +42,7 @@ const sortingFns: Record<string, any> = {
 
 const DriversPage = ({ races, driverRaceResults }: Props) => {
   const [sortBy, setSortBy] = useState<string>('points')
+  const [showDetail, setShowDetail] = useState<boolean>(false)
   const sortFn = sortingFns[sortBy] || sortingFns.default(sortBy)
   const sortedDriverRaceResults: DriverResult[] = sortArray(
     driverRaceResults,
@@ -59,91 +60,115 @@ const DriversPage = ({ races, driverRaceResults }: Props) => {
   )
   return (
     <Layout documentTitle='Drivers' fullWidth>
-      <div className='relative mx-2 my-4 overflow-x-auto overflow-y-hidden rounded-lg sm:mx-4'>
-        <table className='w-full text-base text-left text-gray-300 uppercase bg-gray-800 font-secondary'>
-          <thead className='bg-gray-700 whitespace-nowrap'>
-            <tr>
-              <th
-                key='Constructor'
-                scope='col'
-                className='px-6 py-3 sticky invisible hidden sm:table-cell sm:visible sm:w-[310px] sm:min-w-[310px] sm:max-w-[310px] left-0 bg-gray-700'
-              >
-                {renderSortButton('Driver', 'name')}
-              </th>
-              <th
-                scope='col'
-                className='px-6 py-3 visible table-cell sticky left-0 w-[88px] min-w-[88px] max-w-[88px] bg-gray-700 sm:invisible sm:hidden'
-              >
-                &nbsp;
-              </th>
-              <th
-                key='Total Points'
-                scope='col'
-                className='px-6 py-3 font-normal text-center'
-              >
-                {renderSortButton('Total Points', 'points')}
-              </th>
-              {races.map((race, index) => (
+      <div className='mx-2 my-4 sm:mx-4'>
+        <Toggle
+          label='Detailed Points'
+          checked={showDetail}
+          onChange={() => setShowDetail((current) => !current)}
+          className='mb-1'
+        />
+        <div className='relative overflow-x-auto overflow-y-hidden rounded-lg'>
+          <table className='w-full text-base text-left text-gray-300 uppercase bg-gray-800 font-secondary'>
+            <thead className='bg-gray-700 whitespace-nowrap'>
+              <tr>
                 <th
-                  key={race.id}
+                  key='Constructor'
+                  scope='col'
+                  className='px-6 py-3 sticky invisible hidden sm:table-cell sm:visible sm:w-[310px] sm:min-w-[310px] sm:max-w-[310px] left-0 bg-gray-700'
+                >
+                  {renderSortButton('Driver', 'name')}
+                </th>
+                <th
+                  scope='col'
+                  className='px-6 py-3 visible table-cell sticky left-0 w-[88px] min-w-[88px] max-w-[88px] bg-gray-700 sm:invisible sm:hidden'
+                >
+                  &nbsp;
+                </th>
+                <th
+                  key='Total Points'
                   scope='col'
                   className='px-6 py-3 font-normal text-center'
                 >
-                  {renderSortButton(race.country, index.toString())}
+                  {renderSortButton('Total Points', 'points')}
                 </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {sortedDriverRaceResults.map((seasonResult) => {
-              return (
-                <tr
-                  key={seasonResult.driver.id}
-                  className='text-lg bg-gray-800 border-b border-gray-700 th-child:odd:bg-gray-800 th-child:even:bg-gray-700 sm:hover:bg-gray-600 th-child:sm:hover:bg-gray-600 odd:bg-gray-800 even:bg-gray-700'
-                >
+                {races.map((race, index) => (
                   <th
-                    scope='row'
-                    className='sticky w-[150px] min-w-[150px] max-w-[150px] sm:w-[310px] sm:min-w-[310px] sm:max-w-[310px] left-0'
+                    key={race.id}
+                    scope='col'
+                    className='px-6 py-3 font-normal text-center'
                   >
-                    <div className='sm:flex sm:items-center'>
-                      <div className='invisible hidden sm:visible sm:block sm:h-[75px] sm:w-[75px]'>
-                        <Image
-                          width={75}
-                          height={75}
-                          src={seasonResult.driver.image_url}
-                          alt={seasonResult.driver.full_name}
-                        />
-                      </div>
-                      <div className='flex items-center justify-start gap-3 px-4 py-4 font-semibold text-left text-gray-100 sm:justify-center sm:px-6 sm:py-4 whitespace-nowrap sm:text-center'>
-                        {seasonResult.driver.full_name}
-                      </div>
-                    </div>
+                    {renderSortButton(race.country, index.toString())}
                   </th>
-                  <td className='px-6 py-4 text-center '>
-                    {seasonResult.totalPoints}
-                  </td>
-                  {seasonResult.raceResults.map((raceResult, index) => {
-                    if (raceResult.didNotRace) {
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {sortedDriverRaceResults.map((seasonResult) => {
+                return (
+                  <tr
+                    key={seasonResult.driver.id}
+                    className='text-lg bg-gray-800 border-b border-gray-700 th-child:odd:bg-gray-800 th-child:even:bg-gray-700 sm:hover:bg-gray-600 th-child:sm:hover:bg-gray-600 odd:bg-gray-800 even:bg-gray-700'
+                  >
+                    <th
+                      scope='row'
+                      className='sticky w-[150px] min-w-[150px] max-w-[150px] sm:w-[310px] sm:min-w-[310px] sm:max-w-[310px] left-0'
+                    >
+                      <div className='sm:flex sm:items-center'>
+                        <div className='invisible hidden sm:visible sm:block sm:h-[75px] sm:w-[75px]'>
+                          <Image
+                            width={75}
+                            height={75}
+                            src={seasonResult.driver.image_url}
+                            alt={seasonResult.driver.full_name}
+                          />
+                        </div>
+                        <div className='flex items-center justify-start gap-3 px-4 py-4 font-semibold text-left text-gray-100 sm:justify-center sm:px-6 sm:py-4 whitespace-nowrap sm:text-center'>
+                          {seasonResult.driver.full_name}
+                        </div>
+                      </div>
+                    </th>
+                    <td className='px-6 py-4 text-center '>
+                      {seasonResult.totalPoints}
+                    </td>
+                    {seasonResult.raceResults.map((raceResult, index) => {
+                      if (raceResult.didNotRace) {
+                        return (
+                          <td className='px-6 py-4 text-center' key={index}>
+                            N/A
+                          </td>
+                        )
+                      }
+
+                      if (showDetail) {
+                        return (
+                          <td
+                            className='px-4 py-2 text-base text-center'
+                            key={index}
+                          >
+                            <p className='leading-5'>
+                              Finish: {raceResult?.finish_position_points}
+                            </p>
+                            <p className='leading-5'>
+                              Grid: {raceResult?.grid_difference_points}
+                            </p>
+                          </td>
+                        )
+                      }
+                      const totalPoints =
+                        raceResult?.grid_difference_points +
+                        raceResult?.finish_position_points
                       return (
                         <td className='px-6 py-4 text-center' key={index}>
-                          N/A
+                          {totalPoints}
                         </td>
                       )
-                    }
-                    const totalPoints =
-                      raceResult?.grid_difference_points +
-                      raceResult?.finish_position_points
-                    return (
-                      <td className='px-6 py-4 text-center' key={index}>
-                        {totalPoints}
-                      </td>
-                    )
-                  })}
-                </tr>
-              )
-            })}
-          </tbody>
-        </table>
+                    })}
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
     </Layout>
   )

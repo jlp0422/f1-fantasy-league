@@ -137,7 +137,7 @@ const RacePointsChart = ({
                       onClick={() => {
                         updateSelectedConstructors(constructor.name)
                       }}
-                      className='flex w-full gap-1 px-4 py-2 text-left hover:bg-gray-600 hover:text-white'
+                      className='flex w-full px-4 py-2 text-left gap-1 hover:bg-gray-600 hover:text-white'
                     >
                       <Icon />
                       {constructor.name}

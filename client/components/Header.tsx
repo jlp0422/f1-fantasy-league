@@ -25,10 +25,7 @@ const Header = () => {
   ]
 
   return (
-    <nav
-      className='relative z-10 px-2 py-6 bg-gray-800 border-gray-200 md:px-8'
-      style={{ backgroundColor: '#171420' }}
-    >
+    <nav className='relative z-10 px-2 py-6 border-gray-200 md:px-8 bg-fate-black'>
       <div className='flex flex-wrap items-center justify-between mx-auto max-w-7xl'>
         {query.season ? (
           <button
@@ -58,14 +55,14 @@ const Header = () => {
           id='mobile-menu'
         >
           {query.season ? (
-            <ul className='flex flex-col mt-6 md:flex-row md:space-x-8 md:mt-0 md:text-sm md:font-medium'>
+            <ul className='flex flex-col mt-6 md:flex-row md:space-x-6 md:mt-0 md:text-sm md:font-medium'>
               {routes.map(({ href, title }) => {
                 const isActiveRoute = checkIfRoutesAreEqual(pathname, href)
                 return (
                   <li key={`${href}-${title}`}>
                     <Link
                       href={href}
-                      className={`font-secondary uppercase block px-3 py-2 border-b md:border-0 md:p-0 text-lg lg:text-xl md:hover:text-white hover:bg-gray-700 hover:text-gray-200 md:hover:bg-transparent border-gray-700 ${
+                      className={`mx-1 font-secondary uppercase block px-2 py-2 border-b md:border-0 md:p-0 text-lg lg:text-xl md:hover:text-white hover:bg-gray-700 hover:text-gray-200 md:hover:bg-transparent border-gray-700 ${
                         isActiveRoute ? 'text-white' : 'text-gray-400'
                       }`}
                       onClick={() => setIsOpen((open) => !open)}
@@ -76,7 +73,19 @@ const Header = () => {
                 )
               })}
             </ul>
-          ) : null}
+          ) : (
+            <ul className='flex flex-col mt-6 md:flex-row md:space-x-6 md:mt-0 md:text-sm md:font-medium'>
+              <li>
+                <Link
+                  href=''
+                  className='block px-2 py-2 mx-1 text-lg text-gray-400 uppercase border-b border-gray-700 font-secondary md:border-0 md:p-0 lg:text-xl md:hover:text-white hover:bg-gray-700 hover:text-gray-200 md:hover:bg-transparent'
+                  onClick={() => {}}
+                >
+                  &nbsp;
+                </Link>
+              </li>
+            </ul>
+          )}
         </div>
       </div>
     </nav>

@@ -2,6 +2,7 @@ import CarImage from '@/components/CarImage'
 import TickXAxis from '@/components/charts/TickXAxis'
 import TickYAxis from '@/components/charts/TickYAxis'
 import Layout from '@/components/Layout'
+import Toggle from '@/components/Toggle'
 import { COLORS_BY_CONSTRUCTOR } from '@/constants/index'
 import { getCloudinaryCarUrl, normalizeConstructorName } from '@/helpers/cars'
 import {
@@ -12,15 +13,17 @@ import {
 import { indexBy, makeName, sum } from '@/helpers/utils'
 import { supabase } from '@/lib/database'
 import { GenericObject } from '@/types/Common'
+import { DriverRaceResult } from '@/types/DriverRaceResult'
 import { Race } from '@/types/Race'
 import {
+  ConstructorDriverWithJoins,
   ConstructorWithSeason,
   DriverRaceResultWithJoins,
   RaceWithSeason,
-  ConstructorDriverWithJoins,
 } from '@/types/Unions'
 import { GetStaticPropsContext } from 'next'
 import { useRouter } from 'next/router'
+import { useState } from 'react'
 import {
   CartesianGrid,
   Legend,
@@ -37,7 +40,7 @@ interface DriverPoints {
   total: number
 }
 
-type DriverPointsByRace = Record<string, Record<string, number>>
+type DriverPointsByRace = Record<string, Record<string, DriverRaceResult>>
 
 interface Props {
   races: RaceWithSeason[]
@@ -64,18 +67,22 @@ const Constructor = ({
 }: Props) => {
   const { query } = useRouter()
   const season = query.season as string
+  const [showDetail, setShowDetail] = useState<boolean>(false)
   const data = [
     {
       value: constructor.name,
       label: 'Constructor',
+      classNames: 'text-5xl sm:text-4xl md:text-5xl lg:text-6xl',
     },
     {
       value: constructor.team_principal,
       label: 'Team Principal',
+      classNames: 'text-4xl sm:text-3xl md:text-4xl lg:text-5xl',
     },
     {
       value: totalPoints,
       label: 'Total Points',
+      classNames: 'text-4xl sm:text-3xl md:text-4xl lg:text-5xl',
     },
   ]
 
@@ -103,13 +110,11 @@ const Constructor = ({
       <div className='relative flex flex-col items-center sm:flex-row'>
         <CarImage constructorName={normalized} size='large' />
         <div className='mx-4 my-2 text-center sm:mx-8 sm:text-left'>
-          {data.map(({ value, label }, index) => {
-            const fontSizeClass =
-              index > 0 ? 'text-4xl lg:text-5xl' : 'text-5xl lg:text-6xl'
+          {data.map(({ value, label, classNames }) => {
             return (
               <div key={label} className='flex flex-col mt-4 lg:mt-2'>
                 <h2
-                  className={`font-bold tracking-normal font-primary uppercase sm:text-gray-200 marker:text-gray-900 ${fontSizeClass}`}
+                  className={`font-bold tracking-normal font-primary uppercase sm:text-gray-200 marker:text-gray-900 ${classNames}`}
                 >
                   {value}
                 </h2>
@@ -122,8 +127,15 @@ const Constructor = ({
         </div>
       </div>
 
+      <Toggle
+        label='Detailed Points'
+        checked={showDetail}
+        onChange={() => setShowDetail((current) => !current)}
+        className='mt-2 sm:mt-10'
+      />
+
       {/* mobile points table */}
-      <div className='relative visible block my-4 overflow-x-auto rounded-lg shadow-md md:hidden md:invisible'>
+      <div className='relative visible block mb-4 overflow-x-auto rounded-lg shadow-md md:hidden md:invisible'>
         <table className='w-full text-base text-left text-gray-300 bg-gray-800 font-secondary'>
           <thead className='uppercase bg-gray-700'>
             <tr>
@@ -167,12 +179,30 @@ const Constructor = ({
                 {driversWithPoints.map((driver) => {
                   const { completedRaceIds } = racePointsByDriver[driver]
                   if (completedRaceIds.includes(race.id)) {
+                    const points = driverPointsByRace[race.id][driver]
+                    if (showDetail) {
+                      return (
+                        <td
+                          className='px-3 py-1 text-base font-normal text-center text-gray-100'
+                          key={`${driver}-${race.id}`}
+                        >
+                          <p className='leading-5'>
+                            Finish: {points.finish_position_points}
+                          </p>
+                          <p className='leading-5'>
+                            Grid: {points.grid_difference_points}
+                          </p>
+                        </td>
+                      )
+                    }
+
                     return (
                       <td
                         key={`${driver}-${race.id}`}
                         className='p-3 text-center text-gray-100'
                       >
-                        {driverPointsByRace[race.id][driver]}
+                        {points.finish_position_points +
+                          points.grid_difference_points}
                       </td>
                     )
                   }
@@ -193,7 +223,7 @@ const Constructor = ({
       </div>
 
       {/* desktop points table */}
-      <div className='relative invisible hidden my-10 overflow-x-auto rounded-lg shadow-md md:block md:visible'>
+      <div className='relative invisible hidden mt-1 mb-10 overflow-x-auto rounded-lg shadow-md md:block md:visible'>
         <table className='w-full text-base text-left text-gray-300 uppercase bg-gray-800 font-secondary'>
           <thead className='bg-gray-700 whitespace-nowrap'>
             <tr>
@@ -224,7 +254,7 @@ const Constructor = ({
               return (
                 <tr
                   key={driver}
-                  className='text-base font-semibold text-gray-100 border-b border-gray-700 bg-gray-50 hover:bg-gray-600 odd:bg-gray-800 even:bg-gray-700 th-child:odd:bg-gray-800 th-child:even:bg-gray-700 th-child:hover:bg-gray-600'
+                  className='text-lg font-semibold text-gray-100 border-b border-gray-700 bg-gray-50 hover:bg-gray-600 odd:bg-gray-800 even:bg-gray-700 th-child:odd:bg-gray-800 th-child:even:bg-gray-700 th-child:hover:bg-gray-600'
                 >
                   <th
                     scope='row'
@@ -236,12 +266,31 @@ const Constructor = ({
                   <td className='px-6 py-4 text-center'>{total}</td>
                   {races.map((race) => {
                     if (completedRaceIds.includes(race.id)) {
+                      const points = driverPointsByRace[race.id][driver]
+
+                      if (showDetail) {
+                        return (
+                          <td
+                            className='px-4 py-2 text-base font-normal text-center'
+                            key={`${driver}-${race.id}`}
+                          >
+                            <p className='leading-5'>
+                              Finish: {points.finish_position_points}
+                            </p>
+                            <p className='leading-5'>
+                              Grid: {points.grid_difference_points}
+                            </p>
+                          </td>
+                        )
+                      }
+
                       return (
                         <td
                           className='px-6 py-4 text-center'
                           key={`${driver}-${race.id}`}
                         >
-                          {driverPointsByRace[race.id][driver]}
+                          {points.finish_position_points +
+                            points.grid_difference_points}
                         </td>
                       )
                     }
@@ -433,13 +482,11 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
   const driverPointsByRace = driverRaceResults.reduce(
     (memo: DriverPointsByRace, item: DriverRaceResultWithJoins) => {
       const driverName = makeName(item.driver)
-      const totalPoints =
-        item.finish_position_points + item.grid_difference_points
       if (memo[item.race.id]) {
-        memo[item.race.id][driverName] = totalPoints
+        memo[item.race.id][driverName] = item
       } else {
         memo[item.race.id] = {
-          [driverName]: totalPoints,
+          [driverName]: item,
         }
       }
       return memo
@@ -450,7 +497,17 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
   const pointsByDriverChartData = Object.entries(driverPointsByRace).map(
     ([raceId, drivers]) => ({
       race: racesById[raceId].country,
-      ...drivers,
+      ...Object.keys(drivers).reduce(
+        (memo: Record<string, number>, driverName) => {
+          const driver = drivers[driverName]
+          const totalPoints =
+            driver.finish_position_points + driver.grid_difference_points
+          return Object.assign({}, memo, {
+            [driverName]: totalPoints,
+          })
+        },
+        {}
+      ),
     })
   )
 
