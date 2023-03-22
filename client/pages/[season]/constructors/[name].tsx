@@ -394,12 +394,13 @@ const Constructor = ({
 }
 
 export async function getStaticPaths() {
-  const { data: constructors } = (await supabase
+  const { data: constructors } = await supabase
     .from('constructor')
-    .select(constructorColumns)) as { data: ConstructorWithSeason[] }
+    .select(constructorColumns)
+    .returns<ConstructorWithSeason[]>()
 
   return {
-    paths: constructors.map((constructor) => ({
+    paths: constructors!.map((constructor) => ({
       params: {
         name: encodeURIComponent(
           `${constructor.id}-${normalizeConstructorName(constructor.name)}`
@@ -415,19 +416,21 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
   const constructorNameParam = decodeURIComponent(params?.name as string)
   const constructorId = constructorNameParam.split('-')[0]
 
-  const { data: constructor } = (await supabase
+  const { data: constructorRows } = await supabase
     .from('constructor')
     .select(constructorColumns)
     .eq('season.year', params?.season)
     .eq('id', constructorId)
     .limit(1)
-    .single()) as { data: ConstructorWithSeason }
+    .returns<ConstructorWithSeason[]>()
+  const constructor = constructorRows![0]
 
-  const { data: races } = (await supabase
+  const { data: races } = await supabase
     .from('race')
     .select(raceColumns)
     .eq('season.year', params?.season)
-    .order('start_date', { ascending: true })) as { data: Race[] }
+    .order('start_date', { ascending: true })
+    .returns<Race[]>()
 
   const { data: currentDrivers } = (await supabase
     .from('constructor_driver')
@@ -456,18 +459,17 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
     makeName(currentDrivers.driver_two),
   ]
 
-  const racesById = indexBy('id')(races)
+  const racesById = indexBy('id')(races!)
 
-  const { data: driverRaceResults } = (await supabase
+  const { data: driverRaceResults } = await supabase
     .from('driver_race_result')
     .select(driverRaceResultColumns)
-    .eq('race.season.year', constructor.season.year)
-    .eq('constructor_id', constructor.id)
-    .order('start_date', { ascending: true, foreignTable: 'race' })) as {
-    data: DriverRaceResultWithJoins[]
-  }
+    .eq('race.season.year', constructor!.season.year)
+    .eq('constructor_id', constructor!.id)
+    .order('start_date', { ascending: true, foreignTable: 'race' })
+    .returns<DriverRaceResultWithJoins[]>()
 
-  const racePointsByDriver = driverRaceResults.reduce(
+  const racePointsByDriver = driverRaceResults!.reduce(
     (memo: Record<string, DriverPoints>, item: DriverRaceResultWithJoins) => {
       const driverName = makeName(item.driver)
       const current = memo[driverName]
@@ -491,7 +493,7 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
     {}
   )
 
-  const driverPointsByRace = driverRaceResults.reduce(
+  const driverPointsByRace = driverRaceResults!.reduce(
     (memo: DriverPointsByRace, item: DriverRaceResultWithJoins) => {
       const driverName = makeName(item.driver)
       if (memo[item.race.id]) {

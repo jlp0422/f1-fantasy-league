@@ -142,19 +142,19 @@ const RacePoints = ({
 }
 
 export async function getStaticPaths() {
-  const { data } = (await supabase.from('season').select('*')) as {
-    data: Season[]
-  }
+  const { data } = await supabase.from('season').select('*').returns<Season[]>()
 
-  return makeSeasonPaths(data)
+  return makeSeasonPaths(data!)
 }
 
 export async function getStaticProps({ params }: GetStaticPropsContext) {
-  const { data: totalPointsByConstructorByRace } = (await supabase
-    .rpc('total_points_by_constructor_by_race', { season: params?.season })
-    .select('*')) as { data: TotalPointsByConstructorByRace[] }
+  const seasonParam = params?.season as any
+  const { data: totalPointsByConstructorByRace } = await supabase
+    .rpc('total_points_by_constructor_by_race', { season: seasonParam })
+    .select('*')
+    .returns<TotalPointsByConstructorByRace[]>()
 
-  const indexedRacePoints = totalPointsByConstructorByRace.reduce(
+  const indexedRacePoints = totalPointsByConstructorByRace!.reduce(
     (memo: IndexedRacePoints, item) => {
       const constructorId = item.constructor_id
       const raceId = item.race_id
@@ -178,19 +178,21 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
     {}
   )
 
-  const { data: races } = (await supabase
+  const { data: races } = await supabase
     .from('race')
     .select(raceColumns)
     .eq('season.year', params?.season)
-    .order('start_date', { ascending: true })) as { data: RaceWithSeason[] }
+    .order('start_date', { ascending: true })
+    .returns<RaceWithSeason[]>()
 
-  const { data: constructors } = (await supabase
+  const { data: constructors } = await supabase
     .from('constructor')
     .select(constructorColumns)
-    .eq('season.year', params?.season)) as { data: ConstructorWithSeason[] }
+    .eq('season.year', params?.season)
+    .returns<ConstructorWithSeason[]>()
 
   const { data: standings } = (await supabase
-    .rpc('sum_constructor_points_by_season', { season: params?.season })
+    .rpc('sum_constructor_points_by_season', { season: seasonParam })
     .select('id, name, total_points')
     .order('total_points', { ascending: false })) as {
     data: ConstructorTotalPoints[]
@@ -198,7 +200,7 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
 
   const constructorsById = indexBy('id')(standings)
 
-  const cumulativePointsByConstructor = totalPointsByConstructorByRace.reduce(
+  const cumulativePointsByConstructor = totalPointsByConstructorByRace!.reduce(
     (memo: Record<string, number[]>, item) => {
       const constructorId = item.constructor_id
       const points = item.total_points
@@ -214,10 +216,10 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
     {}
   )
 
-  const chartData = races.reduce((memo: GenericObject[], race, index) => {
+  const chartData = races!.reduce((memo: GenericObject[], race, index) => {
     const data: GenericObject = { race: race.country }
     let hasRaceData = false
-    constructors.forEach((c) => {
+    constructors!.forEach((c) => {
       const cPoints = cumulativePointsByConstructor[c.id]
       const cPointsRace = cPoints ? cPoints[index] : 0
       data[c.name] = cPointsRace
@@ -247,7 +249,7 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
       constructorsById,
       indexedRacePoints,
       constructors: sortArray(
-        constructors,
+        constructors!,
         (a: ConstructorWithSeason, b: ConstructorWithSeason) =>
           a.name > b.name ? 1 : -1
       ),

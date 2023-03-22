@@ -54,19 +54,18 @@ const ConstructorsPage = ({ constructors }: Props) => {
 }
 
 export async function getStaticPaths() {
-  const { data } = (await supabase.from('season').select('*')) as {
-    data: Season[]
-  }
+  const { data } = await supabase.from('season').select('*').returns<Season[]>()
 
-  return makeSeasonPaths(data)
+  return makeSeasonPaths(data!)
 }
 
 export async function getStaticProps({ params }: GetStaticPropsContext) {
-  const { data: constructors } = (await supabase
+  const { data: constructors } = await supabase
     .from('constructor')
     .select(constructorColumns)
     .eq('season.year', params?.season)
-    .order('name')) as { data: ConstructorWithSeason[] }
+    .order('name')
+    .returns<ConstructorWithSeason[]>()
 
   return {
     props: {
