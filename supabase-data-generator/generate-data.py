@@ -164,7 +164,7 @@ def format_for_email(driver_id_by_driver_number, update_row_data, df):
         grid_diff_pts = row["grid_difference_points"]
         string = (
             string
-            + f'{driver_abbrev}: Start: {int(grid_pos)}, Finish: {"DNF" if row["is_dnf"] else int(finish_pos)}, Result Pts: {int(finish_pos_pts)}, Grid Diff Pts: {float(grid_diff_pts)}, Total Points: {finish_pos_pts + grid_diff_pts}\n'
+            + f'{driver_abbrev}: Start: {int(grid_pos) if int(grid_pos) > 0 else "Pit Lane (20th)"}, Finish: {"DNF" if row["is_dnf"] else int(finish_pos)}, Result Pts: {int(finish_pos_pts)}, Grid Diff Pts: {float(grid_diff_pts)}, Total Points: {finish_pos_pts + grid_diff_pts}\n'
         )
     from_email = Email("f1fantasy2022@em5638.m.jeremyphilipson.com")
     to_email = To("jeremyphilipson@gmail.com")
@@ -218,7 +218,12 @@ def do_the_update():
         return constructor_id_by_driver_id.get(int(driver_id), "null")
 
     def get_grid_diff(row):
-        return 0 if row["is_dnf"] else row["GridPosition"] - row["Position"]
+        if row["is_dnf"]:
+            return 0
+        # indicates pit lane start
+        if int(row["GridPosition"]) == 0:
+            return 20 - row["Position"]
+        return row["GridPosition"] - row["Position"]
 
     df["Points"] = df["Position"].map(lambda x: points_map[str(x)])
     df["is_dnf"] = df["Status"].map(dnf_check)
