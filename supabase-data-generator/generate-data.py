@@ -218,7 +218,12 @@ def do_the_update():
         return constructor_id_by_driver_id.get(int(driver_id), "null")
 
     def get_grid_diff(row):
-        return 0 if row["is_dnf"] else row["GridPosition"] - row["Position"]
+        if row["is_dnf"]:
+            return 0
+        # indicates pit lane start
+        if int(row["GridPosition"]) == 0:
+            return 20 - row["Position"]
+        return row["GridPosition"] - row["Position"]
 
     df["Points"] = df["Position"].map(lambda x: points_map[str(x)])
     df["is_dnf"] = df["Status"].map(dnf_check)
