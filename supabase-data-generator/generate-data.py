@@ -185,14 +185,18 @@ def do_the_update():
     existing_data = get_existing_race_data(most_recent_race_id)
 
     if len(existing_data) > 0:
-        print(
-            f"Found existing data for RaceId={most_recent_race_id}, no update needed..."
-        )
+        print(f"Found existing data for RaceId {most_recent_race_id}, no update needed...")
         print("Revalidating anyway...")
         return revalidate_pages()
 
     session = fastf1.get_session(int(season), most_recent_event["Location"], "R")
     session.load(telemetry=False, laps=False, weather=False)
+
+    if len(session.results) == 0:
+        print(f"Found no results for Race: {session.event.Location}, no update needed...")
+        return
+
+    print(f"Running update for existing data for Race: {session.event.Location}...")
 
     driver_id_by_driver_number = get_driver_id_by_driver_number(season_id)
     constructor_id_by_driver_id = get_constructor_id_by_driver_id(season_id)
