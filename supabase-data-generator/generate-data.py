@@ -41,14 +41,14 @@ GET = "GET"
 POST = "POST"
 
 
-def get_race_ids_by_round_number(season_id):
+def get_race_ids_by_race_name(season_id):
     races = requests.request(
         GET,
-        f"{api_base_url}/race?select=id,round_number&season_id=eq.{season_id}",
+        f"{api_base_url}/race?select=id,name&season_id=eq.{season_id}",
         headers=get_headers,
     )
     race_data = races.json()
-    race_info = {race["round_number"]: race["id"] for race in race_data}
+    race_info = {race["name"]: race["id"] for race in race_data}
     return race_info
 
 
@@ -180,19 +180,28 @@ def do_the_update():
 
     season_id = get_season_id(season)
     most_recent_event = get_most_recent_event(schedule)
-    race_ids_by_round_number = get_race_ids_by_round_number(season_id)
-    most_recent_race_id = race_ids_by_round_number[most_recent_event["RoundNumber"]]
+    race_ids_by_race_name = get_race_ids_by_race_name(season_id)
+    most_recent_event_name = most_recent_event["EventName"]
+    most_recent_race_id = race_ids_by_race_name[most_recent_event_name]
     existing_data = get_existing_race_data(most_recent_race_id)
 
     if len(existing_data) > 0:
         print(
-            f"Found existing data for RaceId={most_recent_race_id}, no update needed..."
+            f"Found existing data for Race: {most_recent_event_name} (ID: {most_recent_race_id}), no update needed..."
         )
         print("Revalidating anyway...")
         return revalidate_pages()
 
     session = fastf1.get_session(int(season), most_recent_event["Location"], "R")
     session.load(telemetry=False, laps=False, weather=False)
+
+    if len(session.results) == 0:
+        print(
+            f"Found no results for Race: {session.event.EventName}, no update needed..."
+        )
+        return
+
+    print(f"Running update for Race: {session.event.EventName}...")
 
     driver_id_by_driver_number = get_driver_id_by_driver_number(season_id)
     constructor_id_by_driver_id = get_constructor_id_by_driver_id(season_id)
