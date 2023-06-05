@@ -28,20 +28,20 @@ const ConstructorStandingRow = ({
       style={{ backgroundColor: numberBackground }}
     >
       <div className='flex items-center mx-auto space-x-3 max-w-7xl'>
-        <div className='flex items-center flex-1 min-w-0 truncate'>
+        <div className='flex items-center flex-1 min-w-0'>
           <div
             className='relative min-w-[48px] min-h-[48px] w-12 h-12 p-2 rounded-full sm:w-20 sm:h-20 sm:p-4'
             style={{ backgroundColor: numberBackground }}
           >
             <CarNumber constructorName={normalized} size='small' />
           </div>
-          <div className='flex flex-col ml-1 truncate sm:ml-4'>
+          <div className='flex flex-col ml-1 sm:ml-4'>
             <ConstructorLink
               normalizedConstructor={normalized}
               constructorId={id}
             >
               <p
-                className='pr-[2px] text-2xl font-bold tracking-tight uppercase truncate md:tracking-normal sm:text-4xl sm:hover:underline font-primary'
+                className='pr-[2px] text-2xl font-bold tracking-tight uppercase md:tracking-normal sm:text-4xl sm:hover:underline font-primary'
                 style={{ color: numberText }}
               >
                 {constructor}
