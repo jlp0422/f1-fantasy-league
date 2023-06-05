@@ -146,10 +146,10 @@ const DriversPage = ({ races, driverRaceResults }: Props) => {
                             key={index}
                           >
                             <p className='leading-5'>
-                              Finish: {raceResult?.finish_position_points}
+                              Finish:&nbsp;{raceResult?.finish_position_points}
                             </p>
                             <p className='leading-5'>
-                              Grid: {raceResult?.grid_difference_points}
+                              Grid:&nbsp;{raceResult?.grid_difference_points}
                             </p>
                           </td>
                         )
