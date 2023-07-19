@@ -187,10 +187,10 @@ const Constructor = ({
                           key={`${driver}-${race.id}`}
                         >
                           <p className='leading-5'>
-                            Finish: {points.finish_position_points}
+                            Finish:&nbsp;{points.finish_position_points}
                           </p>
                           <p className='leading-5'>
-                            Grid: {points.grid_difference_points}
+                            Grid:&nbsp;{points.grid_difference_points}
                           </p>
                         </td>
                       )
@@ -275,10 +275,10 @@ const Constructor = ({
                             key={`${driver}-${race.id}`}
                           >
                             <p className='leading-5'>
-                              Finish: {points.finish_position_points}
+                              Finish:&nbsp;{points.finish_position_points}
                             </p>
                             <p className='leading-5'>
-                              Grid: {points.grid_difference_points}
+                              Grid:&nbsp;{points.grid_difference_points}
                             </p>
                           </td>
                         )
