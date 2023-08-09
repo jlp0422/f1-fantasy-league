@@ -11,6 +11,8 @@ import { Season } from '@/types/Season'
 import { DriverRaceResultWithJoins, RaceWithSeason } from '@/types/Unions'
 import { GetStaticPropsContext } from 'next'
 import Image from 'next/image'
+import Link from 'next/link'
+import { useRouter } from 'next/router'
 import { useState } from 'react'
 
 type CustomDriver = DriverType & { full_name: string }
@@ -41,6 +43,8 @@ const sortingFns: Record<string, any> = {
 }
 
 const DriversPage = ({ races, driverRaceResults }: Props) => {
+  const { query } = useRouter()
+  const season = query.season as string
   const [sortBy, setSortBy] = useState<string>('points')
   const [showDetail, setShowDetail] = useState<boolean>(false)
   const sortFn = sortingFns[sortBy] || sortingFns.default(sortBy)
@@ -122,9 +126,12 @@ const DriversPage = ({ races, driverRaceResults }: Props) => {
                             alt={seasonResult.driver.full_name}
                           />
                         </div>
-                        <div className='flex items-center justify-start gap-3 px-4 py-4 font-semibold text-left text-gray-100 sm:justify-center sm:px-6 sm:py-4 whitespace-nowrap sm:text-center'>
+                        <Link
+                          href={`/${season}/drivers/${seasonResult.driver.id}`}
+                          className='flex items-center justify-start gap-3 px-4 py-4 font-semibold text-left text-gray-100 sm:justify-center sm:px-6 sm:py-4 whitespace-nowrap sm:text-center'
+                        >
                           {seasonResult.driver.full_name}
-                        </div>
+                        </Link>
                       </div>
                     </th>
                     <td className='px-6 py-4 text-center '>
