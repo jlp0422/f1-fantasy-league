@@ -51,19 +51,12 @@ const DriverPage = ({
                   key={race.id}
                   className='border-b border-gray-700 odd:bg-gray-800 even:bg-gray-700'
                 >
-                  <th
-                    key={race.id}
-                    scope='col'
-                    className='p-3 text-left uppercase'
-                  >
+                  <th scope='col' className='p-3 text-left uppercase'>
                     {race.country}
                   </th>
                   {raceResult ? (
                     showDetail ? (
-                      <td
-                        className='px-3 py-1 text-base font-normal text-center text-gray-100'
-                        key={race.id}
-                      >
+                      <td className='px-3 py-1 text-base font-normal text-center text-gray-100'>
                         <p className='leading-5'>
                           Finish:&nbsp;{raceResult.finish_position_points}
                         </p>
@@ -72,19 +65,13 @@ const DriverPage = ({
                         </p>
                       </td>
                     ) : (
-                      <td
-                        key={race.id}
-                        className='px-3 py-1 text-base font-normal text-center text-gray-100'
-                      >
+                      <td className='px-3 py-1 text-base font-normal text-center text-gray-100'>
                         {raceResult.finish_position_points +
                           raceResult.grid_difference_points}
                       </td>
                     )
                   ) : (
-                    <td
-                      className='px-3 py-1 text-base font-normal text-center text-gray-100'
-                      key={race.id}
-                    >
+                    <td className='px-3 py-1 text-base font-normal text-center text-gray-100'>
                       {null}
                     </td>
                   )}
@@ -264,13 +251,17 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
     { finishPoints: 0, gridPoints: 0 }
   )
 
+  const hasMatch = Boolean(driverOneMatch) || Boolean(driverTwoMatch)
+
   return {
     props: {
       driver,
       raceResults,
       seasonPoints,
       races,
-      constructor: (driverOneMatch ?? driverTwoMatch).constructor,
+      constructor: hasMatch
+        ? (driverOneMatch ?? driverTwoMatch).constructor
+        : {},
     },
   }
 }
