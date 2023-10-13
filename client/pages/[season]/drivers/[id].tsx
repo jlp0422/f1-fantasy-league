@@ -51,7 +51,11 @@ const DriverPage = ({
                   key={race.id}
                   className='border-b border-gray-700 odd:bg-gray-800 even:bg-gray-700'
                 >
-                  <th key={race.id} scope='col' className='p-3 text-left'>
+                  <th
+                    key={race.id}
+                    scope='col'
+                    className='p-3 text-left uppercase'
+                  >
                     {race.country}
                   </th>
                   {raceResult ? (
@@ -173,13 +177,13 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
     .from('driver')
     .select(
       `
-    id,
-    first_name,
-    last_name,
-    number,
-    abbreviation,
-    constructor_name,
-    image_url
+      id,
+      first_name,
+      last_name,
+      number,
+      abbreviation,
+      constructor_name,
+      image_url
     `
     )
     .eq('id', params?.id)
