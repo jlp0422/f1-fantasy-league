@@ -1,4 +1,4 @@
-import { colors_2023, colors_2022 } from './colors'
+import { colors_2022, colors_2023, colors_2024 } from './colors'
 
 interface Colors {
   numberBackground: string
@@ -11,4 +11,5 @@ interface Colors {
 export const COLORS_BY_CONSTRUCTOR: Record<string, Record<string, Colors>> = {
   2022: colors_2022,
   2023: colors_2023,
+  2024: colors_2024,
 }

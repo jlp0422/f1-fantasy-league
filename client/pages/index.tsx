@@ -18,6 +18,10 @@ const seasonColors: Record<string, Colors> = {
     bg: 'bg-orange-600',
     hover: 'hover:bg-orange-800',
   },
+  2024: {
+    bg: 'bg-emerald-600',
+    hover: 'hover:bg-emerald-800',
+  },
 }
 
 interface Props {
