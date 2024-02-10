@@ -37,73 +37,62 @@ const DriverPage = ({
   const fullName = makeName(driver)
   console.log({ driver, raceResults, constructor, seasonPoints })
 
-  const data = [
+  const seasonData = [
     {
-      value: fullName,
-      label: 'Name',
-      classNames: 'text-5xl sm:text-4xl md:text-5xl lg:text-6xl',
+      value: seasonPoints.finishPoints + seasonPoints.gridPoints,
+      label: 'Total Points',
     },
+    {
+      value: constructor.name ?? 'No Constructor',
+      label: 'Constructor',
+    },
+  ]
+  const driverData = [
     {
       value: driver.number,
       label: 'Number',
-      classNames: 'text-4xl sm:text-3xl md:text-4xl lg:text-5xl',
-    },
-    {
-      value: constructor.name,
-      label: 'Constructor',
-      classNames: 'text-4xl sm:text-3xl md:text-4xl lg:text-5xl',
     },
     {
       value: driver.constructor_name,
       label: 'Racing Team',
-      classNames: 'text-4xl sm:text-3xl md:text-4xl lg:text-5xl',
     },
   ]
 
-  const normalized = normalizeConstructorName(constructor.name)
-  const {
-    primary: primaryColor,
-    secondary: secondaryColor,
-    tertiary: tertiaryColor,
-    numberBackground,
-    numberText,
-  } = COLORS_BY_CONSTRUCTOR[season][normalized]
-
-  // move image to center above name
-  // 3 cols with number | constructor | racing team
-  // 3 cols with  total points | finish points | grid points
+  const data = [seasonData, driverData]
 
   return (
     <Layout documentTitle={fullName}>
-      <div
-        className='bg-cover bg-center w-screen absolute h-0 sm:h-[22rem] md:h-96 left-0 top-[64px] sm:top-[72px] shadow-inset-black-7'
-        style={{ backgroundColor: numberBackground }}
-      />
-      <div className='relative flex flex-col items-center sm:flex-row'>
-        <div className='flex items-center justify-center sm:w-60 sm:h-60'>
+      <div className='flex flex-col items-center'>
+        <div className='flex flex-col items-center justify-center'>
           <Image
             src={driver.image_url}
             alt={fullName}
             width={150}
             height={150}
           />
+          <h2 className='my-2 text-5xl font-bold tracking-normal text-gray-900 uppercase font-primary sm:text-4xl md:text-5xl lg:text-6xl'>
+            {fullName}
+          </h2>
         </div>
-        <div className='mx-4 my-2 text-center sm:mx-8 sm:text-left'>
-          {data.map(({ value, label, classNames }) => {
-            return (
-              <div key={label} className='flex flex-col mt-4 lg:mt-2'>
-                <h2
-                  className={`font-bold tracking-normal font-primary uppercase sm:text-gray-200 marker:text-gray-900 ${classNames}`}
-                >
-                  {value}
-                </h2>
-                <p className='text-2xl leading-none tracking-wide text-gray-600 font-tertiary sm:text-gray-300'>
-                  {label}
-                </p>
-              </div>
-            )
-          })}
-        </div>
+        {data.map((dataGroup, index) => (
+          <div
+            key={index}
+            className='flex flex-col gap-0 mx-4 my-2 mt-4 text-center last:mt-0 sm:flex-row sm:gap-16 space-between sm:mx-8'
+          >
+            {dataGroup.map(({ value, label }) => {
+              return (
+                <div key={label} className='flex flex-col'>
+                  <h2 className='text-4xl font-bold tracking-normal text-gray-900 uppercase font-primary sm:text-3xl md:text-4xl lg:text-5xl'>
+                    {value}
+                  </h2>
+                  <p className='text-2xl leading-none tracking-wide text-gray-600 font-tertiary'>
+                    {label}
+                  </p>
+                </div>
+              )
+            })}
+          </div>
+        ))}
       </div>
 
       <Toggle
