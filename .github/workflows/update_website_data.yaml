@@ -18,7 +18,7 @@ jobs:
           REVALIDATE_TOKEN: ${{ secrets.REVALIDATE_TOKEN }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
-          SEASON: 2023
+          SEASON: 2024
         run: |
           pip install -r supabase-data-generator/requirements.txt
           python supabase-data-generator/generate-data.py
