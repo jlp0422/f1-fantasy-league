@@ -1,7 +1,7 @@
 import Layout from '@/components/Layout'
 import Toggle from '@/components/Toggle'
-import { COLORS_BY_CONSTRUCTOR } from '@/constants/index'
-import { getCloudinaryCarUrl, normalizeConstructorName } from '@/helpers/cars'
+// import { COLORS_BY_CONSTRUCTOR } from '@/constants/index'
+// import { getCloudinaryCarUrl, normalizeConstructorName } from '@/helpers/cars'
 import { constructorColumns, raceColumns } from '@/helpers/supabase'
 import { makeName } from '@/helpers/utils'
 import { supabase } from '@/lib/database'
@@ -13,7 +13,7 @@ import {
 } from '@/types/Unions'
 import { GetStaticPropsContext } from 'next'
 import Image from 'next/image'
-import { useRouter } from 'next/router'
+// import { useRouter } from 'next/router'
 import { useState } from 'react'
 
 interface Props {
@@ -32,10 +32,9 @@ const DriverPage = ({
   races,
 }: Props) => {
   const [showDetail, setShowDetail] = useState<boolean>(false)
-  const { query } = useRouter()
-  const season = query.season as string
+  // const { query } = useRouter()
+  // const season = query.season as string
   const fullName = makeName(driver)
-  console.log({ driver, raceResults, constructor, seasonPoints })
 
   const seasonData = [
     {
