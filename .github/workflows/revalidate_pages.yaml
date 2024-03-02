@@ -2,7 +2,7 @@ name: "Revalidate pages"
 on:
   workflow_dispatch:
   schedule:
-  - cron: "0 10 * * THU"
+    - cron: "0 10 * * THU"
 
 jobs:
   revalidate-pages:
