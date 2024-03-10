@@ -152,6 +152,7 @@ def get_existing_race_data(race_id):
 def format_for_email(driver_id_by_driver_number, update_row_data, df):
     driver_id_by_driver_number_keys = list(driver_id_by_driver_number.keys())
     driver_id_by_driver_number_values = list(driver_id_by_driver_number.values())
+    driver_id_to_start_position = {}
     string = "Sorted By Finish Position\n"
     for row in update_row_data:
         position = driver_id_by_driver_number_values.index(row["driver_id"])
@@ -162,25 +163,27 @@ def format_for_email(driver_id_by_driver_number, update_row_data, df):
         finish_pos = row["finish_position"]
         finish_pos_pts = row["finish_position_points"]
         grid_diff_pts = row["grid_difference_points"]
+        driver_id_to_start_position[row["driver_id"]] = (
+            int(grid_pos) if int(grid_pos) > 0 else 20
+        )
         string = (
             string
             + f'{driver_abbrev}: Start: {int(grid_pos) if int(grid_pos) > 0 else "Pit Lane (20th)"}, Finish: {"DNF" if row["is_dnf"] else int(finish_pos)}, Result Pts: {int(finish_pos_pts)}, Grid Diff Pts: {float(grid_diff_pts)}, Total Points: {finish_pos_pts + grid_diff_pts}\n'
         )
 
-    string = string + '\nSorted by Start Position\n'
-    start_order_sorted_data = sorted(update_row_data, key=lambda row: row["finish_position"] + row["grid_difference"])
+    string = string + "\nSorted by Start Position\n"
+    start_order_sorted_data = sorted(
+        update_row_data, key=lambda row: driver_id_to_start_position[row["driver_id"]]
+    )
     for row in start_order_sorted_data:
         position = driver_id_by_driver_number_values.index(row["driver_id"])
         driver_number = str(driver_id_by_driver_number_keys[position])
         df_driver = df.loc[df["DriverNumber"] == driver_number]
         driver_abbrev = df_driver["Abbreviation"][0]
         grid_pos = df_driver["GridPosition"][0]
-        finish_pos = row["finish_position"]
-        finish_pos_pts = row["finish_position_points"]
-        grid_diff_pts = row["grid_difference_points"]
         string = (
             string
-            + f'{driver_abbrev}: Start: {int(grid_pos) if int(grid_pos) > 0 else "Pit Lane (20th)"}, Finish: {"DNF" if row["is_dnf"] else int(finish_pos)}, Result Pts: {int(finish_pos_pts)}, Grid Diff Pts: {float(grid_diff_pts)}, Total Points: {finish_pos_pts + grid_diff_pts}\n'
+            + f'{driver_abbrev}: Start: {int(grid_pos) if int(grid_pos) > 0 else "Pit Lane (20th)"}\n'
         )
     from_email = Email("f1fantasy2022@em5638.m.jeremyphilipson.com")
     to_email = To("jeremyphilipson@gmail.com")
