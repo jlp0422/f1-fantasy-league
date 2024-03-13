@@ -179,7 +179,7 @@ const Constructor = ({
                 key={race.id}
                 className='border-b border-gray-700 odd:bg-gray-800 even:bg-gray-700'
               >
-                <th key={race.id} scope='col' className='p-3 text-left'>
+                <th scope='col' className='p-3 text-left'>
                   {race.country}
                 </th>
                 {driversWithPoints.map((driver) => {
@@ -190,7 +190,7 @@ const Constructor = ({
                       return (
                         <td
                           className='px-3 py-1 text-base font-normal text-center text-gray-100'
-                          key={`${driver}-${race.id}`}
+                          key={`${driver.name}-${race.id}`}
                         >
                           <p className='leading-5'>
                             Finish:&nbsp;{points.finish_position_points}
@@ -204,7 +204,7 @@ const Constructor = ({
 
                     return (
                       <td
-                        key={`${driver}-${race.id}`}
+                        key={`${driver.name}-${race.id}`}
                         className='p-3 text-center text-gray-100'
                       >
                         {points.finish_position_points +
@@ -216,7 +216,7 @@ const Constructor = ({
                   return (
                     <td
                       className='p-3 text-center text-gray-100'
-                      key={`${driver}-${race.id}`}
+                      key={`${driver.name}-${race.id}`}
                     >
                       {null}
                     </td>
@@ -284,7 +284,7 @@ const Constructor = ({
                         return (
                           <td
                             className='px-4 py-2 text-base font-normal text-center'
-                            key={`${driver}-${race.id}`}
+                            key={`${driver.name}-${race.id}`}
                           >
                             <p className='leading-5'>
                               Finish:&nbsp;{points.finish_position_points}
@@ -299,7 +299,7 @@ const Constructor = ({
                       return (
                         <td
                           className='px-6 py-4 text-center'
-                          key={`${driver}-${race.id}`}
+                          key={`${driver.name}-${race.id}`}
                         >
                           {points.finish_position_points +
                             points.grid_difference_points}
@@ -310,7 +310,7 @@ const Constructor = ({
                     return (
                       <td
                         className='px-6 py-4 text-center'
-                        key={`${driver}-${race.id}`}
+                        key={`${driver.name}-${race.id}`}
                       >
                         {null}
                       </td>

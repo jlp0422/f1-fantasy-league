@@ -1,11 +1,15 @@
 import Layout from '@/components/Layout'
 import Toggle from '@/components/Toggle'
-// import { COLORS_BY_CONSTRUCTOR } from '@/constants/index'
-// import { getCloudinaryCarUrl, normalizeConstructorName } from '@/helpers/cars'
+import TickXAxis from '@/components/charts/TickXAxis'
+import TickYAxis from '@/components/charts/TickYAxis'
+import { COLORS_BY_CONSTRUCTOR } from '@/constants/index'
+import { normalizeConstructorName } from '@/helpers/cars'
 import { constructorColumns, raceColumns } from '@/helpers/supabase'
-import { makeName } from '@/helpers/utils'
+import { indexBy, makeName } from '@/helpers/utils'
 import { supabase } from '@/lib/database'
+import { GenericObject } from '@/types/Common'
 import { Driver } from '@/types/Driver'
+import { DriverRaceResult } from '@/types/DriverRaceResult'
 import { Race } from '@/types/Race'
 import {
   ConstructorDriverWithJoins,
@@ -13,15 +17,27 @@ import {
 } from '@/types/Unions'
 import { GetStaticPropsContext } from 'next'
 import Image from 'next/image'
-// import { useRouter } from 'next/router'
+import { useRouter } from 'next/router'
 import { useState } from 'react'
+import {
+  CartesianGrid,
+  Legend,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts'
 
+type DriverPointsByRace = Record<string, Record<string, DriverRaceResult>>
 interface Props {
   driver: Driver
   raceResults: DriverRaceResultWithJoins[]
   constructor: ConstructorDriverWithJoins
   races: Race[]
   seasonPoints: Record<'finishPoints' | 'gridPoints', number>
+  pointsByDriverChartData: GenericObject[]
 }
 
 const DriverPage = ({
@@ -30,11 +46,18 @@ const DriverPage = ({
   constructor,
   seasonPoints,
   races,
+  pointsByDriverChartData,
 }: Props) => {
   const [showDetail, setShowDetail] = useState<boolean>(false)
-  // const { query } = useRouter()
-  // const season = query.season as string
+  const { query } = useRouter()
+  const season = query.season as string
   const fullName = makeName(driver)
+  const normalized = normalizeConstructorName(constructor.name)
+  const {
+    primary: primaryColor,
+    secondary: secondaryColor,
+    tertiary: tertiaryColor,
+  } = COLORS_BY_CONSTRUCTOR[season][normalized]
 
   const seasonData = [
     {
@@ -200,6 +223,59 @@ const DriverPage = ({
             </tr>
           </tbody>
         </table>
+
+        <div className='invisible hidden sm:visible sm:block'>
+          <h2 className='text-xl font-bold tracking-tight text-gray-900 font-secondary md:text-2xl lg:text-3xl'>
+            Driver Points by Race
+          </h2>
+          <div className='w-full mt-4 rounded-lg bg-slate-600 h-500'>
+            <ResponsiveContainer>
+              <LineChart
+                data={pointsByDriverChartData}
+                margin={{ top: 30, right: 30, bottom: 30, left: 10 }}
+              >
+                <CartesianGrid stroke='#ccc' strokeDasharray='4 4' />
+                <XAxis
+                  dataKey='race'
+                  padding={{ left: 10, right: 0 }}
+                  interval={0}
+                  tick={<TickXAxis />}
+                  axisLine={{ stroke: '#ccc' }}
+                  tickLine={{ stroke: '#ccc' }}
+                />
+                <YAxis
+                  domain={[-2, 22]}
+                  tickCount={7}
+                  tick={<TickYAxis />}
+                  axisLine={{ stroke: '#ccc' }}
+                  tickLine={{ stroke: '#ccc' }}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: '#475569',
+                    color: '#fff',
+                    fontFamily: 'Teko',
+                    fontSize: '20px',
+                  }}
+                />
+                <Legend
+                  wrapperStyle={{
+                    paddingTop: '50px',
+                    fontFamily: 'Teko',
+                    fontSize: '24px',
+                  }}
+                />
+                <Line
+                  key={fullName}
+                  type='monotone'
+                  dataKey={fullName}
+                  stroke={primaryColor}
+                  strokeWidth={5}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
       </div>
     </Layout>
   )
@@ -304,6 +380,8 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
     .eq('season.year', params?.season)
     .order('start_date', { ascending: true })) as { data: Race[] }
 
+  const racesById = indexBy('id')(races)
+
   const seasonPoints = raceResults.reduce(
     (memo, result) => {
       memo.finishPoints += result.finish_position_points
@@ -311,6 +389,38 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
       return memo
     },
     { finishPoints: 0, gridPoints: 0 }
+  )
+
+  const driverPointsByRace = raceResults.reduce(
+    (memo: DriverPointsByRace, item: DriverRaceResultWithJoins) => {
+      const driverName = makeName(driver)
+      if (memo[item.race.id]) {
+        memo[item.race.id][driverName] = item
+      } else {
+        memo[item.race.id] = {
+          [driverName]: item,
+        }
+      }
+      return memo
+    },
+    {}
+  )
+
+  const pointsByDriverChartData = Object.entries(driverPointsByRace).map(
+    ([raceId, drivers]) => ({
+      race: racesById[raceId].country,
+      ...Object.keys(drivers).reduce(
+        (memo: Record<string, number>, driverName) => {
+          const driver = drivers[driverName]
+          const totalPoints =
+            driver.finish_position_points + driver.grid_difference_points
+          return Object.assign({}, memo, {
+            [driverName]: totalPoints,
+          })
+        },
+        {}
+      ),
+    })
   )
 
   const hasMatch = Boolean(driverOneMatch) || Boolean(driverTwoMatch)
@@ -324,6 +434,7 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
       constructor: hasMatch
         ? (driverOneMatch ?? driverTwoMatch).constructor
         : {},
+      pointsByDriverChartData,
     },
   }
 }
