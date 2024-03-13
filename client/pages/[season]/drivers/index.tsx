@@ -133,7 +133,7 @@ const DriversPage = ({ races, driverRaceResults }: Props) => {
                         <div className='flex flex-col p-4 sm:px-6 sm:py-4'>
                           <Link
                             href={`/${season}/drivers/${seasonResult.driver.id}`}
-                            className='font-semibold text-left text-gray-100 whitespace-nowrap'
+                            className='font-semibold text-left text-gray-100 whitespace-nowrap hover:text-gray-300'
                           >
                             {seasonResult.driver.full_name}
                           </Link>

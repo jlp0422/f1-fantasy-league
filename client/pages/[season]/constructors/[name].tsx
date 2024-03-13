@@ -22,6 +22,7 @@ import {
   RaceWithSeason,
 } from '@/types/Unions'
 import { GetStaticPropsContext } from 'next'
+import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useState } from 'react'
 import {
@@ -38,20 +39,21 @@ import {
 interface DriverPoints {
   completedRaceIds: number[]
   total: number
+  id: number
 }
 
 type DriverPointsByRace = Record<string, Record<string, DriverRaceResult>>
+type DriversWithPoints = { name: string; id: number }
 
 interface Props {
   races: RaceWithSeason[]
   constructor: ConstructorWithSeason
   totalPoints: number
   driverPointsByRace: DriverPointsByRace
-  driversWithPoints: string[]
+  driversWithPoints: DriversWithPoints[]
   currentDriverNames: string[]
   racePointsByDriver: Record<string, DriverPoints>
   pointsByDriverChartData: GenericObject[]
-  chartsEnabled: boolean
 }
 
 const Constructor = ({
@@ -63,7 +65,6 @@ const Constructor = ({
   racePointsByDriver,
   pointsByDriverChartData,
   currentDriverNames,
-  chartsEnabled,
 }: Props) => {
   const { query } = useRouter()
   const season = query.season as string
@@ -143,14 +144,19 @@ const Constructor = ({
                 &nbsp;
               </th>
               {driversWithPoints.map((driver) => {
-                const isCurrentDriver = currentDriverNames.includes(driver)
+                const isCurrentDriver = currentDriverNames.includes(driver.name)
                 return (
                   <th
-                    key={driver}
+                    key={driver.name}
                     scope='col'
                     className='p-3 text-center text-gray-100'
                   >
-                    {driver}
+                    <Link
+                      href={`/${season}/drivers/${driver.id}`}
+                      className='font-semibold text-left text-gray-100 whitespace-nowrap hover:text-gray-300'
+                    >
+                      {driver.name}
+                    </Link>
                     {isCurrentDriver ? '*' : null}
                   </th>
                 )
@@ -163,8 +169,8 @@ const Constructor = ({
                 Total Points
               </th>
               {driversWithPoints.map((driver) => (
-                <td className='p-3 text-center text-gray-100' key={driver}>
-                  {racePointsByDriver[driver].total}
+                <td className='p-3 text-center text-gray-100' key={driver.name}>
+                  {racePointsByDriver[driver.name].total}
                 </td>
               ))}
             </tr>
@@ -177,9 +183,9 @@ const Constructor = ({
                   {race.country}
                 </th>
                 {driversWithPoints.map((driver) => {
-                  const { completedRaceIds } = racePointsByDriver[driver]
+                  const { completedRaceIds } = racePointsByDriver[driver.name]
                   if (completedRaceIds.includes(race.id)) {
-                    const points = driverPointsByRace[race.id][driver]
+                    const points = driverPointsByRace[race.id][driver.name]
                     if (showDetail) {
                       return (
                         <td
@@ -249,24 +255,30 @@ const Constructor = ({
           </thead>
           <tbody>
             {driversWithPoints.map((driver) => {
-              const isCurrentDriver = currentDriverNames.includes(driver)
-              const { completedRaceIds, total } = racePointsByDriver[driver]
+              const isCurrentDriver = currentDriverNames.includes(driver.name)
+              const { completedRaceIds, total } =
+                racePointsByDriver[driver.name]
               return (
                 <tr
-                  key={driver}
+                  key={driver.name}
                   className='text-lg font-semibold text-gray-100 border-b border-gray-700 bg-gray-50 hover:bg-gray-600 odd:bg-gray-800 even:bg-gray-700 th-child:odd:bg-gray-800 th-child:even:bg-gray-700 th-child:hover:bg-gray-600'
                 >
                   <th
                     scope='row'
                     className='px-6 py-4 whitespace-nowrap sticky w-44 min-w-[176px] max-w-[176px] left-0 '
                   >
-                    {driver}
+                    <Link
+                      href={`/${season}/drivers/${driver.id}`}
+                      className='font-semibold text-left text-gray-100 whitespace-nowrap hover:text-gray-300'
+                    >
+                      {driver.name}
+                    </Link>
                     {isCurrentDriver ? '*' : null}
                   </th>
                   <td className='px-6 py-4 text-center'>{total}</td>
                   {races.map((race) => {
                     if (completedRaceIds.includes(race.id)) {
-                      const points = driverPointsByRace[race.id][driver]
+                      const points = driverPointsByRace[race.id][driver.name]
 
                       if (showDetail) {
                         return (
@@ -312,73 +324,71 @@ const Constructor = ({
       </div>
 
       {/* charts */}
-      {chartsEnabled && (
-        <div className='invisible hidden sm:visible sm:block'>
-          <h2 className='text-xl font-bold tracking-tight text-gray-900 font-secondary md:text-2xl lg:text-3xl'>
-            Driver Points by Race
-          </h2>
-          <div className='w-full mt-4 rounded-lg bg-slate-600 h-500'>
-            <ResponsiveContainer>
-              <LineChart
-                data={pointsByDriverChartData}
-                margin={{ top: 30, right: 30, bottom: 30, left: 10 }}
-              >
-                <CartesianGrid stroke='#ccc' strokeDasharray='4 4' />
-                <XAxis
-                  dataKey='race'
-                  padding={{ left: 10, right: 0 }}
-                  interval={0}
-                  tick={<TickXAxis />}
-                  axisLine={{ stroke: '#ccc' }}
-                  tickLine={{ stroke: '#ccc' }}
-                />
-                <YAxis
-                  domain={[-2, 22]}
-                  tickCount={7}
-                  tick={<TickYAxis />}
-                  axisLine={{ stroke: '#ccc' }}
-                  tickLine={{ stroke: '#ccc' }}
-                />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: '#475569',
-                    color: '#fff',
-                    fontFamily: 'Teko',
-                    fontSize: '20px',
-                  }}
-                />
-                <Legend
-                  wrapperStyle={{
-                    paddingTop: '50px',
-                    fontFamily: 'Teko',
-                    fontSize: '24px',
-                  }}
-                />
-                {driversWithPoints.map((driver, index) => {
-                  const colorIndex = index + 1
-                  const mod3 = colorIndex % 3
-                  const mod2 = colorIndex % 2
-                  return (
-                    <Line
-                      key={driver}
-                      type='monotone'
-                      dataKey={driver}
-                      stroke={
-                        !mod3
-                          ? tertiaryColor
-                          : !mod2
-                          ? secondaryColor
-                          : primaryColor
-                      }
-                      strokeWidth={5}
-                    />
-                  )
-                })}
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
+      <div className='invisible hidden sm:visible sm:block'>
+        <h2 className='text-xl font-bold tracking-tight text-gray-900 font-secondary md:text-2xl lg:text-3xl'>
+          Driver Points by Race
+        </h2>
+        <div className='w-full mt-4 rounded-lg bg-slate-600 h-500'>
+          <ResponsiveContainer>
+            <LineChart
+              data={pointsByDriverChartData}
+              margin={{ top: 30, right: 30, bottom: 30, left: 10 }}
+            >
+              <CartesianGrid stroke='#ccc' strokeDasharray='4 4' />
+              <XAxis
+                dataKey='race'
+                padding={{ left: 10, right: 0 }}
+                interval={0}
+                tick={<TickXAxis />}
+                axisLine={{ stroke: '#ccc' }}
+                tickLine={{ stroke: '#ccc' }}
+              />
+              <YAxis
+                domain={[-2, 22]}
+                tickCount={7}
+                tick={<TickYAxis />}
+                axisLine={{ stroke: '#ccc' }}
+                tickLine={{ stroke: '#ccc' }}
+              />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: '#475569',
+                  color: '#fff',
+                  fontFamily: 'Teko',
+                  fontSize: '20px',
+                }}
+              />
+              <Legend
+                wrapperStyle={{
+                  paddingTop: '50px',
+                  fontFamily: 'Teko',
+                  fontSize: '24px',
+                }}
+              />
+              {driversWithPoints.map((driver, index) => {
+                const colorIndex = index + 1
+                const mod3 = colorIndex % 3
+                const mod2 = colorIndex % 2
+                return (
+                  <Line
+                    key={driver.name}
+                    type='monotone'
+                    dataKey={driver.name}
+                    stroke={
+                      !mod3
+                        ? tertiaryColor
+                        : !mod2
+                        ? secondaryColor
+                        : primaryColor
+                    }
+                    strokeWidth={5}
+                  />
+                )
+              })}
+            </LineChart>
+          </ResponsiveContainer>
         </div>
-      )}
+      </div>
     </Layout>
   )
 }
@@ -467,11 +477,13 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
         memo[driverName] = {
           total: current.total + finishAndGridPoints,
           completedRaceIds: current.completedRaceIds.concat(item.race.id),
+          id: item.driver.id,
         }
       } else {
         memo[driverName] = {
           total: finishAndGridPoints,
           completedRaceIds: [item.race.id],
+          id: item.driver.id,
         }
       }
       return memo
@@ -518,9 +530,9 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
   )
 
   const driversWithPoints = Object.entries(racePointsByDriver)
-    .map(([driver, { total }]) => ({ driver, total }))
+    .map(([driver, { total, id }]) => ({ driver, total, driverId: id }))
     .sort((a, b) => b.total - a.total)
-    .map(({ driver }) => driver)
+    .map(({ driver, driverId }) => ({ name: driver, id: driverId }))
 
   if (!constructor) {
     return {
@@ -538,7 +550,6 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
       racePointsByDriver,
       pointsByDriverChartData,
       currentDriverNames,
-      chartsEnabled: process.env.CHARTS_ENABLED === 'true',
     },
   }
 }
