@@ -2,7 +2,7 @@ import Layout from '@/components/Layout'
 import Toggle from '@/components/Toggle'
 import TickXAxis from '@/components/charts/TickXAxis'
 import TickYAxis from '@/components/charts/TickYAxis'
-import { COLORS_BY_CONSTRUCTOR } from '@/constants/index'
+import { COLORS_BY_CONSTRUCTOR, COLORS_BY_SEASON } from '@/constants/index'
 import { normalizeConstructorName } from '@/helpers/cars'
 import { constructorColumns, raceColumns } from '@/helpers/supabase'
 import { indexBy, makeName } from '@/helpers/utils'
@@ -52,12 +52,10 @@ const DriverPage = ({
   const { query } = useRouter()
   const season = query.season as string
   const fullName = makeName(driver)
-  const normalized = normalizeConstructorName(constructor.name)
-  const {
-    primary: primaryColor,
-    secondary: secondaryColor,
-    tertiary: tertiaryColor,
-  } = COLORS_BY_CONSTRUCTOR[season][normalized]
+  const normalized = normalizeConstructorName(constructor.name ?? '')
+  const { primary: primaryColor } = constructor.name
+    ? COLORS_BY_CONSTRUCTOR[season][normalized]
+    : COLORS_BY_SEASON[season]
 
   const seasonData = [
     {
@@ -65,7 +63,7 @@ const DriverPage = ({
       label: 'Total Points',
     },
     {
-      value: constructor.name ?? 'No Constructor',
+      value: constructor.name ?? 'N/A',
       label: 'Constructor',
     },
   ]
@@ -223,58 +221,58 @@ const DriverPage = ({
             </tr>
           </tbody>
         </table>
+      </div>
 
-        <div className='invisible hidden sm:visible sm:block'>
-          <h2 className='text-xl font-bold tracking-tight text-gray-900 font-secondary md:text-2xl lg:text-3xl'>
-            Driver Points by Race
-          </h2>
-          <div className='w-full mt-4 rounded-lg bg-slate-600 h-500'>
-            <ResponsiveContainer>
-              <LineChart
-                data={pointsByDriverChartData}
-                margin={{ top: 30, right: 30, bottom: 30, left: 10 }}
-              >
-                <CartesianGrid stroke='#ccc' strokeDasharray='4 4' />
-                <XAxis
-                  dataKey='race'
-                  padding={{ left: 10, right: 0 }}
-                  interval={0}
-                  tick={<TickXAxis />}
-                  axisLine={{ stroke: '#ccc' }}
-                  tickLine={{ stroke: '#ccc' }}
-                />
-                <YAxis
-                  domain={[-2, 22]}
-                  tickCount={7}
-                  tick={<TickYAxis />}
-                  axisLine={{ stroke: '#ccc' }}
-                  tickLine={{ stroke: '#ccc' }}
-                />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: '#475569',
-                    color: '#fff',
-                    fontFamily: 'Teko',
-                    fontSize: '20px',
-                  }}
-                />
-                <Legend
-                  wrapperStyle={{
-                    paddingTop: '50px',
-                    fontFamily: 'Teko',
-                    fontSize: '24px',
-                  }}
-                />
-                <Line
-                  key={fullName}
-                  type='monotone'
-                  dataKey={fullName}
-                  stroke={primaryColor}
-                  strokeWidth={5}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
+      <div className='invisible hidden sm:visible sm:block'>
+        <h2 className='text-xl font-bold tracking-tight text-gray-900 font-secondary md:text-2xl lg:text-3xl'>
+          Driver Points by Race
+        </h2>
+        <div className='w-full mt-4 rounded-lg bg-slate-600 h-500'>
+          <ResponsiveContainer>
+            <LineChart
+              data={pointsByDriverChartData}
+              margin={{ top: 30, right: 30, bottom: 30, left: 10 }}
+            >
+              <CartesianGrid stroke='#ccc' strokeDasharray='4 4' />
+              <XAxis
+                dataKey='race'
+                padding={{ left: 10, right: 0 }}
+                interval={0}
+                tick={<TickXAxis />}
+                axisLine={{ stroke: '#ccc' }}
+                tickLine={{ stroke: '#ccc' }}
+              />
+              <YAxis
+                domain={[-2, 22]}
+                tickCount={7}
+                tick={<TickYAxis />}
+                axisLine={{ stroke: '#ccc' }}
+                tickLine={{ stroke: '#ccc' }}
+              />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: '#475569',
+                  color: '#fff',
+                  fontFamily: 'Teko',
+                  fontSize: '20px',
+                }}
+              />
+              <Legend
+                wrapperStyle={{
+                  paddingTop: '50px',
+                  fontFamily: 'Teko',
+                  fontSize: '24px',
+                }}
+              />
+              <Line
+                key={fullName}
+                type='monotone'
+                dataKey={fullName}
+                stroke={primaryColor}
+                strokeWidth={5}
+              />
+            </LineChart>
+          </ResponsiveContainer>
         </div>
       </div>
     </Layout>
@@ -424,6 +422,8 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
   )
 
   const hasMatch = Boolean(driverOneMatch) || Boolean(driverTwoMatch)
+
+  console.log({ hasMatch })
 
   return {
     props: {
