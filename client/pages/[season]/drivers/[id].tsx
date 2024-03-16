@@ -423,8 +423,6 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
 
   const hasMatch = Boolean(driverOneMatch) || Boolean(driverTwoMatch)
 
-  console.log({ hasMatch })
-
   return {
     props: {
       driver,

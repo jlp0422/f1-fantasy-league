@@ -15,7 +15,6 @@ const HomePage = ({ seasons }: Props) => {
       <div className='flex flex-col h-full'>
         {seasons.map((season) => {
           const color = COLORS_BY_SEASON[season.year]
-          console.log({ color })
           return (
             <Link
               key={season.id}
