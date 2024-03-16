@@ -4,4 +4,5 @@ export interface ConstructorDriver {
   season_id: number
   driver_one_id: number
   driver_two_id: number
+  name: string
 }

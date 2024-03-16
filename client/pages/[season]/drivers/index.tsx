@@ -8,9 +8,15 @@ import { supabase } from '@/lib/database'
 import { Driver as DriverType } from '@/types/Driver'
 import { DriverRaceResult } from '@/types/DriverRaceResult'
 import { Season } from '@/types/Season'
-import { DriverRaceResultWithJoins, RaceWithSeason } from '@/types/Unions'
+import {
+  ConstructorDriverWithJoins,
+  DriverRaceResultWithJoins,
+  RaceWithSeason,
+} from '@/types/Unions'
 import { GetStaticPropsContext } from 'next'
 import Image from 'next/image'
+import Link from 'next/link'
+import { useRouter } from 'next/router'
 import { useState } from 'react'
 
 type CustomDriver = DriverType & { full_name: string }
@@ -41,6 +47,8 @@ const sortingFns: Record<string, any> = {
 }
 
 const DriversPage = ({ races, driverRaceResults }: Props) => {
+  const { query } = useRouter()
+  const season = query.season as string
   const [sortBy, setSortBy] = useState<string>('points')
   const [showDetail, setShowDetail] = useState<boolean>(false)
   const sortFn = sortingFns[sortBy] || sortingFns.default(sortBy)
@@ -122,12 +130,20 @@ const DriversPage = ({ races, driverRaceResults }: Props) => {
                             alt={seasonResult.driver.full_name}
                           />
                         </div>
-                        <div className='flex items-center justify-start gap-3 px-4 py-4 font-semibold text-left text-gray-100 sm:justify-center sm:px-6 sm:py-4 whitespace-nowrap sm:text-center'>
-                          {seasonResult.driver.full_name}
+                        <div className='flex flex-col p-4 sm:px-6 sm:py-4'>
+                          <Link
+                            href={`/${season}/drivers/${seasonResult.driver.id}`}
+                            className='font-semibold text-left text-gray-100 whitespace-nowrap hover:text-gray-300'
+                          >
+                            {seasonResult.driver.full_name}
+                          </Link>
+                          <h2 className='text-base font-normal leading-4 font-tertiary'>
+                            {seasonResult.driver.constructor?.name}
+                          </h2>
                         </div>
                       </div>
                     </th>
-                    <td className='px-6 py-4 text-center '>
+                    <td className='px-6 py-4 text-center'>
                       {seasonResult.totalPoints}
                     </td>
                     {seasonResult.raceResults.map((raceResult, index) => {
@@ -197,6 +213,32 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
     data: DriverRaceResultWithJoins[]
   }
 
+  const { data: currentDrivers } = (await supabase
+    .from('constructor_driver')
+    .select(
+      `
+      id,
+      driver_one_id,
+      driver_two_id,
+      constructor(
+        id,
+        name
+      ),
+      season!inner(year)`
+    )
+    .eq('season.year', params?.season)) as {
+    data: ConstructorDriverWithJoins[]
+  }
+
+  const constructorByDriverId = currentDrivers.reduce(
+    (memo: Record<any, any>, d) => {
+      memo[d.driver_one_id] = d.constructor
+      memo[d.driver_two_id] = d.constructor
+      return memo
+    },
+    {}
+  )
+
   const resultsByDriverId = raceResults?.reduce(
     (
       memo: Record<string, Record<string, DriverRaceResultWithJoins>>,
@@ -215,7 +257,10 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
   )
 
   const uniqueDriversById = raceResults
-    .map((result) => result.driver)
+    .map((result) => ({
+      ...result.driver,
+      constructor: constructorByDriverId[result.driver.id] ?? {},
+    }))
     .reduce((memo: Record<string, DriverType>, driver) => {
       if (!memo[driver.id]) {
         memo[driver.id] = driver

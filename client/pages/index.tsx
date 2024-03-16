@@ -3,26 +3,7 @@ import Layout from '@/components/Layout'
 import { sortArray } from '@/helpers/utils'
 import { supabase } from '@/lib/database'
 import Link from 'next/link'
-
-interface Colors {
-  bg: string
-  hover: string
-}
-
-const seasonColors: Record<string, Colors> = {
-  2022: {
-    bg: 'bg-cyan-600',
-    hover: 'hover:bg-cyan-800',
-  },
-  2023: {
-    bg: 'bg-orange-600',
-    hover: 'hover:bg-orange-800',
-  },
-  2024: {
-    bg: 'bg-emerald-600',
-    hover: 'hover:bg-emerald-800',
-  },
-}
+import { COLORS_BY_SEASON } from '../constants'
 
 interface Props {
   seasons: Season[]
@@ -33,7 +14,7 @@ const HomePage = ({ seasons }: Props) => {
     <Layout documentTitle='Home' fullWidth>
       <div className='flex flex-col h-full'>
         {seasons.map((season) => {
-          const color = seasonColors[season.year]
+          const color = COLORS_BY_SEASON[season.year]
           return (
             <Link
               key={season.id}
