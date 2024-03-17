@@ -90,7 +90,7 @@ const DriverPage = ({
             width={150}
             height={150}
           />
-          <h2 className='my-2 text-5xl font-bold tracking-normal text-gray-900 uppercase font-primary sm:text-4xl md:text-5xl lg:text-6xl'>
+          <h2 className='my-2 text-5xl font-bold tracking-normal text-center text-gray-900 uppercase font-primary sm:text-4xl md:text-5xl lg:text-6xl'>
             {fullName}
           </h2>
         </div>
