@@ -148,7 +148,23 @@ export default async function handler(
     // const { data, error } = await supabase
     //   .from('constructor_driver')
     //   .update({ [driverKey]: +new_driver_id })
-    //   .match({ [driverKey]: +old_driver_id, constructor_id: +constructor_id })
+    //   .match({ id: constructor.id })
+    //   .select()
+
+    // const resp = await fetch(
+    //   `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/constructor_driver?${driverKey}=eq.${old_driver_id}`,
+    //   {
+    //     headers: {
+    //       apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    //       Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
+    //       'Content-Type': 'application/json',
+    //     } as HeadersInit,
+    //     method: 'PATCH',
+    //     body: JSON.stringify({ [driverKey]: +new_driver_id }),
+    //   }
+    // )
+
+    // const data = await resp.json()
 
     return res.status(200).json({
       success: true,
@@ -158,7 +174,8 @@ export default async function handler(
         newDriver,
         driverOneMatch,
         driverTwoMatch,
-        // data,error
+        driverKey,
+        // data,
       },
     })
   } catch (err) {
