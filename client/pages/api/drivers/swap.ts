@@ -1,9 +1,20 @@
+import { normalizeConstructorName } from '@/helpers/cars'
 import { supabase } from '@/lib/database'
 import type { NextApiRequest, NextApiResponse } from 'next'
 
 interface Data {
   success?: boolean
   message?: string
+}
+
+interface ConstructorDriverResponse {
+  id: number
+  driver_one_id: number
+  driver_two_id: number
+  constructor: {
+    id: number
+    name: string
+  }
 }
 
 const responseCreator =
@@ -160,6 +171,19 @@ export default async function handler(
     if (!resp.ok) {
       throw new Error(resp.statusText)
     }
+
+    const routesToRevalidate = [
+      `/${season}/drivers/${old_driver_id}`,
+      `/${season}/drivers/${new_driver_id}`,
+      `/${season}/constructors/${constructor.id}-${normalizeConstructorName(
+        constructor.name
+      )}`,
+    ]
+
+    await res.revalidate(`/${season}/standings`)
+    await res.revalidate(`/${season}/race-points`)
+    await res.revalidate(`/${season}/drivers`)
+    await Promise.all(routesToRevalidate.map((route) => res.revalidate(route)))
 
     return res.status(resp.status).json({
       success: true,
