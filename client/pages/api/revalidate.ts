@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { normalizeConstructorName } from '@/helpers/cars'
 import { Constructor } from '@/types/Constructor'
+import { Driver } from '@/types/Driver'
 
 interface Data {
   revalidated?: boolean
@@ -18,7 +19,7 @@ export default async function handler(
 
   try {
     const season = req.query.season
-    const resp = await fetch(
+    const constructorResponse = await fetch(
       `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/constructor?season.year=eq.${season}&select=id,name,season!inner(year)`,
       {
         headers: {
@@ -27,14 +28,30 @@ export default async function handler(
         } as HeadersInit,
       }
     )
-    const data: Constructor[] = await resp.json()
-    const constructorRoutes = data
+
+    const driverResponse = await fetch(
+      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/driver?season.year=eq.${season}&select=id,season!inner(year)`,
+      {
+        headers: {
+          apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
+        } as HeadersInit,
+      }
+    )
+
+    const constructorData: Constructor[] = await constructorResponse.json()
+    const driverData: Driver[] = await driverResponse.json()
+    const constructorRoutes = constructorData
       .map(({ id, name }) => `${id}-${normalizeConstructorName(name)}`)
       .map((url) => `/${season}/constructors/${url}`)
+    const driverRoutes = driverData.map(({ id }) => `/${season}/drivers/${id}`)
+
     await res.revalidate(`/${season}/standings`)
     await res.revalidate(`/${season}/race-points`)
     await res.revalidate(`/${season}/drivers`)
     await Promise.all(constructorRoutes.map((route) => res.revalidate(route)))
+    await Promise.all(driverRoutes.map((route) => res.revalidate(route)))
+
     return res.status(200).json({ revalidated: true })
   } catch (err) {
     console.error('** error', err)
