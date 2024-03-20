@@ -7,17 +7,7 @@ interface Data {
   message?: string
 }
 
-interface ConstructorDriverResponse {
-  id: number
-  driver_one_id: number
-  driver_two_id: number
-  constructor: {
-    id: number
-    name: string
-  }
-}
-
-const responseCreator =
+const errorResponseCreator =
   (res: NextApiResponse<Data>) => (status: number, message: string) => {
     return res.status(status).json({ success: false, message })
   }
@@ -26,25 +16,24 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>
 ) {
-  // Check for valid API key -- CREATE IT FIRST
-  // if (req.query.secret !== process.env.REVALIDATE_TOKEN) {
-  //   return res.status(401).json({ message: 'Invalid token' })
-  // }
-  const createResponse = responseCreator(res)
+  const createResponse = errorResponseCreator(res)
+  if (req.method !== 'POST') {
+    return createResponse(405, 'Method not allowed')
+  }
 
   const { season, constructor_id, old_driver_id, new_driver_id } = req.query
 
   if (!season) {
-    return createResponse(405, 'Invalid parameters, missing `season`')
+    return createResponse(405, 'Invalid parameters, missing "season"')
   }
   if (!constructor_id) {
-    return createResponse(405, 'Invalid parameters, missing `constructor_id`')
+    return createResponse(405, 'Invalid parameters, missing "constructor_id"')
   }
   if (!old_driver_id) {
-    return createResponse(405, 'Invalid parameters, missing `old_driver_id`')
+    return createResponse(405, 'Invalid parameters, missing "old_driver_id"')
   }
   if (!new_driver_id) {
-    return createResponse(405, 'Invalid parameters, missing `new_driver_id`')
+    return createResponse(405, 'Invalid parameters, missing "new_driver_id"')
   }
 
   try {
@@ -180,8 +169,6 @@ export default async function handler(
       )}`,
     ]
 
-    await res.revalidate(`/${season}/standings`)
-    await res.revalidate(`/${season}/race-points`)
     await res.revalidate(`/${season}/drivers`)
     await Promise.all(routesToRevalidate.map((route) => res.revalidate(route)))
 
