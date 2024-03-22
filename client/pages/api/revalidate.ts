@@ -49,6 +49,7 @@ export default async function handler(
     await res.revalidate(`/${season}/standings`)
     await res.revalidate(`/${season}/race-points`)
     await res.revalidate(`/${season}/drivers`)
+    await res.revalidate(`/${season}/swap-drivers`)
     await Promise.all(constructorRoutes.map((route) => res.revalidate(route)))
     await Promise.all(driverRoutes.map((route) => res.revalidate(route)))
 

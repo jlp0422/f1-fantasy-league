@@ -2,14 +2,15 @@ import { normalizeConstructorName } from '@/helpers/cars'
 import { supabase } from '@/lib/database'
 import type { NextApiRequest, NextApiResponse } from 'next'
 
-interface Data {
+export interface Data {
   success?: boolean
   message?: string
+  statusCode?: number
 }
 
 const errorResponseCreator =
-  (res: NextApiResponse<Data>) => (status: number, message: string) => {
-    return res.status(status).json({ success: false, message })
+  (res: NextApiResponse<Data>) => (statusCode: number, message: string) => {
+    return res.status(statusCode).json({ success: false, message, statusCode })
   }
 
 export default async function handler(
@@ -24,16 +25,16 @@ export default async function handler(
   const { season, constructor_id, old_driver_id, new_driver_id } = req.query
 
   if (!season) {
-    return createResponse(405, 'Invalid parameters, missing "season"')
+    return createResponse(400, 'Invalid parameters, missing "season"')
   }
   if (!constructor_id) {
-    return createResponse(405, 'Invalid parameters, missing "constructor_id"')
+    return createResponse(400, 'Invalid parameters, missing "constructor_id"')
   }
   if (!old_driver_id) {
-    return createResponse(405, 'Invalid parameters, missing "old_driver_id"')
+    return createResponse(400, 'Invalid parameters, missing "old_driver_id"')
   }
   if (!new_driver_id) {
-    return createResponse(405, 'Invalid parameters, missing "new_driver_id"')
+    return createResponse(400, 'Invalid parameters, missing "new_driver_id"')
   }
 
   try {
@@ -57,7 +58,7 @@ export default async function handler(
       .single()
 
     if (!constructor) {
-      return createResponse(405, 'Constructor does not exist')
+      return createResponse(400, 'Constructor does not exist')
     }
 
     const { data: oldDriver } = await supabase
@@ -75,7 +76,7 @@ export default async function handler(
       .single()
 
     if (!oldDriver) {
-      return createResponse(405, 'Old Driver does not exist')
+      return createResponse(400, 'Old Driver does not exist')
     }
 
     if (
@@ -83,7 +84,7 @@ export default async function handler(
       constructor.driver_two_id !== oldDriver.id
     ) {
       return createResponse(
-        405,
+        400,
         'Old Driver is not assigned to the selected Constructor'
       )
     }
@@ -103,7 +104,7 @@ export default async function handler(
       .single()
 
     if (!newDriver) {
-      return createResponse(405, 'New Driver does not exist')
+      return createResponse(400, 'New Driver does not exist')
     }
 
     const { data: driverOneMatch } = await supabase
@@ -134,7 +135,7 @@ export default async function handler(
 
     if (driverOneMatch || driverTwoMatch) {
       return createResponse(
-        405,
+        400,
         `New Driver is already assigned to a constructor`
       )
     }
@@ -162,19 +163,21 @@ export default async function handler(
     }
 
     const routesToRevalidate = [
+      `/${season}/drivers`,
       `/${season}/drivers/${old_driver_id}`,
       `/${season}/drivers/${new_driver_id}`,
-      `/${season}/constructors/${constructor.id}-${normalizeConstructorName(
-        constructor.name
-      )}`,
+      `/${season}/swap-drivers`,
+      `/${season}/constructors/${
+        constructor.constructor.id
+      }-${normalizeConstructorName(constructor.constructor.name)}`,
     ]
 
-    await res.revalidate(`/${season}/drivers`)
     await Promise.all(routesToRevalidate.map((route) => res.revalidate(route)))
 
-    return res.status(resp.status).json({
+    return res.status(201).json({
       success: true,
       message: resp.statusText,
+      statusCode: 201,
     })
   } catch (err) {
     console.error('** error', err)
