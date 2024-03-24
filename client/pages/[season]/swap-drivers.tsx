@@ -34,8 +34,8 @@ const SwapDrivers = ({
   return (
     <Layout documentTitle='Swap Drivers' description='Swap Drivers'>
       <div className='relative mx-2 mt-2 text-xl font-secondary sm:mx-4'>
-        <div className='flex flex-wrap items-center justify-between w-full gap-8'>
-          <div className='flex-1'>
+        <div className='flex flex-col w-full max-w-3xl gap-6 mx-auto'>
+          <div className='flex-1 min-w-full'>
             <h3 className='mb-2 text-2xl'>Constructor</h3>
             <select
               name='Constructor'
@@ -54,7 +54,7 @@ const SwapDrivers = ({
               ))}
             </select>
           </div>
-          <div className='flex-1'>
+          <div className='flex-1 min-w-full'>
             <h3 className='mb-2 text-2xl'>Driver to Replace</h3>
             <select
               name='Old Driver'
@@ -86,7 +86,7 @@ const SwapDrivers = ({
                 ))}
             </select>
           </div>
-          <div className='flex-1'>
+          <div className='flex-1 min-w-full'>
             <h3 className='mb-2 text-2xl'>New Driver</h3>
             <select
               name='New Driver'
@@ -107,7 +107,7 @@ const SwapDrivers = ({
             </select>
           </div>
         </div>
-        <div className='flex items-center justify-center mt-4'>
+        <div className='flex items-center justify-center mt-8'>
           <button
             type='button'
             onClick={async () => {
@@ -175,8 +175,7 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
         is_full_time,
         season!inner(year)`
     )
-    .eq('season.year', params?.season)
-    .eq('is_full_time', true)) as {
+    .eq('season.year', params?.season)) as {
     data: DriverWithSeason[]
   }
 

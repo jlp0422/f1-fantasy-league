@@ -145,6 +145,7 @@ export default async function handler(
         ? 'driver_one_id'
         : 'driver_two_id'
 
+    // weird but not working for some reason
     const resp = await fetch(
       `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/constructor_driver?${driverKey}=eq.${old_driver_id}`,
       {
