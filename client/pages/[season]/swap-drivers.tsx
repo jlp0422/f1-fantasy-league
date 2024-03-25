@@ -131,20 +131,19 @@ const SwapDrivers = ({
 }
 
 export async function getStaticPaths() {
-  const { data } = (await supabase.from('season').select('*')) as {
-    data: Season[]
-  }
+  const { data } = await supabase.from('season').select('*').returns<Season[]>()
 
-  return makeSeasonPaths(data)
+  return makeSeasonPaths(data!)
 }
 
 export async function getStaticProps({ params }: GetStaticPropsContext) {
-  const { data: constructors } = (await supabase
+  const { data: constructors } = await supabase
     .from('constructor')
     .select(constructorColumns)
-    .eq('season.year', params?.season)) as { data: ConstructorWithSeason[] }
+    .eq('season.year', params?.season)
+    .returns<ConstructorWithSeason[]>()
 
-  const { data: selectedDrivers } = (await supabase
+  const { data: selectedDrivers } = await supabase
     .from('constructor_driver')
     .select(
       `
@@ -162,10 +161,10 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
         constructor_id,
         season!inner(year)`
     )
-    .eq('season.year', params?.season)) as {
-    data: ConstructorDriverWithJoins[]
-  }
-  const { data: allDrivers } = (await supabase
+    .eq('season.year', params?.season)
+    .returns<ConstructorDriverWithJoins[]>()
+
+  const { data: allDrivers } = await supabase
     .from('driver')
     .select(
       `
@@ -175,16 +174,15 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
         is_full_time,
         season!inner(year)`
     )
-    .eq('season.year', params?.season)) as {
-    data: DriverWithSeason[]
-  }
+    .eq('season.year', params?.season)
+    .returns<DriverWithSeason[]>()
 
-  const selectedDriverIds = selectedDrivers.flatMap((driver) => [
+  const selectedDriverIds = selectedDrivers!.flatMap((driver) => [
     driver.driver_one.id,
     driver.driver_two.id,
   ])
 
-  const availableDrivers = allDrivers.filter(
+  const availableDrivers = allDrivers!.filter(
     (driver) => !selectedDriverIds.includes(driver.id)
   )
 
