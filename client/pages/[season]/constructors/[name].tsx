@@ -13,6 +13,7 @@ import {
 import { indexBy, makeName, sum } from '@/helpers/utils'
 import { supabase } from '@/lib/database'
 import { GenericObject } from '@/types/Common'
+import { Driver } from '@/types/Driver'
 import { DriverRaceResult } from '@/types/DriverRaceResult'
 import { Race } from '@/types/Race'
 import {
@@ -416,14 +417,14 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
   const constructorNameParam = decodeURIComponent(params?.name as string)
   const constructorId = constructorNameParam.split('-')[0]
 
-  const { data: constructorRows } = await supabase
+  const { data: constructor } = await supabase
     .from('constructor')
     .select(constructorColumns)
     .eq('season.year', params?.season)
     .eq('id', constructorId)
     .limit(1)
     .returns<ConstructorWithSeason[]>()
-  const constructor = constructorRows![0]
+    .single()
 
   const { data: races } = await supabase
     .from('race')
@@ -432,7 +433,7 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
     .order('start_date', { ascending: true })
     .returns<Race[]>()
 
-  const { data: currentDrivers } = (await supabase
+  const { data: currentDrivers } = await supabase
     .from('constructor_driver')
     .select(
       `
@@ -452,11 +453,12 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
     .eq('season.year', params?.season)
     .eq('constructor_id', constructorId)
     .limit(1)
-    .single()) as { data: ConstructorDriverWithJoins }
+    .returns<ConstructorDriverWithJoins>()
+    .single()
 
   const currentDriverNames = [
-    makeName(currentDrivers.driver_one),
-    makeName(currentDrivers.driver_two),
+    makeName(currentDrivers?.['driver_one']),
+    makeName(currentDrivers?.['driver_two']),
   ]
 
   const racesById = indexBy('id')(races!)

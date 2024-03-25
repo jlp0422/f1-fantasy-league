@@ -191,14 +191,13 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
     .eq('season.year', params?.season)
     .returns<ConstructorWithSeason[]>()
 
-  const { data: standings } = (await supabase
+  const { data: standings } = await supabase
     .rpc('sum_constructor_points_by_season', { season: seasonParam })
     .select('id, name, total_points')
-    .order('total_points', { ascending: false })) as {
-    data: ConstructorTotalPoints[]
-  }
+    .order('total_points', { ascending: false })
+    .returns<ConstructorTotalPoints[]>()
 
-  const constructorsById = indexBy('id')(standings)
+  const constructorsById = indexBy('id')(standings!)
 
   const cumulativePointsByConstructor = totalPointsByConstructorByRace!.reduce(
     (memo: Record<string, number[]>, item) => {

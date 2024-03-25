@@ -14,6 +14,7 @@ import { Race } from '@/types/Race'
 import {
   ConstructorDriverWithJoins,
   DriverRaceResultWithJoins,
+  DriverWithSeason,
 } from '@/types/Unions'
 import { GetStaticPropsContext } from 'next'
 import Image from 'next/image'
@@ -280,12 +281,13 @@ const DriverPage = ({
 }
 
 export async function getStaticPaths() {
-  const { data: drivers } = (await supabase
+  const { data: drivers } = await supabase
     .from('driver')
-    .select('id, season!inner(id, year)')) as { data: any[] }
+    .select('id, season!inner(id, year)')
+    .returns<DriverWithSeason[]>()
 
   return {
-    paths: drivers.map((driver) => ({
+    paths: drivers!.map((driver) => ({
       params: {
         id: driver.id.toString(),
         season: driver.season.year.toString(),
@@ -311,9 +313,10 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
     )
     .eq('id', params?.id)
     .limit(1)
+    .returns<Driver>()
     .single()
 
-  const { data: raceResults } = (await supabase
+  const { data: raceResults } = await supabase
     .from('driver_race_result')
     .select(
       `
@@ -335,11 +338,10 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
     )
     .eq('race.season.year', params?.season)
     .eq('driver_id', params?.id)
-    .order('start_date', { ascending: true, foreignTable: 'race' })) as {
-    data: DriverRaceResultWithJoins[]
-  }
+    .order('start_date', { ascending: true, foreignTable: 'race' })
+    .returns<DriverRaceResultWithJoins[]>()
 
-  const { data: driverOneMatch } = (await supabase
+  const { data: driverOneMatch } = await supabase
     .from('constructor_driver')
     .select(
       `
@@ -352,10 +354,10 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
     .eq('season.year', params?.season)
     .eq('driver_one_id', params?.id)
     .limit(1)
-    .single()) as {
-    data: ConstructorDriverWithJoins
-  }
-  const { data: driverTwoMatch } = (await supabase
+    .returns<ConstructorDriverWithJoins>()
+    .single()
+
+  const { data: driverTwoMatch } = await supabase
     .from('constructor_driver')
     .select(
       `
@@ -368,19 +370,19 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
     .eq('season.year', params?.season)
     .eq('driver_two_id', params?.id)
     .limit(1)
-    .single()) as {
-    data: ConstructorDriverWithJoins
-  }
+    .returns<ConstructorDriverWithJoins>()
+    .single()
 
-  const { data: races } = (await supabase
+  const { data: races } = await supabase
     .from('race')
     .select(raceColumns)
     .eq('season.year', params?.season)
-    .order('start_date', { ascending: true })) as { data: Race[] }
+    .order('start_date', { ascending: true })
+    .returns<Race[]>()
 
-  const racesById = indexBy('id')(races)
+  const racesById = indexBy('id')(races!)
 
-  const seasonPoints = raceResults.reduce(
+  const seasonPoints = raceResults!.reduce(
     (memo, result) => {
       memo.finishPoints += result.finish_position_points
       memo.gridPoints += result.grid_difference_points
@@ -389,9 +391,9 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
     { finishPoints: 0, gridPoints: 0 }
   )
 
-  const driverPointsByRace = raceResults.reduce(
+  const driverPointsByRace = raceResults!.reduce(
     (memo: DriverPointsByRace, item: DriverRaceResultWithJoins) => {
-      const driverName = makeName(driver)
+      const driverName = makeName(driver!)
       if (memo[item.race.id]) {
         memo[item.race.id][driverName] = item
       } else {
@@ -430,7 +432,7 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
       seasonPoints,
       races,
       constructor: hasMatch
-        ? (driverOneMatch ?? driverTwoMatch).constructor
+        ? (driverOneMatch ?? driverTwoMatch)!['constructor']
         : {},
       pointsByDriverChartData,
     },
