@@ -37,13 +37,14 @@ const HomePage = ({ seasons }: Props) => {
 }
 
 export async function getStaticProps() {
-  const { data: seasons } = (await supabase.from('season').select('*')) as {
-    data: Season[]
-  }
+  const { data: seasons } = await supabase
+    .from('season')
+    .select('*')
+    .returns<Season[]>()
 
   return {
     props: {
-      seasons: sortArray(seasons, (a, b) => b.year - a.year),
+      seasons: sortArray(seasons!, (a, b) => b.year - a.year),
     },
   }
 }

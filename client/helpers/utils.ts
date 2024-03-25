@@ -20,7 +20,9 @@ export const indexBy = (key: string) => (array: GenericObject[]) =>
     })
   }, {})
 
-export const makeName = (driver: Driver) =>
-  `${driver.first_name} ${driver.last_name}`
+export const makeName = (driver?: Driver) => {
+  if (!driver?.first_name || !driver?.last_name) return ''
+  return `${driver.first_name} ${driver.last_name}`
+}
 
 export const sortAlpha = (a: string, b: string) => (a > b ? 1 : -1)
