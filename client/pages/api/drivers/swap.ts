@@ -1,5 +1,8 @@
 import { normalizeConstructorName } from '@/helpers/cars'
 import { supabase } from '@/lib/database'
+import { ConstructorDriver } from '@/types/ConstructorDriver'
+import { Driver } from '@/types/Driver'
+import { ConstructorDriverWithJoins } from '@/types/Unions'
 import type { NextApiRequest, NextApiResponse } from 'next'
 
 export interface Data {
@@ -38,7 +41,7 @@ export default async function handler(
   }
 
   try {
-    const { data: constructor } = await supabase
+    const { data: constructorDriver } = await supabase
       .from('constructor_driver')
       .select(
         `
@@ -55,9 +58,10 @@ export default async function handler(
       .eq('constructor_id', constructor_id)
       .eq('season.year', season)
       .limit(1)
+      .returns<ConstructorDriverWithJoins>()
       .single()
 
-    if (!constructor) {
+    if (!constructorDriver) {
       return createResponse(400, 'Constructor does not exist')
     }
 
@@ -73,6 +77,7 @@ export default async function handler(
       .eq('id', old_driver_id)
       .eq('season.year', season)
       .limit(1)
+      .returns<Driver>()
       .single()
 
     if (!oldDriver) {
@@ -80,8 +85,8 @@ export default async function handler(
     }
 
     if (
-      constructor.driver_one_id !== oldDriver.id &&
-      constructor.driver_two_id !== oldDriver.id
+      constructorDriver['driver_one_id'] !== oldDriver['id'] &&
+      constructorDriver['driver_two_id'] !== oldDriver['id']
     ) {
       return createResponse(
         400,
@@ -101,6 +106,7 @@ export default async function handler(
       .eq('id', new_driver_id)
       .eq('season.year', season)
       .limit(1)
+      .returns<Driver>()
       .single()
 
     if (!newDriver) {
@@ -118,6 +124,7 @@ export default async function handler(
       .eq('season.year', season)
       .eq('driver_one_id', new_driver_id)
       .limit(1)
+      .returns<ConstructorDriver>()
       .single()
 
     const { data: driverTwoMatch } = await supabase
@@ -131,6 +138,7 @@ export default async function handler(
       .eq('season.year', season)
       .eq('driver_two_id', new_driver_id)
       .limit(1)
+      .returns<ConstructorDriver>()
       .single()
 
     if (driverOneMatch || driverTwoMatch) {
@@ -141,43 +149,54 @@ export default async function handler(
     }
 
     const driverKey =
-      constructor.driver_one_id === +old_driver_id
+      constructorDriver['driver_one_id'] === +old_driver_id
         ? 'driver_one_id'
         : 'driver_two_id'
 
-    // weird but not working for some reason
-    const resp = await fetch(
-      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/constructor_driver?${driverKey}=eq.${old_driver_id}`,
-      {
-        headers: {
-          apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-          Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json',
-        } as HeadersInit,
-        method: 'PATCH',
-        body: JSON.stringify({ [driverKey]: +new_driver_id }),
-      }
-    )
+    // neither the supabase update or the API update are working
+    // the api call works in postmant though
 
-    if (!resp.ok) {
-      throw new Error(resp.statusText)
-    }
+    // const { data, error } = await supabase
+    //   .from('constructor_driver')
+    //   .update({ [driverKey]: +new_driver_id })
+    //   .eq('id', constructorDriver["id"])
+    //   .select()
 
-    const routesToRevalidate = [
-      `/${season}/drivers`,
-      `/${season}/drivers/${old_driver_id}`,
-      `/${season}/drivers/${new_driver_id}`,
-      `/${season}/swap-drivers`,
-      `/${season}/constructors/${
-        constructor.constructor.id
-      }-${normalizeConstructorName(constructor.constructor.name)}`,
-    ]
+    // const resp = await fetch(
+    //   `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/constructor_driver?${driverKey}=eq.${old_driver_id}`,
+    //   {
+    //     headers: {
+    //       apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    //       Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
+    //       'Content-Type': 'application/json',
+    //     } as HeadersInit,
+    //     method: 'PATCH',
+    //     body: JSON.stringify({ [driverKey]: +new_driver_id }),
+    //   }
+    // )
 
-    await Promise.all(routesToRevalidate.map((route) => res.revalidate(route)))
+    // if (!resp.ok) {
+    //   throw new Error(resp.statusText)
+    // }
+
+    // const routesToRevalidate = [
+    //   `/${season}/drivers`,
+    //   `/${season}/drivers/${old_driver_id}`,
+    //   `/${season}/drivers/${new_driver_id}`,
+    //   `/${season}/swap-drivers`,
+    //   `/${season}/constructors/${
+    //     constructor.constructor.id
+    //   }-${normalizeConstructorName(constructor.constructor.name)}`,
+    // ]
+
+    // await Promise.all(routesToRevalidate.map((route) => res.revalidate(route)))
 
     return res.status(201).json({
       success: true,
-      message: resp.statusText,
+      message: `
+      url is: constructor_driver?${driverKey}=eq.${old_driver_id}
+
+      json is { [${driverKey}]: ${new_driver_id} }`,
       statusCode: 201,
     })
   } catch (err) {

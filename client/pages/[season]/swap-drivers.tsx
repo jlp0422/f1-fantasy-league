@@ -110,6 +110,7 @@ const SwapDrivers = ({
         <div className='flex items-center justify-center mt-8'>
           <button
             type='button'
+            disabled={!constructorId || !oldDriverId || !newDriverId}
             onClick={async () => {
               const resp = await fetch(
                 `/api/drivers/swap?season=${season}&constructor_id=${constructorId}&old_driver_id=${oldDriverId}&new_driver_id=${newDriverId}`,
@@ -125,6 +126,7 @@ const SwapDrivers = ({
             Swap
           </button>
         </div>
+        <p className='text-center'>{swapResponse?.message}</p>
       </div>
     </Layout>
   )
@@ -141,6 +143,7 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
     .from('constructor')
     .select(constructorColumns)
     .eq('season.year', params?.season)
+    .order('name', { ascending: true })
     .returns<ConstructorWithSeason[]>()
 
   const { data: selectedDrivers } = await supabase
@@ -175,6 +178,7 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
         season!inner(year)`
     )
     .eq('season.year', params?.season)
+    .order('last_name', { ascending: true })
     .returns<DriverWithSeason[]>()
 
   const selectedDriverIds = selectedDrivers!.flatMap((driver) => [
