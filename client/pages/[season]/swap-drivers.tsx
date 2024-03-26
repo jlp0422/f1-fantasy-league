@@ -12,6 +12,7 @@ import { GetStaticPropsContext } from 'next'
 import { Fragment, useState } from 'react'
 import { Data } from '@/pages/api/drivers/swap'
 import { useRouter } from 'next/router'
+import { makeName } from '@/helpers/utils'
 
 interface Props {
   constructors: ConstructorWithSeason[]
@@ -29,7 +30,10 @@ const SwapDrivers = ({
   const [constructorId, setConstructorId] = useState<number>()
   const [oldDriverId, setOldDriverId] = useState<number>()
   const [newDriverId, setNewDriverId] = useState<number>()
+  const [isSwapping, setIsSwapping] = useState<boolean>(false)
   const [swapResponse, setSwapResponse] = useState<Data>()
+  const disableButton =
+    !constructorId || !oldDriverId || !newDriverId || isSwapping
   return (
     <Layout documentTitle='Swap Drivers' description='Swap Drivers'>
       <div className='relative mx-2 mt-2 text-xl font-secondary sm:mx-4'>
@@ -74,12 +78,10 @@ const SwapDrivers = ({
                 .map((constructorDrivers) => (
                   <Fragment key={constructorDrivers.constructor_id}>
                     <option value={constructorDrivers.driver_one.id}>
-                      {constructorDrivers.driver_one.first_name}{' '}
-                      {constructorDrivers.driver_one.last_name}
+                      {makeName(constructorDrivers.driver_one)}
                     </option>
                     <option value={constructorDrivers.driver_two.id}>
-                      {constructorDrivers.driver_two.first_name}{' '}
-                      {constructorDrivers.driver_two.last_name}
+                      {makeName(constructorDrivers.driver_two)}
                     </option>
                   </Fragment>
                 ))}
@@ -100,7 +102,7 @@ const SwapDrivers = ({
               </option>
               {availableDrivers.map((driver) => (
                 <option key={driver.id} value={driver.id}>
-                  {driver.first_name} {driver.last_name}
+                  {makeName(driver)}
                 </option>
               ))}
             </select>
@@ -109,18 +111,18 @@ const SwapDrivers = ({
         <div className='flex items-center justify-center mt-8'>
           <button
             type='button'
-            disabled={!constructorId || !oldDriverId || !newDriverId}
+            className='px-4 py-2 mb-2 text-xl text-white bg-green-700 rounded-lg focus:outline-none hover:bg-green-800 focus:ring-4 focus:ring-green-300 me-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800'
+            disabled={disableButton}
             onClick={async () => {
+              setIsSwapping(true)
               const resp = await fetch(
                 `/api/drivers/swap?season=${season}&constructor_id=${constructorId}&old_driver_id=${oldDriverId}&new_driver_id=${newDriverId}`,
-                {
-                  method: 'POST',
-                }
+                { method: 'POST' }
               )
+              setIsSwapping(false)
               const data = await resp.json()
               setSwapResponse(data)
             }}
-            className='px-4 py-2 mb-2 text-xl text-white bg-green-700 rounded-lg focus:outline-none hover:bg-green-800 focus:ring-4 focus:ring-green-300 me-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800'
           >
             Swap
           </button>
