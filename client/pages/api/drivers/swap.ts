@@ -1,4 +1,5 @@
 import { normalizeConstructorName } from '@/helpers/cars'
+import { makeName } from '@/helpers/utils'
 import { supabase } from '@/lib/database'
 import { ConstructorDriver } from '@/types/ConstructorDriver'
 import { Driver } from '@/types/Driver'
@@ -41,7 +42,7 @@ export default async function handler(
   }
 
   try {
-    const { data: constructorDriver } = await supabase
+    const { data: constructorDriverResp } = await supabase
       .from('constructor_driver')
       .select(
         `
@@ -61,15 +62,20 @@ export default async function handler(
       .returns<ConstructorDriverWithJoins>()
       .single()
 
-    if (!constructorDriver) {
+    if (!constructorDriverResp) {
       return createResponse(400, 'Constructor does not exist')
     }
+
+    const constructorDriver =
+      constructorDriverResp as ConstructorDriverWithJoins
 
     const { data: oldDriver } = await supabase
       .from('driver')
       .select(
         `
         id,
+        first_name,
+        last_name,
         abbreviation,
         season!inner(year)
       `
@@ -85,8 +91,8 @@ export default async function handler(
     }
 
     if (
-      constructorDriver['driver_one_id'] !== oldDriver['id'] &&
-      constructorDriver['driver_two_id'] !== oldDriver['id']
+      constructorDriver.driver_one_id !== (oldDriver as Driver).id &&
+      constructorDriver.driver_two_id !== (oldDriver as Driver).id
     ) {
       return createResponse(
         400,
@@ -100,6 +106,8 @@ export default async function handler(
         `
         id,
         abbreviation,
+        first_name,
+        last_name,
         season!inner(year)
       `
       )
@@ -149,54 +157,36 @@ export default async function handler(
     }
 
     const driverKey =
-      constructorDriver['driver_one_id'] === +old_driver_id
+      constructorDriver.driver_one_id === +old_driver_id
         ? 'driver_one_id'
         : 'driver_two_id'
 
-    // neither the supabase update or the API update are working
-    // the api call works in postmant though
+    const { error } = await supabase
+      .from('constructor_driver')
+      .update({ [driverKey]: +new_driver_id })
+      .eq('id', constructorDriver.id)
 
-    // const { data, error } = await supabase
-    //   .from('constructor_driver')
-    //   .update({ [driverKey]: +new_driver_id })
-    //   .eq('id', constructorDriver["id"])
-    //   .select()
+    if (error) {
+      throw new Error(error as any)
+    }
 
-    // const resp = await fetch(
-    //   `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/constructor_driver?${driverKey}=eq.${old_driver_id}`,
-    //   {
-    //     headers: {
-    //       apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    //       Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
-    //       'Content-Type': 'application/json',
-    //     } as HeadersInit,
-    //     method: 'PATCH',
-    //     body: JSON.stringify({ [driverKey]: +new_driver_id }),
-    //   }
-    // )
+    const routesToRevalidate = [
+      `/${season}/drivers`,
+      `/${season}/drivers/${old_driver_id}`,
+      `/${season}/drivers/${new_driver_id}`,
+      `/${season}/swap-drivers`,
+      `/${season}/constructors/${
+        constructorDriver.constructor.id
+      }-${normalizeConstructorName(constructorDriver.constructor.name)}`,
+    ]
 
-    // if (!resp.ok) {
-    //   throw new Error(resp.statusText)
-    // }
-
-    // const routesToRevalidate = [
-    //   `/${season}/drivers`,
-    //   `/${season}/drivers/${old_driver_id}`,
-    //   `/${season}/drivers/${new_driver_id}`,
-    //   `/${season}/swap-drivers`,
-    //   `/${season}/constructors/${
-    //     constructor.constructor.id
-    //   }-${normalizeConstructorName(constructor.constructor.name)}`,
-    // ]
-
-    // await Promise.all(routesToRevalidate.map((route) => res.revalidate(route)))
+    await Promise.all(routesToRevalidate.map((route) => res.revalidate(route)))
 
     return res.status(201).json({
       success: true,
-      message: `
-      url is: constructor_driver?${driverKey}=eq.${old_driver_id}
-
-      json is { [${driverKey}]: ${new_driver_id} }`,
+      message: `Success! ${makeName(oldDriver)} was replaced with ${makeName(
+        newDriver
+      )}`,
       statusCode: 201,
     })
   } catch (err) {

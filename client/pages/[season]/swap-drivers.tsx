@@ -30,7 +30,6 @@ const SwapDrivers = ({
   const [oldDriverId, setOldDriverId] = useState<number>()
   const [newDriverId, setNewDriverId] = useState<number>()
   const [swapResponse, setSwapResponse] = useState<Data>()
-  console.log({ swapResponse })
   return (
     <Layout documentTitle='Swap Drivers' description='Swap Drivers'>
       <div className='relative mx-2 mt-2 text-xl font-secondary sm:mx-4'>
