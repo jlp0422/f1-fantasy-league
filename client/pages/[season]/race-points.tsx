@@ -6,8 +6,8 @@ import { constructorColumns, raceColumns } from '@/helpers/supabase'
 import { indexBy, sortAlpha, sortArray } from '@/helpers/utils'
 import { supabase } from '@/lib/database'
 import {
-  ConstructorsById,
   ConstructorTotalPoints,
+  ConstructorsById,
   GenericObject,
   IndexedRacePoints,
 } from '@/types/Common'
