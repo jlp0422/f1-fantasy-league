@@ -103,6 +103,7 @@ def revalidate_pages():
     revalidate_response = requests.request(
         GET,
         f"https://fate-of-the-eight.vercel.app/api/revalidate?secret={revalidate_token}&season={season}",
+        timeout=60
     )
     if revalidate_response.ok:
         print("Revalidation successful!")
