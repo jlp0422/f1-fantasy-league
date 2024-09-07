@@ -18,7 +18,7 @@ const DraftSelectionRow = ({ draftSelection }: Props) => {
   const normalized = normalizeConstructorName(draftSelection.constructor.name)
   const { numberBackground, numberText } =
     COLORS_BY_CONSTRUCTOR[season][normalized]
-  const roundNumber = draftSelection.pick_number <= 8 ? 1 : 2
+  const roundNumber = Math.floor(draftSelection.pick_number / 8) // draftSelection.pick_number <= 8 ? 1 : 2
   const roundPickNumber = draftSelection.pick_number - 8 * (roundNumber - 1)
   return (
     <li
