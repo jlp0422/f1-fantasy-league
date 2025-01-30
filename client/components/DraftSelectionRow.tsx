@@ -18,8 +18,9 @@ const DraftSelectionRow = ({ draftSelection }: Props) => {
   const normalized = normalizeConstructorName(draftSelection.constructor.name)
   const { numberBackground, numberText } =
     COLORS_BY_CONSTRUCTOR[season][normalized]
-  const roundNumber = Math.floor(draftSelection.pick_number / 8) // draftSelection.pick_number <= 8 ? 1 : 2
-  const roundPickNumber = draftSelection.pick_number - 8 * (roundNumber - 1)
+  const roundNumber = Math.ceil(draftSelection.pick_number / 8)
+  const picksToSubtract = 8 * (roundNumber - 1)
+  const roundPickNumber = draftSelection.pick_number - picksToSubtract
   return (
     <li
       className='w-full pr-3 pl-1 py-3 sm:px-8 sm:py-2.5 border-b border-gray-600'
@@ -74,6 +75,8 @@ const DraftSelectionRow = ({ draftSelection }: Props) => {
           style={{ color: numberText }}
         >
           {ordinal(draftSelection.pick_number)} Pick
+          <br />
+          (Rd {roundNumber} Pk {roundPickNumber})
         </p>
       </div>
     </li>
