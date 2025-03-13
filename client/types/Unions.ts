@@ -1,5 +1,6 @@
 import { Constructor } from './Constructor'
 import { ConstructorDriver } from './ConstructorDriver'
+import { DraftSelection } from './DraftSelection'
 import { Driver } from './Driver'
 import { DriverRaceResult } from './DriverRaceResult'
 import { Race } from './Race'
@@ -19,4 +20,9 @@ export type DriverRaceResultWithJoins = DriverRaceResultWithRaceAndSeason & {
 
 export type DriverRaceResultWithRaceAndSeason = DriverRaceResult & {
   race: RaceWithSeason
+}
+
+export type DraftSelectionWithDriverAndConstructor = DraftSelection & {
+  driver: Driver
+  constructor: Constructor
 }

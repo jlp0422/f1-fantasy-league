@@ -22,6 +22,7 @@ const Header = () => {
     { href: `/${query.season}/race-points`, title: 'Points by Race' },
     { href: `/${query.season}/constructors`, title: 'Constructors' },
     { href: `/${query.season}/drivers`, title: 'Drivers' },
+    { href: `/${query.season}/draft`, title: 'Draft' },
   ]
 
   return (
@@ -55,7 +56,7 @@ const Header = () => {
           id='mobile-menu'
         >
           {query.season ? (
-            <ul className='flex flex-col mt-6 md:flex-row md:space-x-6 md:mt-0 md:text-sm md:font-medium'>
+            <ul className='flex flex-col mt-6 md:flex-row md:space-x-4 md:mt-0 md:text-sm md:font-medium'>
               {routes.map(({ href, title }) => {
                 const isActiveRoute = checkIfRoutesAreEqual(pathname, href)
                 return (
