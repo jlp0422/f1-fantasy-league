@@ -53,7 +53,7 @@ const DraftSelectionRow = ({ draftSelection }: Props) => {
               normalizedConstructor={normalized}
             >
               <p
-                className='invisible hidden italic font-semibold uppercase hover:underline sm:visible sm:block sm:text-lg font-secondary'
+                className='text-base italic font-semibold uppercase hover:underline md:text-lg font-secondary'
                 style={{ color: numberText, lineHeight: 1.25 }}
               >
                 {draftSelection.constructor.name}
