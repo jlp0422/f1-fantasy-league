@@ -12,7 +12,6 @@ interface Props {
 }
 
 const Standings = ({ draftSelections }: Props) => {
-  console.log({ draftSelections })
   return (
     <Layout documentTitle='Draft' description='Draft Picks' fullWidth>
       <div>
