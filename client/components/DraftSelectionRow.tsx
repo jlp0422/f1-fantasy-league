@@ -66,9 +66,9 @@ const DraftSelectionRow = ({ draftSelection }: Props) => {
           style={{ color: numberText }}
         >
           {ordinal(draftSelection.pick_number)} Overall Pick
-          <p className='text-xl'>
+          <span className='block text-xl'>
             Round {roundNumber}, Pick {roundPickNumber}
-          </p>
+          </span>
         </p>
         <p
           className='inline-flex items-center visible text-xl font-bold uppercase sm:hidden sm:invisible sm:text-2xl font-primary'
