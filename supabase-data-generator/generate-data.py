@@ -64,8 +64,16 @@ def get_season_id(szn):
 
 def get_most_recent_event(schedule):
     now = datetime.now()
-    old_events = schedule[schedule["Session5Date"] < now]
-    return old_events.iloc[-1]
+    times = schedule['Session5Date']
+    latest_time = ''
+
+    for time in times:
+        now_sec = now.timestamp()
+        race_sec = time.timestamp()
+        if (race_sec < now_sec):
+            latest_time = time
+
+    return schedule[schedule['Session5Date'] == latest_time].iloc[0]
 
 
 def get_driver_id_by_driver_number(season_id):
@@ -213,7 +221,7 @@ def do_the_update():
         return revalidate_pages()
 
     session = fastf1.get_session(int(season), most_recent_event["Location"], "R")
-    session.load(telemetry=False, laps=False, weather=False)
+    session.load()
 
     if len(session.results) == 0:
         print(
