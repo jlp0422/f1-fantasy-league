@@ -63,10 +63,6 @@ def get_season_id(szn):
 
 
 def get_most_recent_event(schedule):
-    # now = datetime.now()
-    # old_events = schedule[schedule["Session5Date"] < now]
-    # return old_events.iloc[-1]
-
     now = datetime.now()
     times = schedule['Session5Date']
     latest_time = ''
