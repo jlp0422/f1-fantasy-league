@@ -213,7 +213,7 @@ def do_the_update():
         return revalidate_pages()
 
     session = fastf1.get_session(int(season), most_recent_event["Location"], "R")
-    session.load(telemetry=False, laps=False, weather=False)
+    session.load()
 
     if len(session.results) == 0:
         print(
