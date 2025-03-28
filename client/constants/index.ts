@@ -46,3 +46,10 @@ export const COLORS_BY_SEASON: Record<string, SeasonColors> = {
     hover: 'hover:bg-rose-800',
   },
 }
+
+export const HAS_IMAGES_BY_SEASON: Record<string, boolean> = {
+  2022: true,
+  2023: true,
+  2024: false,
+  2025: false,
+}

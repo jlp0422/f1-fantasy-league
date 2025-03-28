@@ -1,4 +1,4 @@
-import { COLORS_BY_CONSTRUCTOR } from '@/constants/index'
+import { COLORS_BY_CONSTRUCTOR, HAS_IMAGES_BY_SEASON } from '@/constants/index'
 import {
   getCloudinaryCarUrl,
   getDimensions,
@@ -18,6 +18,7 @@ interface Props {
 const CarImage = ({ constructorName, size }: Props) => {
   const { query } = useRouter()
   const season = query.season as string
+  const hasImages = HAS_IMAGES_BY_SEASON[season]
   const widthHeight = getDimensions(size)
   const carImageUrl = getCloudinaryCarUrl(constructorName, season, {
     format: 'webp',
@@ -29,7 +30,7 @@ const CarImage = ({ constructorName, size }: Props) => {
   return (
     <Image
       priority
-      src={carImageUrl}
+      src={hasImages ? carImageUrl : rgbDataURL(red, green, blue)}
       alt={`${constructorName} Car Livery`}
       width={widthHeight}
       height={widthHeight}

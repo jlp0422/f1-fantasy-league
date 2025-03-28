@@ -1,13 +1,19 @@
+import ConstructorLink from '@/components/ConstructorLink'
+import Layout from '@/components/Layout'
+import { COLORS_BY_CONSTRUCTOR, HAS_IMAGES_BY_SEASON } from '@/constants/index'
+import {
+  getCloudinaryCarUrl,
+  normalizeConstructorName,
+  rgbDataURL,
+} from '@/helpers/cars'
+import { makeSeasonPaths } from '@/helpers/routes'
+import { constructorColumns } from '@/helpers/supabase'
+import { supabase } from '@/lib/database'
 import { Constructor } from '@/types/Constructor'
 import { Season } from '@/types/Season'
 import { ConstructorWithSeason } from '@/types/Unions'
-import ConstructorLink from '@/components/ConstructorLink'
-import Layout from '@/components/Layout'
-import { getCloudinaryCarUrl, normalizeConstructorName } from '@/helpers/cars'
-import { supabase } from '@/lib/database'
+import hexRgb from 'hex-rgb'
 import { GetStaticPropsContext } from 'next'
-import { makeSeasonPaths } from '@/helpers/routes'
-import { constructorColumns } from '@/helpers/supabase'
 import { useRouter } from 'next/router'
 
 interface Props {
@@ -17,11 +23,19 @@ interface Props {
 const ConstructorsPage = ({ constructors }: Props) => {
   const { query } = useRouter()
   const season = query.season as string
+  const hasImages = HAS_IMAGES_BY_SEASON[season]
   return (
     <Layout documentTitle='Constructors'>
       <div className='grid grid-cols-1 gap-y-8 gap-x-4 justify-items-center sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'>
         {constructors.map((constructor) => {
           const normalized = normalizeConstructorName(constructor.name)
+          const { primary } = COLORS_BY_CONSTRUCTOR[season][normalized]
+          const { red, blue, green } = hexRgb(primary)
+          const imageUrl = hasImages
+            ? getCloudinaryCarUrl(normalized, season, {
+                format: 'webp',
+              })
+            : rgbDataURL(red, green, blue)
           return (
             <ConstructorLink
               normalizedConstructor={normalized}
@@ -32,13 +46,7 @@ const ConstructorsPage = ({ constructors }: Props) => {
                 <div
                   className='bg-contain rounded-lg h-72 w-72 shadow-inset-black-6'
                   style={{
-                    backgroundImage: `url(${getCloudinaryCarUrl(
-                      normalized,
-                      season,
-                      {
-                        format: 'webp',
-                      }
-                    )})`,
+                    backgroundImage: `url(${imageUrl})`,
                   }}
                 />
                 <h2 className='absolute px-4 text-4xl font-bold text-center text-gray-100 uppercase font-primary'>
