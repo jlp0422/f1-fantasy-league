@@ -3,8 +3,12 @@ import TickXAxis from '@/components/charts/TickXAxis'
 import TickYAxis from '@/components/charts/TickYAxis'
 import Layout from '@/components/Layout'
 import Toggle from '@/components/Toggle'
-import { COLORS_BY_CONSTRUCTOR } from '@/constants/index'
-import { getCloudinaryCarUrl, normalizeConstructorName } from '@/helpers/cars'
+import { COLORS_BY_CONSTRUCTOR, HAS_IMAGES_BY_SEASON } from '@/constants/index'
+import {
+  getCloudinaryCarUrl,
+  normalizeConstructorName,
+  rgbDataURL,
+} from '@/helpers/cars'
 import {
   constructorColumns,
   driverRaceResultColumns,
@@ -13,7 +17,6 @@ import {
 import { indexBy, makeName, sum } from '@/helpers/utils'
 import { supabase } from '@/lib/database'
 import { GenericObject } from '@/types/Common'
-import { Driver } from '@/types/Driver'
 import { DriverRaceResult } from '@/types/DriverRaceResult'
 import { Race } from '@/types/Race'
 import {
@@ -22,6 +25,7 @@ import {
   DriverRaceResultWithJoins,
   RaceWithSeason,
 } from '@/types/Unions'
+import hexRgb from 'hex-rgb'
 import { GetStaticPropsContext } from 'next'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
@@ -69,6 +73,7 @@ const Constructor = ({
 }: Props) => {
   const { query } = useRouter()
   const season = query.season as string
+  const hasImages = HAS_IMAGES_BY_SEASON[season]
   const [showDetail, setShowDetail] = useState<boolean>(false)
   const data = [
     {
@@ -94,6 +99,13 @@ const Constructor = ({
     secondary: secondaryColor,
     tertiary: tertiaryColor,
   } = COLORS_BY_CONSTRUCTOR[season][normalized]
+  const { red, blue, green } = hexRgb(primaryColor)
+
+  const imageUrl = hasImages
+    ? getCloudinaryCarUrl(normalized, season, {
+        format: 'webp',
+      })
+    : rgbDataURL(red, green, blue)
 
   return (
     <Layout
@@ -104,9 +116,7 @@ const Constructor = ({
       <div
         className='bg-cover bg-center w-screen absolute h-80 sm:h-[336px] left-0 top-[64px] sm:top-[72px] shadow-inset-black-7'
         style={{
-          backgroundImage: `url(${getCloudinaryCarUrl(normalized, season, {
-            format: 'webp',
-          })})`,
+          backgroundImage: `url(${imageUrl})`,
         }}
       />
       <div className='relative flex flex-col items-center sm:flex-row'>
