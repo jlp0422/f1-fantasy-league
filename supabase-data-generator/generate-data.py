@@ -173,12 +173,16 @@ def format_for_email(driver_id_by_driver_number, update_row_data, df):
         finish_pos = row["finish_position"]
         finish_pos_pts = row["finish_position_points"]
         grid_diff_pts = row["grid_difference_points"]
+        grid_int = int(grid_pos)
         driver_id_to_start_position[row["driver_id"]] = (
-            int(grid_pos) if int(grid_pos) > 0 else 20
+            grid_int if grid_int > 0 else 20
         )
+
+        finish_str = "DNF" if row["is_dnf"] else int(finish_pos)
+        start_str = grid_int if grid_int > 0 else "Pit Lane (20th)"
         string = (
             string
-            + f'{driver_abbrev}: Start: {int(grid_pos) if int(grid_pos) > 0 else "Pit Lane (20th)"}, Finish: {"DNF" if row["is_dnf"] else int(finish_pos)}, Result Pts: {int(finish_pos_pts)}, Grid Diff Pts: {float(grid_diff_pts)}, Total Points: {finish_pos_pts + grid_diff_pts}\n'
+            + f'{finish_str}) {driver_abbrev}: Start: {start_str}, Result Pts: {int(finish_pos_pts)}, Grid Diff Pts: {float(grid_diff_pts)}, Total Points: {finish_pos_pts + grid_diff_pts}\n'
         )
 
     string = string + "\nSorted by Start Position\n"
@@ -193,7 +197,7 @@ def format_for_email(driver_id_by_driver_number, update_row_data, df):
         grid_pos = df_driver["GridPosition"][0]
         string = (
             string
-            + f'{int(grid_pos) if int(grid_pos) > 0 else "Pit Lane (20th)"}): {driver_abbrev}\n'
+            + f'{int(grid_pos) if int(grid_pos) > 0 else "Pit Lane (20th)"}) {driver_abbrev}\n'
         )
     from_email = Email("f1fantasy2022@em5638.m.jeremyphilipson.com")
     to_email = To("jeremyphilipson@gmail.com")
