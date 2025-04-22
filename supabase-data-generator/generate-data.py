@@ -1,5 +1,6 @@
 import requests
 import fastf1
+import pandas as pd
 import os
 from datetime import datetime
 import json
@@ -172,12 +173,16 @@ def format_for_email(driver_id_by_driver_number, update_row_data, df):
         finish_pos = row["finish_position"]
         finish_pos_pts = row["finish_position_points"]
         grid_diff_pts = row["grid_difference_points"]
+        grid_int = int(grid_pos)
         driver_id_to_start_position[row["driver_id"]] = (
-            int(grid_pos) if int(grid_pos) > 0 else 20
+            grid_int if grid_int > 0 else 20
         )
+
+        finish_str = "DNF" if row["is_dnf"] else int(finish_pos)
+        start_str = grid_int if grid_int > 0 else "Pit Lane (20th)"
         string = (
             string
-            + f'{driver_abbrev}: Start: {int(grid_pos) if int(grid_pos) > 0 else "Pit Lane (20th)"}, Finish: {"DNF" if row["is_dnf"] else int(finish_pos)}, Result Pts: {int(finish_pos_pts)}, Grid Diff Pts: {float(grid_diff_pts)}, Total Points: {finish_pos_pts + grid_diff_pts}\n'
+            + f'{finish_str}) {driver_abbrev}: Start: {start_str}, Result Pts: {int(finish_pos_pts)}, Grid Diff Pts: {float(grid_diff_pts)}, Total Points: {finish_pos_pts + grid_diff_pts}\n'
         )
 
     string = string + "\nSorted by Start Position\n"
@@ -192,7 +197,7 @@ def format_for_email(driver_id_by_driver_number, update_row_data, df):
         grid_pos = df_driver["GridPosition"][0]
         string = (
             string
-            + f'{driver_abbrev}: Start: {int(grid_pos) if int(grid_pos) > 0 else "Pit Lane (20th)"}\n'
+            + f'{int(grid_pos) if int(grid_pos) > 0 else "Pit Lane (20th)"}) {driver_abbrev}\n'
         )
     from_email = Email("f1fantasy2022@em5638.m.jeremyphilipson.com")
     to_email = To("jeremyphilipson@gmail.com")
@@ -235,15 +240,15 @@ def do_the_update():
     constructor_id_by_driver_id = get_constructor_id_by_driver_id(season_id)
 
     df = session.results[
-        ["DriverNumber", "Abbreviation", "Position", "Status", "GridPosition"]
+        ["DriverNumber", "Abbreviation", "Position", "ClassifiedPosition", "GridPosition", "Time"]
     ]
 
-    def dnf_check(result):
-        if result.startswith("Finished"):
-            return False
-        if result.startswith("+"):
-            return False
-        return True
+    def dnf_check(row):
+        # "ClassifiedPosition" is int if driver was classified, otherwise it is a string
+        # "Time" is a valid time if driver finished race, otherwise it is NaT
+        not_classified = not row["ClassifiedPosition"].isdigit()
+        invalid_time = pd.isna(row["Time"])
+        return not_classified or invalid_time
 
     def dnf_points(row):
         return -1 if row["is_dnf"] else row["Points"]
@@ -257,13 +262,16 @@ def do_the_update():
     def get_grid_diff(row):
         if row["is_dnf"]:
             return 0
+        row_grid = row["GridPosition"]
+        row_pos = row["Position"]
+
         # indicates pit lane start
-        if int(row["GridPosition"]) == 0:
-            return 20 - row["Position"]
-        return row["GridPosition"] - row["Position"]
+        if int(row_grid) == 0:
+            return 20 - row_pos
+        return row_grid - row_pos
 
     df["Points"] = df["Position"].map(lambda x: points_map[str(x)])
-    df["is_dnf"] = df["Status"].map(dnf_check)
+    df["is_dnf"] = df.apply(dnf_check, axis=1)
     df["driver_id"] = df["DriverNumber"].map(get_driver_id)
     df["constructor_id"] = df["driver_id"].map(get_constructor_id)
     df["Points"] = df.apply(dnf_points, axis=1)
