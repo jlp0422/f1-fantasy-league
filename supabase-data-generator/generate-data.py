@@ -271,7 +271,7 @@ def do_the_update():
         return row_grid - row_pos
 
     df["Points"] = df["Position"].map(lambda x: points_map[str(x)])
-    df['is_dnf'] = df.apply(dnf_check, axis=1)
+    df["is_dnf"] = df.apply(dnf_check, axis=1)
     df["driver_id"] = df["DriverNumber"].map(get_driver_id)
     df["constructor_id"] = df["driver_id"].map(get_constructor_id)
     df["Points"] = df.apply(dnf_points, axis=1)
