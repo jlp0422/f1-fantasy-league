@@ -43,14 +43,18 @@ export const ordinal = (num: number) => {
   return num + 'th'
 }
 
-export const getSeasonParam = (context: GetServerSidePropsContext) => {
+const getParam = (param: string) => (context: GetServerSidePropsContext) => {
   const { params } = context
   if (!params) {
     throw new Error('No params found')
   }
-  const { season } = params
-  if (!season) {
-    throw new Error('No season found')
+  const { [param]: paramValue } = params
+  if (!paramValue) {
+    throw new Error(`No ${param} found`)
   }
-  return season as any
+  return paramValue as any
 }
+
+export const getSeasonParam = getParam('season')
+export const getIdParam = getParam('id')
+export const getNameParam = getParam('name')

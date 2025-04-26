@@ -5,7 +5,7 @@ import TickYAxis from '@/components/charts/TickYAxis'
 import { COLORS_BY_CONSTRUCTOR, COLORS_BY_SEASON } from '@/constants/index'
 import { normalizeConstructorName } from '@/helpers/cars'
 import { constructorColumns, raceColumns } from '@/helpers/supabase'
-import { getSeasonParam, indexBy, makeName } from '@/helpers/utils'
+import { getIdParam, getSeasonParam, indexBy, makeName } from '@/helpers/utils'
 import { supabase } from '@/lib/database'
 import { GenericObject } from '@/types/Common'
 import { Driver } from '@/types/Driver'
@@ -299,7 +299,7 @@ const DriverPage = ({
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const season = getSeasonParam(context)
-  const driverId = context.params?.id as string
+  const driverId = getIdParam(context)
   const { data: driver } = await supabase
     .from('driver')
     .select(

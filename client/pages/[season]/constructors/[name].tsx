@@ -14,7 +14,13 @@ import {
   driverRaceResultColumns,
   raceColumns,
 } from '@/helpers/supabase'
-import { getSeasonParam, indexBy, makeName, sum } from '@/helpers/utils'
+import {
+  getNameParam,
+  getSeasonParam,
+  indexBy,
+  makeName,
+  sum,
+} from '@/helpers/utils'
 import { supabase } from '@/lib/database'
 import { GenericObject } from '@/types/Common'
 import { DriverRaceResult } from '@/types/DriverRaceResult'
@@ -26,7 +32,7 @@ import {
   RaceWithSeason,
 } from '@/types/Unions'
 import hexRgb from 'hex-rgb'
-import { GetServerSidePropsContext, GetStaticPropsContext } from 'next'
+import { GetServerSidePropsContext } from 'next'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useState } from 'react'
@@ -404,30 +410,9 @@ const Constructor = ({
   )
 }
 
-// export async function getStaticPaths() {
-//   const { data: constructors } = await supabase
-//     .from('constructor')
-//     .select(constructorColumns)
-//     .returns<ConstructorWithSeason[]>()
-
-//   return {
-//     paths: constructors!.map((constructor) => ({
-//       params: {
-//         name: encodeURIComponent(
-//           `${constructor.id}-${normalizeConstructorName(constructor.name)}`
-//         ),
-//         season: constructor.season.year.toString(),
-//       },
-//     })),
-//     fallback: false,
-//   }
-// }
-
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const season = getSeasonParam(context)
-  const constructorNameParam = decodeURIComponent(
-    context.params?.name as string
-  )
+  const constructorNameParam = decodeURIComponent(getNameParam(context))
   const constructorId = constructorNameParam.split('-')[0]
 
   const { data: constructor } = await supabase

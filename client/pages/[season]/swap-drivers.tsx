@@ -1,18 +1,16 @@
 import Layout from '@/components/Layout'
-import { makeSeasonPaths } from '@/helpers/routes'
 import { constructorColumns } from '@/helpers/supabase'
+import { getSeasonParam, makeName } from '@/helpers/utils'
 import { supabase } from '@/lib/database'
-import { Season } from '@/types/Season'
+import { Data } from '@/pages/api/drivers/swap'
 import {
   ConstructorDriverWithJoins,
   ConstructorWithSeason,
   DriverWithSeason,
 } from '@/types/Unions'
-import { GetServerSidePropsContext, GetStaticPropsContext } from 'next'
-import { Fragment, useState } from 'react'
-import { Data } from '@/pages/api/drivers/swap'
+import { GetServerSidePropsContext } from 'next'
 import { useRouter } from 'next/router'
-import { getSeasonParam, makeName } from '@/helpers/utils'
+import { Fragment, useState } from 'react'
 
 interface Props {
   constructors: ConstructorWithSeason[]
@@ -132,12 +130,6 @@ const SwapDrivers = ({
     </Layout>
   )
 }
-
-// export async function getStaticPaths() {
-//   const { data } = await supabase.from('season').select('*').returns<Season[]>()
-
-//   return makeSeasonPaths(data!)
-// }
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const season = getSeasonParam(context)

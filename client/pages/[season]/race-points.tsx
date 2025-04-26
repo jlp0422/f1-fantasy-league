@@ -1,7 +1,6 @@
 import Layout from '@/components/Layout'
 import RacePointsChart from '@/components/RacePointsChart'
 import RacePointsTable from '@/components/RacePointsTable'
-import { makeSeasonPaths } from '@/helpers/routes'
 import { constructorColumns, raceColumns } from '@/helpers/supabase'
 import { getSeasonParam, indexBy, sortAlpha, sortArray } from '@/helpers/utils'
 import { supabase } from '@/lib/database'
@@ -11,9 +10,8 @@ import {
   GenericObject,
   IndexedRacePoints,
 } from '@/types/Common'
-import { Season } from '@/types/Season'
 import { ConstructorWithSeason, RaceWithSeason } from '@/types/Unions'
-import { GetServerSidePropsContext, GetStaticPropsContext } from 'next'
+import { GetServerSidePropsContext } from 'next'
 import { useState } from 'react'
 
 interface TotalPointsByConstructorByRace {
@@ -140,12 +138,6 @@ const RacePoints = ({
     </Layout>
   )
 }
-
-// export async function getStaticPaths() {
-//   const { data } = await supabase.from('season').select('*').returns<Season[]>()
-
-//   return makeSeasonPaths(data!)
-// }
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const seasonParam = getSeasonParam(context)

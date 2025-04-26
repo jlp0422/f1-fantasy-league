@@ -1,19 +1,17 @@
 import Arrow from '@/components/icons/Arrow'
 import Layout from '@/components/Layout'
 import Toggle from '@/components/Toggle'
-import { makeSeasonPaths } from '@/helpers/routes'
 import { driverRaceResultColumns, raceColumns } from '@/helpers/supabase'
 import { getSeasonParam, makeName, sortArray, toNum } from '@/helpers/utils'
 import { supabase } from '@/lib/database'
 import { Driver as DriverType } from '@/types/Driver'
 import { DriverRaceResult } from '@/types/DriverRaceResult'
-import { Season } from '@/types/Season'
 import {
   ConstructorDriverWithJoins,
   DriverRaceResultWithJoins,
   RaceWithSeason,
 } from '@/types/Unions'
-import { GetServerSidePropsContext, GetStaticPropsContext } from 'next'
+import { GetServerSidePropsContext } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
@@ -189,12 +187,6 @@ const DriversPage = ({ races, driverRaceResults }: Props) => {
     </Layout>
   )
 }
-
-// export async function getStaticPaths() {
-//   const { data } = await supabase.from('season').select('*').returns<Season[]>()
-
-//   return makeSeasonPaths(data!)
-// }
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const season = getSeasonParam(context)
