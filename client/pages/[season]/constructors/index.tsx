@@ -8,6 +8,7 @@ import {
 } from '@/helpers/cars'
 import { makeSeasonPaths } from '@/helpers/routes'
 import { constructorColumns } from '@/helpers/supabase'
+import { getSeasonParam } from '@/helpers/utils'
 import { supabase } from '@/lib/database'
 import { Constructor } from '@/types/Constructor'
 import { Season } from '@/types/Season'
@@ -71,7 +72,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const { data: constructors } = await supabase
     .from('constructor')
     .select(constructorColumns)
-    .eq('season.year', context.params?.season)
+    .eq('season.year', getSeasonParam(context))
     .order('name')
     .returns<ConstructorWithSeason[]>()
 

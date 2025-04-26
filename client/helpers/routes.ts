@@ -1,5 +1,6 @@
 import { Season } from '@/types/Season'
 
+// unused
 export const makeSeasonPaths = (seasons: Season[]) => {
   return {
     paths: seasons.map((season) => ({

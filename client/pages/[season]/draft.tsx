@@ -6,6 +6,7 @@ import { makeSeasonPaths } from '@/helpers/routes'
 import { constructorColumns } from '@/helpers/supabase'
 import { DraftSelectionWithDriverAndConstructor } from '@/types/Unions'
 import DraftSelectionRow from '@/components/DraftSelectionRow'
+import { getSeasonParam } from '@/helpers/utils'
 
 interface Props {
   draftSelections: DraftSelectionWithDriverAndConstructor[]
@@ -59,7 +60,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       )
     `
     )
-    .eq('draft.season.year', context.params?.season)
+    .eq('draft.season.year', getSeasonParam(context))
     .order('pick_number', { ascending: true })
     .returns<DraftSelectionWithDriverAndConstructor[]>()
 

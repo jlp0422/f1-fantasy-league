@@ -3,7 +3,7 @@ import Layout from '@/components/Layout'
 import Toggle from '@/components/Toggle'
 import { makeSeasonPaths } from '@/helpers/routes'
 import { driverRaceResultColumns, raceColumns } from '@/helpers/supabase'
-import { makeName, sortArray, toNum } from '@/helpers/utils'
+import { getSeasonParam, makeName, sortArray, toNum } from '@/helpers/utils'
 import { supabase } from '@/lib/database'
 import { Driver as DriverType } from '@/types/Driver'
 import { DriverRaceResult } from '@/types/DriverRaceResult'
@@ -197,17 +197,18 @@ const DriversPage = ({ races, driverRaceResults }: Props) => {
 // }
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
+  const season = getSeasonParam(context)
   const { data: races } = await supabase
     .from('race')
     .select(raceColumns)
-    .eq('season.year', context.params?.season)
+    .eq('season.year', season)
     .order('start_date', { ascending: true })
     .returns<RaceWithSeason[]>()
 
   const { data: raceResults } = await supabase
     .from('driver_race_result')
     .select(driverRaceResultColumns)
-    .eq('race.season.year', context.params?.season)
+    .eq('race.season.year', season)
     .order('start_date', { ascending: true, foreignTable: 'race' })
     .returns<DriverRaceResultWithJoins[]>()
 
@@ -224,7 +225,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       ),
       season!inner(year)`
     )
-    .eq('season.year', context.params?.season)
+    .eq('season.year', season)
     .returns<ConstructorDriverWithJoins[]>()
 
   const constructorByDriverId = currentDrivers!.reduce(

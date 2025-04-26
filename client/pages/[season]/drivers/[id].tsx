@@ -5,7 +5,7 @@ import TickYAxis from '@/components/charts/TickYAxis'
 import { COLORS_BY_CONSTRUCTOR, COLORS_BY_SEASON } from '@/constants/index'
 import { normalizeConstructorName } from '@/helpers/cars'
 import { constructorColumns, raceColumns } from '@/helpers/supabase'
-import { indexBy, makeName } from '@/helpers/utils'
+import { getSeasonParam, indexBy, makeName } from '@/helpers/utils'
 import { supabase } from '@/lib/database'
 import { GenericObject } from '@/types/Common'
 import { Driver } from '@/types/Driver'
@@ -298,6 +298,8 @@ const DriverPage = ({
 // }
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
+  const season = getSeasonParam(context)
+  const driverId = context.params?.id as string
   const { data: driver } = await supabase
     .from('driver')
     .select(
@@ -311,7 +313,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       image_url
     `
     )
-    .eq('id', context.params?.id)
+    .eq('id', driverId)
     .limit(1)
     .returns<Driver>()
     .single()
@@ -336,8 +338,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     )
   `
     )
-    .eq('race.season.year', context.params?.season)
-    .eq('driver_id', context.params?.id)
+    .eq('race.season.year', season)
+    .eq('driver_id', driverId)
     .order('start_date', { ascending: true, foreignTable: 'race' })
     .returns<DriverRaceResultWithJoins[]>()
 
@@ -351,8 +353,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       constructor!inner(${constructorColumns}),
       season!inner(year)`
     )
-    .eq('season.year', context.params?.season)
-    .eq('driver_one_id', context.params?.id)
+    .eq('season.year', season)
+    .eq('driver_one_id', driverId)
     .limit(1)
     .returns<ConstructorDriverWithJoins>()
     .single()
@@ -367,8 +369,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       constructor!inner(${constructorColumns}),
       season!inner(year)`
     )
-    .eq('season.year', context.params?.season)
-    .eq('driver_two_id', context.params?.id)
+    .eq('season.year', season)
+    .eq('driver_two_id', driverId)
     .limit(1)
     .returns<ConstructorDriverWithJoins>()
     .single()
@@ -376,7 +378,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const { data: races } = await supabase
     .from('race')
     .select(raceColumns)
-    .eq('season.year', context.params?.season)
+    .eq('season.year', season)
     .order('start_date', { ascending: true })
     .returns<Race[]>()
 

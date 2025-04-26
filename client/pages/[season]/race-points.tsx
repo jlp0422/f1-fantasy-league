@@ -3,7 +3,7 @@ import RacePointsChart from '@/components/RacePointsChart'
 import RacePointsTable from '@/components/RacePointsTable'
 import { makeSeasonPaths } from '@/helpers/routes'
 import { constructorColumns, raceColumns } from '@/helpers/supabase'
-import { indexBy, sortAlpha, sortArray } from '@/helpers/utils'
+import { getSeasonParam, indexBy, sortAlpha, sortArray } from '@/helpers/utils'
 import { supabase } from '@/lib/database'
 import {
   ConstructorTotalPoints,
@@ -148,7 +148,7 @@ const RacePoints = ({
 // }
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
-  const seasonParam = context.params?.season as any
+  const seasonParam = getSeasonParam(context)
   const { data: totalPointsByConstructorByRace } = await supabase
     .rpc('total_points_by_constructor_by_race', { season: seasonParam })
     .select('*')
@@ -181,14 +181,14 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const { data: races } = await supabase
     .from('race')
     .select(raceColumns)
-    .eq('season.year', context.params?.season)
+    .eq('season.year', seasonParam)
     .order('start_date', { ascending: true })
     .returns<RaceWithSeason[]>()
 
   const { data: constructors } = await supabase
     .from('constructor')
     .select(constructorColumns)
-    .eq('season.year', context.params?.season)
+    .eq('season.year', seasonParam)
     .returns<ConstructorWithSeason[]>()
 
   const { data: standings } = await supabase

@@ -4,6 +4,7 @@ import Layout from '@/components/Layout'
 import { supabase } from '@/lib/database'
 import { GetServerSidePropsContext, GetStaticPropsContext } from 'next'
 import { makeSeasonPaths } from '@/helpers/routes'
+import { getSeasonParam } from '@/helpers/utils'
 
 interface Standing {
   id: number
@@ -48,7 +49,7 @@ const Standings = ({ standings }: Props) => {
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const { data: standings } = await supabase
     .rpc('sum_constructor_points_by_season', {
-      season: context.params?.season as any,
+      season: getSeasonParam(context),
     })
     .select('id, name, team_principal, total_points')
     .order('total_points', { ascending: false })

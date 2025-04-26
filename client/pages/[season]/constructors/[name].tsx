@@ -14,7 +14,7 @@ import {
   driverRaceResultColumns,
   raceColumns,
 } from '@/helpers/supabase'
-import { indexBy, makeName, sum } from '@/helpers/utils'
+import { getSeasonParam, indexBy, makeName, sum } from '@/helpers/utils'
 import { supabase } from '@/lib/database'
 import { GenericObject } from '@/types/Common'
 import { DriverRaceResult } from '@/types/DriverRaceResult'
@@ -424,6 +424,7 @@ const Constructor = ({
 // }
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
+  const season = getSeasonParam(context)
   const constructorNameParam = decodeURIComponent(
     context.params?.name as string
   )
@@ -432,7 +433,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const { data: constructor } = await supabase
     .from('constructor')
     .select(constructorColumns)
-    .eq('season.year', context.params?.season)
+    .eq('season.year', season)
     .eq('id', constructorId)
     .limit(1)
     .returns<ConstructorWithSeason[]>()
@@ -441,7 +442,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const { data: races } = await supabase
     .from('race')
     .select(raceColumns)
-    .eq('season.year', context.params?.season)
+    .eq('season.year', season)
     .order('start_date', { ascending: true })
     .returns<Race[]>()
 
@@ -462,7 +463,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       ),
       season!inner(year)`
     )
-    .eq('season.year', context.params?.season)
+    .eq('season.year', season)
     .eq('constructor_id', constructorId)
     .limit(1)
     .returns<ConstructorDriverWithJoins>()

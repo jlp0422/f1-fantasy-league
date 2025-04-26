@@ -12,7 +12,7 @@ import { GetServerSidePropsContext, GetStaticPropsContext } from 'next'
 import { Fragment, useState } from 'react'
 import { Data } from '@/pages/api/drivers/swap'
 import { useRouter } from 'next/router'
-import { makeName } from '@/helpers/utils'
+import { getSeasonParam, makeName } from '@/helpers/utils'
 
 interface Props {
   constructors: ConstructorWithSeason[]
@@ -140,10 +140,11 @@ const SwapDrivers = ({
 // }
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
+  const season = getSeasonParam(context)
   const { data: constructors } = await supabase
     .from('constructor')
     .select(constructorColumns)
-    .eq('season.year', context.params?.season)
+    .eq('season.year', season)
     .order('name', { ascending: true })
     .returns<ConstructorWithSeason[]>()
 
@@ -165,7 +166,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
         constructor_id,
         season!inner(year)`
     )
-    .eq('season.year', context.params?.season)
+    .eq('season.year', season)
     .returns<ConstructorDriverWithJoins[]>()
 
   const { data: allDrivers } = await supabase
@@ -178,7 +179,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
         is_full_time,
         season!inner(year)`
     )
-    .eq('season.year', context.params?.season)
+    .eq('season.year', season)
     .order('last_name', { ascending: true })
     .returns<DriverWithSeason[]>()
 
