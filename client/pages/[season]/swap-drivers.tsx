@@ -8,7 +8,7 @@ import {
   ConstructorWithSeason,
   DriverWithSeason,
 } from '@/types/Unions'
-import { GetStaticPropsContext } from 'next'
+import { GetServerSidePropsContext, GetStaticPropsContext } from 'next'
 import { Fragment, useState } from 'react'
 import { Data } from '@/pages/api/drivers/swap'
 import { useRouter } from 'next/router'
@@ -133,17 +133,17 @@ const SwapDrivers = ({
   )
 }
 
-export async function getStaticPaths() {
-  const { data } = await supabase.from('season').select('*').returns<Season[]>()
+// export async function getStaticPaths() {
+//   const { data } = await supabase.from('season').select('*').returns<Season[]>()
 
-  return makeSeasonPaths(data!)
-}
+//   return makeSeasonPaths(data!)
+// }
 
-export async function getStaticProps({ params }: GetStaticPropsContext) {
+export async function getServerSideProps(context: GetServerSidePropsContext) {
   const { data: constructors } = await supabase
     .from('constructor')
     .select(constructorColumns)
-    .eq('season.year', params?.season)
+    .eq('season.year', context.params?.season)
     .order('name', { ascending: true })
     .returns<ConstructorWithSeason[]>()
 
@@ -165,7 +165,7 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
         constructor_id,
         season!inner(year)`
     )
-    .eq('season.year', params?.season)
+    .eq('season.year', context.params?.season)
     .returns<ConstructorDriverWithJoins[]>()
 
   const { data: allDrivers } = await supabase
@@ -178,7 +178,7 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
         is_full_time,
         season!inner(year)`
     )
-    .eq('season.year', params?.season)
+    .eq('season.year', context.params?.season)
     .order('last_name', { ascending: true })
     .returns<DriverWithSeason[]>()
 

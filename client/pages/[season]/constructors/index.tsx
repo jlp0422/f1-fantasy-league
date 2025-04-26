@@ -13,7 +13,7 @@ import { Constructor } from '@/types/Constructor'
 import { Season } from '@/types/Season'
 import { ConstructorWithSeason } from '@/types/Unions'
 import hexRgb from 'hex-rgb'
-import { GetStaticPropsContext } from 'next'
+import { GetServerSidePropsContext, GetStaticPropsContext } from 'next'
 import { useRouter } from 'next/router'
 
 interface Props {
@@ -61,17 +61,17 @@ const ConstructorsPage = ({ constructors }: Props) => {
   )
 }
 
-export async function getStaticPaths() {
-  const { data } = await supabase.from('season').select('*').returns<Season[]>()
+// export async function getStaticPaths() {
+//   const { data } = await supabase.from('season').select('*').returns<Season[]>()
 
-  return makeSeasonPaths(data!)
-}
+//   return makeSeasonPaths(data!)
+// }
 
-export async function getStaticProps({ params }: GetStaticPropsContext) {
+export async function getServerSideProps(context: GetServerSidePropsContext) {
   const { data: constructors } = await supabase
     .from('constructor')
     .select(constructorColumns)
-    .eq('season.year', params?.season)
+    .eq('season.year', context.params?.season)
     .order('name')
     .returns<ConstructorWithSeason[]>()
 

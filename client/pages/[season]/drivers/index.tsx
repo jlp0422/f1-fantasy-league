@@ -13,7 +13,7 @@ import {
   DriverRaceResultWithJoins,
   RaceWithSeason,
 } from '@/types/Unions'
-import { GetStaticPropsContext } from 'next'
+import { GetServerSidePropsContext, GetStaticPropsContext } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
@@ -190,24 +190,24 @@ const DriversPage = ({ races, driverRaceResults }: Props) => {
   )
 }
 
-export async function getStaticPaths() {
-  const { data } = await supabase.from('season').select('*').returns<Season[]>()
+// export async function getStaticPaths() {
+//   const { data } = await supabase.from('season').select('*').returns<Season[]>()
 
-  return makeSeasonPaths(data!)
-}
+//   return makeSeasonPaths(data!)
+// }
 
-export async function getStaticProps({ params }: GetStaticPropsContext) {
+export async function getServerSideProps(context: GetServerSidePropsContext) {
   const { data: races } = await supabase
     .from('race')
     .select(raceColumns)
-    .eq('season.year', params?.season)
+    .eq('season.year', context.params?.season)
     .order('start_date', { ascending: true })
     .returns<RaceWithSeason[]>()
 
   const { data: raceResults } = await supabase
     .from('driver_race_result')
     .select(driverRaceResultColumns)
-    .eq('race.season.year', params?.season)
+    .eq('race.season.year', context.params?.season)
     .order('start_date', { ascending: true, foreignTable: 'race' })
     .returns<DriverRaceResultWithJoins[]>()
 
@@ -224,7 +224,7 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
       ),
       season!inner(year)`
     )
-    .eq('season.year', params?.season)
+    .eq('season.year', context.params?.season)
     .returns<ConstructorDriverWithJoins[]>()
 
   const constructorByDriverId = currentDrivers!.reduce(

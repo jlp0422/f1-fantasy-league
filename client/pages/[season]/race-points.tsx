@@ -13,7 +13,7 @@ import {
 } from '@/types/Common'
 import { Season } from '@/types/Season'
 import { ConstructorWithSeason, RaceWithSeason } from '@/types/Unions'
-import { GetStaticPropsContext } from 'next'
+import { GetServerSidePropsContext, GetStaticPropsContext } from 'next'
 import { useState } from 'react'
 
 interface TotalPointsByConstructorByRace {
@@ -141,14 +141,14 @@ const RacePoints = ({
   )
 }
 
-export async function getStaticPaths() {
-  const { data } = await supabase.from('season').select('*').returns<Season[]>()
+// export async function getStaticPaths() {
+//   const { data } = await supabase.from('season').select('*').returns<Season[]>()
 
-  return makeSeasonPaths(data!)
-}
+//   return makeSeasonPaths(data!)
+// }
 
-export async function getStaticProps({ params }: GetStaticPropsContext) {
-  const seasonParam = params?.season as any
+export async function getServerSideProps(context: GetServerSidePropsContext) {
+  const seasonParam = context.params?.season as any
   const { data: totalPointsByConstructorByRace } = await supabase
     .rpc('total_points_by_constructor_by_race', { season: seasonParam })
     .select('*')
@@ -181,14 +181,14 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
   const { data: races } = await supabase
     .from('race')
     .select(raceColumns)
-    .eq('season.year', params?.season)
+    .eq('season.year', context.params?.season)
     .order('start_date', { ascending: true })
     .returns<RaceWithSeason[]>()
 
   const { data: constructors } = await supabase
     .from('constructor')
     .select(constructorColumns)
-    .eq('season.year', params?.season)
+    .eq('season.year', context.params?.season)
     .returns<ConstructorWithSeason[]>()
 
   const { data: standings } = await supabase

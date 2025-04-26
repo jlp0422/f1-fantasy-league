@@ -2,7 +2,7 @@ import { Season } from '@/types/Season'
 import ConstructorStandingRow from '@/components/ConstructorStandingRow'
 import Layout from '@/components/Layout'
 import { supabase } from '@/lib/database'
-import { GetStaticPropsContext } from 'next'
+import { GetServerSidePropsContext, GetStaticPropsContext } from 'next'
 import { makeSeasonPaths } from '@/helpers/routes'
 
 interface Standing {
@@ -39,15 +39,17 @@ const Standings = ({ standings }: Props) => {
   )
 }
 
-export async function getStaticPaths() {
-  const { data } = await supabase.from('season').select('*').returns<Season[]>()
+// export async function getStaticPaths() {
+//   const { data } = await supabase.from('season').select('*').returns<Season[]>()
 
-  return makeSeasonPaths(data!)
-}
+//   return makeSeasonPaths(data!)
+// }
 
-export async function getStaticProps({ params }: GetStaticPropsContext) {
+export async function getServerSideProps(context: GetServerSidePropsContext) {
   const { data: standings } = await supabase
-    .rpc('sum_constructor_points_by_season', { season: params?.season as any })
+    .rpc('sum_constructor_points_by_season', {
+      season: context.params?.season as any,
+    })
     .select('id, name, team_principal, total_points')
     .order('total_points', { ascending: false })
     .returns<Standing[]>()

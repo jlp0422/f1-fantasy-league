@@ -26,7 +26,7 @@ import {
   RaceWithSeason,
 } from '@/types/Unions'
 import hexRgb from 'hex-rgb'
-import { GetStaticPropsContext } from 'next'
+import { GetServerSidePropsContext, GetStaticPropsContext } from 'next'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useState } from 'react'
@@ -404,33 +404,35 @@ const Constructor = ({
   )
 }
 
-export async function getStaticPaths() {
-  const { data: constructors } = await supabase
-    .from('constructor')
-    .select(constructorColumns)
-    .returns<ConstructorWithSeason[]>()
+// export async function getStaticPaths() {
+//   const { data: constructors } = await supabase
+//     .from('constructor')
+//     .select(constructorColumns)
+//     .returns<ConstructorWithSeason[]>()
 
-  return {
-    paths: constructors!.map((constructor) => ({
-      params: {
-        name: encodeURIComponent(
-          `${constructor.id}-${normalizeConstructorName(constructor.name)}`
-        ),
-        season: constructor.season.year.toString(),
-      },
-    })),
-    fallback: false,
-  }
-}
+//   return {
+//     paths: constructors!.map((constructor) => ({
+//       params: {
+//         name: encodeURIComponent(
+//           `${constructor.id}-${normalizeConstructorName(constructor.name)}`
+//         ),
+//         season: constructor.season.year.toString(),
+//       },
+//     })),
+//     fallback: false,
+//   }
+// }
 
-export async function getStaticProps({ params }: GetStaticPropsContext) {
-  const constructorNameParam = decodeURIComponent(params?.name as string)
+export async function getServerSideProps(context: GetServerSidePropsContext) {
+  const constructorNameParam = decodeURIComponent(
+    context.params?.name as string
+  )
   const constructorId = constructorNameParam.split('-')[0]
 
   const { data: constructor } = await supabase
     .from('constructor')
     .select(constructorColumns)
-    .eq('season.year', params?.season)
+    .eq('season.year', context.params?.season)
     .eq('id', constructorId)
     .limit(1)
     .returns<ConstructorWithSeason[]>()
@@ -439,7 +441,7 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
   const { data: races } = await supabase
     .from('race')
     .select(raceColumns)
-    .eq('season.year', params?.season)
+    .eq('season.year', context.params?.season)
     .order('start_date', { ascending: true })
     .returns<Race[]>()
 
@@ -460,7 +462,7 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
       ),
       season!inner(year)`
     )
-    .eq('season.year', params?.season)
+    .eq('season.year', context.params?.season)
     .eq('constructor_id', constructorId)
     .limit(1)
     .returns<ConstructorDriverWithJoins>()
