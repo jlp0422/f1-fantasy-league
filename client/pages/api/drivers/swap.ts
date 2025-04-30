@@ -170,17 +170,17 @@ export default async function handler(
       throw new Error(error as any)
     }
 
-    const routesToRevalidate = [
-      `/${season}/drivers`,
-      `/${season}/drivers/${old_driver_id}`,
-      `/${season}/drivers/${new_driver_id}`,
-      `/${season}/swap-drivers`,
-      `/${season}/constructors/${
-        constructorDriver.constructor.id
-      }-${normalizeConstructorName(constructorDriver.constructor.name)}`,
-    ]
+    // const routesToRevalidate = [
+    //   `/${season}/drivers`,
+    //   `/${season}/drivers/${old_driver_id}`,
+    //   `/${season}/drivers/${new_driver_id}`,
+    //   `/${season}/swap-drivers`,
+    //   `/${season}/constructors/${
+    //     constructorDriver.constructor.id
+    //   }-${normalizeConstructorName(constructorDriver.constructor.name)}`,
+    // ]
 
-    await Promise.all(routesToRevalidate.map((route) => res.revalidate(route)))
+    // await Promise.all(routesToRevalidate.map((route) => res.revalidate(route)))
 
     return res.status(201).json({
       success: true,

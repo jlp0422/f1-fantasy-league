@@ -15,7 +15,6 @@ jobs:
           cache: 'pip' # caching pip dependencies
       - name: Update website data from fastf1 python package
         env:
-          REVALIDATE_TOKEN: ${{ secrets.REVALIDATE_TOKEN }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
           SEASON: 2025

@@ -1,18 +1,15 @@
-name: "Revalidate pages"
+name: "Ping database"
 on:
   workflow_dispatch:
   schedule:
     - cron: "0 10 * * THU"
 
 jobs:
-  revalidate-pages:
+  ping-database:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3.1.0
-      - name: Revalidate pages so Supabase doesn't shut down
-        env:
-          REVALIDATE_TOKEN: ${{ secrets.REVALIDATE_TOKEN }}
-          SEASON: 2025
+      - name: Ping database so Supabase doesn't shut down
         run: |
           yarn
-          node revalidate.js "$REVALIDATE_TOKEN" "$SEASON"
+          node revalidate.js

@@ -1,16 +1,15 @@
 import fetch from 'node-fetch'
 
-async function revalidate() {
-  const secret = process.argv[2] || process.env.REVALIDATE_TOKEN
-  const season = process.argv[3] || process.env.SEASON
+async function ping_database() {
   const response = await fetch(
-    `https://fate-of-the-eight.vercel.app/api/revalidate?secret=${secret}&season=${season}`
+    'https://fate-of-the-eight.vercel.app/api/get-seasons'
   )
+  const resp = await response.json()
   if (response.ok) {
-    console.log('revalidation response successful with code: ', response.status)
+    console.log(`pinged database successful: ${resp}`)
   } else {
-    console.log('revalidation response failed: ', response)
+    console.log(`pinged database failed: ${resp}`)
   }
 }
 
-revalidate()
+ping_database()
