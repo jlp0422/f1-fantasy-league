@@ -24,11 +24,11 @@ export default async function handler(
       return res
         .status(response.status)
         .json({ success: true, message: 'Retrieved seasons' })
-    } else {
-      return res
-        .status(response.status)
-        .send({ success: false, message: 'Error fetching seasons' })
     }
+
+    return res
+      .status(response.status)
+      .send({ success: false, message: 'Error fetching seasons' })
   } catch (err) {
     return res
       .status(500)
