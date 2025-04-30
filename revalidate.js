@@ -6,9 +6,9 @@ async function ping_database() {
   )
   const resp = await response.json()
   if (response.ok) {
-    console.log(`pinged database successful: ${resp}`)
+    console.log(`pinged database successful: ${resp.message}`)
   } else {
-    console.log(`pinged database failed: ${resp}`)
+    console.log(`pinged database failed: ${resp.message}`)
   }
 }
 
