@@ -223,7 +223,6 @@ def do_the_update():
         )
         print("Pinging database anyway...")
         return ping_database()
-        return
 
     session = fastf1.get_session(int(season), most_recent_event["Location"], "R")
     session.load()
@@ -298,7 +297,6 @@ def do_the_update():
     )
 
     if insert_rows.status_code == 201:
-        # ping_database()
         sg = sendgrid.SendGridAPIClient(api_key=sendgrid_api_key)
         mail = format_for_email(driver_id_by_driver_number, update_row_data, df)
         response = sg.client.mail.send.post(request_body=mail.get())
