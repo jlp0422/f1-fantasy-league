@@ -1,11 +1,10 @@
-import { Season } from '@/types/Season'
-import Layout from '@/components/Layout'
-import { supabase } from '@/lib/database'
-import { GetStaticPropsContext } from 'next'
-import { makeSeasonPaths } from '@/helpers/routes'
-import { constructorColumns } from '@/helpers/supabase'
-import { DraftSelectionWithDriverAndConstructor } from '@/types/Unions'
 import DraftSelectionRow from '@/components/DraftSelectionRow'
+import Layout from '@/components/Layout'
+import { constructorColumns } from '@/helpers/supabase'
+import { getSeasonParam } from '@/helpers/utils'
+import { supabase } from '@/lib/database'
+import { DraftSelectionWithDriverAndConstructor } from '@/types/Unions'
+import { GetServerSidePropsContext } from 'next'
 
 interface Props {
   draftSelections: DraftSelectionWithDriverAndConstructor[]
@@ -28,13 +27,7 @@ const Standings = ({ draftSelections }: Props) => {
   )
 }
 
-export async function getStaticPaths() {
-  const { data } = await supabase.from('season').select('*').returns<Season[]>()
-
-  return makeSeasonPaths(data!)
-}
-
-export async function getStaticProps({ params }: GetStaticPropsContext) {
+export async function getServerSideProps(context: GetServerSidePropsContext) {
   const { data: draftSelections } = await supabase
     .from('draft_selection')
     .select(
@@ -59,7 +52,7 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
       )
     `
     )
-    .eq('draft.season.year', params?.season)
+    .eq('draft.season.year', getSeasonParam(context))
     .order('pick_number', { ascending: true })
     .returns<DraftSelectionWithDriverAndConstructor[]>()
 

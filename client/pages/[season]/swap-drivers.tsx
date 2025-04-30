@@ -1,18 +1,16 @@
 import Layout from '@/components/Layout'
-import { makeSeasonPaths } from '@/helpers/routes'
 import { constructorColumns } from '@/helpers/supabase'
+import { getSeasonParam, makeName } from '@/helpers/utils'
 import { supabase } from '@/lib/database'
-import { Season } from '@/types/Season'
+import { Data } from '@/pages/api/drivers/swap'
 import {
   ConstructorDriverWithJoins,
   ConstructorWithSeason,
   DriverWithSeason,
 } from '@/types/Unions'
-import { GetStaticPropsContext } from 'next'
-import { Fragment, useState } from 'react'
-import { Data } from '@/pages/api/drivers/swap'
+import { GetServerSidePropsContext } from 'next'
 import { useRouter } from 'next/router'
-import { makeName } from '@/helpers/utils'
+import { Fragment, useState } from 'react'
 
 interface Props {
   constructors: ConstructorWithSeason[]
@@ -133,17 +131,12 @@ const SwapDrivers = ({
   )
 }
 
-export async function getStaticPaths() {
-  const { data } = await supabase.from('season').select('*').returns<Season[]>()
-
-  return makeSeasonPaths(data!)
-}
-
-export async function getStaticProps({ params }: GetStaticPropsContext) {
+export async function getServerSideProps(context: GetServerSidePropsContext) {
+  const season = getSeasonParam(context)
   const { data: constructors } = await supabase
     .from('constructor')
     .select(constructorColumns)
-    .eq('season.year', params?.season)
+    .eq('season.year', season)
     .order('name', { ascending: true })
     .returns<ConstructorWithSeason[]>()
 
@@ -165,7 +158,7 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
         constructor_id,
         season!inner(year)`
     )
-    .eq('season.year', params?.season)
+    .eq('season.year', season)
     .returns<ConstructorDriverWithJoins[]>()
 
   const { data: allDrivers } = await supabase
@@ -178,7 +171,7 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
         is_full_time,
         season!inner(year)`
     )
-    .eq('season.year', params?.season)
+    .eq('season.year', season)
     .order('last_name', { ascending: true })
     .returns<DriverWithSeason[]>()
 

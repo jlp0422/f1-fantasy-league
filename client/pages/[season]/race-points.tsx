@@ -1,9 +1,8 @@
 import Layout from '@/components/Layout'
 import RacePointsChart from '@/components/RacePointsChart'
 import RacePointsTable from '@/components/RacePointsTable'
-import { makeSeasonPaths } from '@/helpers/routes'
 import { constructorColumns, raceColumns } from '@/helpers/supabase'
-import { indexBy, sortAlpha, sortArray } from '@/helpers/utils'
+import { getSeasonParam, indexBy, sortAlpha, sortArray } from '@/helpers/utils'
 import { supabase } from '@/lib/database'
 import {
   ConstructorTotalPoints,
@@ -11,9 +10,8 @@ import {
   GenericObject,
   IndexedRacePoints,
 } from '@/types/Common'
-import { Season } from '@/types/Season'
 import { ConstructorWithSeason, RaceWithSeason } from '@/types/Unions'
-import { GetStaticPropsContext } from 'next'
+import { GetServerSidePropsContext } from 'next'
 import { useState } from 'react'
 
 interface TotalPointsByConstructorByRace {
@@ -141,14 +139,8 @@ const RacePoints = ({
   )
 }
 
-export async function getStaticPaths() {
-  const { data } = await supabase.from('season').select('*').returns<Season[]>()
-
-  return makeSeasonPaths(data!)
-}
-
-export async function getStaticProps({ params }: GetStaticPropsContext) {
-  const seasonParam = params?.season as any
+export async function getServerSideProps(context: GetServerSidePropsContext) {
+  const seasonParam = getSeasonParam(context)
   const { data: totalPointsByConstructorByRace } = await supabase
     .rpc('total_points_by_constructor_by_race', { season: seasonParam })
     .select('*')
@@ -181,14 +173,14 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
   const { data: races } = await supabase
     .from('race')
     .select(raceColumns)
-    .eq('season.year', params?.season)
+    .eq('season.year', seasonParam)
     .order('start_date', { ascending: true })
     .returns<RaceWithSeason[]>()
 
   const { data: constructors } = await supabase
     .from('constructor')
     .select(constructorColumns)
-    .eq('season.year', params?.season)
+    .eq('season.year', seasonParam)
     .returns<ConstructorWithSeason[]>()
 
   const { data: standings } = await supabase

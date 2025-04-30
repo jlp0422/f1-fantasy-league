@@ -1,5 +1,6 @@
 import { GenericObject } from '@/types/Common'
 import { Driver } from '@/types/Driver'
+import { GetServerSidePropsContext } from 'next'
 
 export const toNum = (stringNumber: string) => +stringNumber
 
@@ -41,3 +42,19 @@ export const ordinal = (num: number) => {
   }
   return num + 'th'
 }
+
+const getParam = (param: string) => (context: GetServerSidePropsContext) => {
+  const { params } = context
+  if (!params) {
+    throw new Error('No params found')
+  }
+  const { [param]: paramValue } = params
+  if (!paramValue) {
+    throw new Error(`No ${param} found`)
+  }
+  return paramValue as any
+}
+
+export const getSeasonParam = getParam('season')
+export const getIdParam = getParam('id')
+export const getNameParam = getParam('name')

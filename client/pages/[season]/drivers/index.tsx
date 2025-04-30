@@ -1,19 +1,17 @@
 import Arrow from '@/components/icons/Arrow'
 import Layout from '@/components/Layout'
 import Toggle from '@/components/Toggle'
-import { makeSeasonPaths } from '@/helpers/routes'
 import { driverRaceResultColumns, raceColumns } from '@/helpers/supabase'
-import { makeName, sortArray, toNum } from '@/helpers/utils'
+import { getSeasonParam, makeName, sortArray, toNum } from '@/helpers/utils'
 import { supabase } from '@/lib/database'
 import { Driver as DriverType } from '@/types/Driver'
 import { DriverRaceResult } from '@/types/DriverRaceResult'
-import { Season } from '@/types/Season'
 import {
   ConstructorDriverWithJoins,
   DriverRaceResultWithJoins,
   RaceWithSeason,
 } from '@/types/Unions'
-import { GetStaticPropsContext } from 'next'
+import { GetServerSidePropsContext } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
@@ -190,24 +188,19 @@ const DriversPage = ({ races, driverRaceResults }: Props) => {
   )
 }
 
-export async function getStaticPaths() {
-  const { data } = await supabase.from('season').select('*').returns<Season[]>()
-
-  return makeSeasonPaths(data!)
-}
-
-export async function getStaticProps({ params }: GetStaticPropsContext) {
+export async function getServerSideProps(context: GetServerSidePropsContext) {
+  const season = getSeasonParam(context)
   const { data: races } = await supabase
     .from('race')
     .select(raceColumns)
-    .eq('season.year', params?.season)
+    .eq('season.year', season)
     .order('start_date', { ascending: true })
     .returns<RaceWithSeason[]>()
 
   const { data: raceResults } = await supabase
     .from('driver_race_result')
     .select(driverRaceResultColumns)
-    .eq('race.season.year', params?.season)
+    .eq('race.season.year', season)
     .order('start_date', { ascending: true, foreignTable: 'race' })
     .returns<DriverRaceResultWithJoins[]>()
 
@@ -224,7 +217,7 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
       ),
       season!inner(year)`
     )
-    .eq('season.year', params?.season)
+    .eq('season.year', season)
     .returns<ConstructorDriverWithJoins[]>()
 
   const constructorByDriverId = currentDrivers!.reduce(
