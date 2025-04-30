@@ -9,11 +9,6 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>
 ) {
-  // Check for secret to confirm this is a valid request
-  if (req.query.secret !== process.env.REVALIDATE_TOKEN) {
-    return res.status(401).json({ success: false, message: 'Invalid token' })
-  }
-
   try {
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/season`,
