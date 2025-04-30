@@ -30,7 +30,6 @@ points_map = {
     "20.0": 1,
 }
 
-revalidate_token = os.environ["REVALIDATE_TOKEN"]
 api_key = os.environ["SUPABASE_SERVICE_ROLE_KEY"]
 sendgrid_api_key = os.environ["SENDGRID_API_KEY"]
 season = os.environ["SEASON"]
@@ -108,17 +107,17 @@ def get_constructor_id_by_driver_id(season_id):
     return constructor_id_by_driver_id
 
 
-def revalidate_pages():
-    revalidate_response = requests.request(
+def ping_database():
+    ping_db_response = requests.request(
         GET,
-        f"https://fate-of-the-eight.vercel.app/api/revalidate?secret={revalidate_token}&season={season}",
+        f"https://fate-of-the-eight.vercel.app/api/get-seasons",
         timeout=60
     )
-    if revalidate_response.ok:
-        print("Revalidation successful!")
+    if ping_db_response.ok:
+        print("Ping database successful!")
     else:
         print(
-            f"Revalidation failed. Reason={revalidate_response.reason}, Error={revalidate_response.raise_for_status()}"
+            f"Ping database failed. Reason={ping_db_response.reason}, Error={ping_db_response.raise_for_status()}"
         )
 
 
@@ -222,8 +221,8 @@ def do_the_update():
         print(
             f"Found existing data for Race: {most_recent_event_name} (ID: {most_recent_race_id}), no update needed..."
         )
-        print("Revalidating anyway...")
-        return revalidate_pages()
+        print("Pinging database anyway...")
+        return ping_database()
 
     session = fastf1.get_session(int(season), most_recent_event["Location"], "R")
     session.load()
@@ -298,7 +297,6 @@ def do_the_update():
     )
 
     if insert_rows.status_code == 201:
-        revalidate_pages()
         sg = sendgrid.SendGridAPIClient(api_key=sendgrid_api_key)
         mail = format_for_email(driver_id_by_driver_number, update_row_data, df)
         response = sg.client.mail.send.post(request_body=mail.get())
