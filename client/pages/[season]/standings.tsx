@@ -38,11 +38,12 @@ const Standings = ({ standings }: Props) => {
 }
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
-  const commitSha = process.env.VERCEL_GIT_COMMIT_SHA
-  const deploymentId = process.env.VERCEL_DEPLOYMENT_ID
-  const eTagValue = commitSha + '_' + deploymentId
+  // const commitSha = process.env.VERCEL_GIT_COMMIT_SHA
+  // const deploymentId = process.env.VERCEL_DEPLOYMENT_ID
+  // const eTagValue = commitSha + '-' + deploymentId
 
-  context.res.setHeader('ETag', '"' + eTagValue + '"')
+  // not working :shrug:
+  // context.res.setHeader('ETag', '"' + eTagValue + '"')
 
   const { data: standings } = await supabase
     .rpc('sum_constructor_points_by_season', {
