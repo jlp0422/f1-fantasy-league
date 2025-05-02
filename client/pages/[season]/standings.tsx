@@ -28,7 +28,6 @@ const Standings = ({ standings }: Props) => {
             key={id}
             teamPrincipal={team_principal}
             points={total_points}
-            // this makes no sense
             constructor={name as any}
             id={id}
           />
@@ -39,6 +38,12 @@ const Standings = ({ standings }: Props) => {
 }
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
+  const commitSha = process.env.VERCEL_GIT_COMMIT_SHA
+  const deploymentId = process.env.VERCEL_DEPLOYMENT_ID
+  const eTagValue = commitSha + '_' + deploymentId
+
+  context.res.setHeader('ETag', '"' + eTagValue + '"')
+
   const { data: standings } = await supabase
     .rpc('sum_constructor_points_by_season', {
       season: getSeasonParam(context),
@@ -46,14 +51,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     .select('id, name, team_principal, total_points')
     .order('total_points', { ascending: false })
     .returns<Standing[]>()
-
-  console.log('VERCEL_DEPLOYMENT_ID: ', process.env.VERCEL_DEPLOYMENT_ID)
-  console.log('VERCEL_GIT_COMMIT_SHA: ', process.env.VERCEL_GIT_COMMIT_SHA)
-
-  // context.res.setHeader(
-  //   'Expires',
-  //   'public, s-maxage=10, stale-while-revalidate=59'
-  // )
 
   return {
     props: {
