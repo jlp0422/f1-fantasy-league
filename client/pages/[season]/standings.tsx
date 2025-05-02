@@ -49,7 +49,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   console.log('VERCEL_DEPLOYMENT_ID: ', process.env.VERCEL_DEPLOYMENT_ID)
   console.log('VERCEL_GIT_COMMIT_SHA: ', process.env.VERCEL_GIT_COMMIT_SHA)
-  console.log('VERCEL_GIT_COMMIT_REF: ', process.env.VERCEL_GIT_COMMIT_REF)
 
   // context.res.setHeader(
   //   'Expires',
