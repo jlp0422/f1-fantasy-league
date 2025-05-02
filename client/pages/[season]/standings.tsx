@@ -47,6 +47,15 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     .order('total_points', { ascending: false })
     .returns<Standing[]>()
 
+  console.log('VERCEL_DEPLOYMENT_ID: ', process.env.VERCEL_DEPLOYMENT_ID)
+  console.log('VERCEL_GIT_COMMIT_SHA: ', process.env.VERCEL_GIT_COMMIT_SHA)
+  console.log('VERCEL_GIT_COMMIT_REF: ', process.env.VERCEL_GIT_COMMIT_REF)
+
+  // context.res.setHeader(
+  //   'Expires',
+  //   'public, s-maxage=10, stale-while-revalidate=59'
+  // )
+
   return {
     props: {
       standings,
