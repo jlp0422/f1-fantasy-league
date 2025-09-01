@@ -198,11 +198,12 @@ def format_for_email(driver_id_by_driver_number, update_row_data, df):
             string
             + f'{int(grid_pos) if int(grid_pos) > 0 else "Pit Lane (20th)"}) {driver_abbrev}\n'
         )
-    from_email = Email("f1fantasy2022@em5638.m.jeremyphilipson.com")
-    to_email = To("jeremyphilipson@gmail.com")
-    subject = "Race Standings Update"
-    content = Content("text/plain", string)
-    return Mail(from_email, to_email, subject, content)
+    # from_email = Email("f1fantasy2022@em5638.m.jeremyphilipson.com")
+    # to_email = To("jeremyphilipson@gmail.com")
+    # subject = "Race Standings Update"
+    # content = Content("text/plain", string)
+    return string
+    # return Mail(from_email, to_email, subject, content)
 
 
 def do_the_update():
@@ -297,12 +298,14 @@ def do_the_update():
     )
 
     if insert_rows.status_code == 201:
-        sg = sendgrid.SendGridAPIClient(api_key=sendgrid_api_key)
-        mail = format_for_email(driver_id_by_driver_number, update_row_data, df)
-        response = sg.client.mail.send.post(request_body=mail.get())
-        print(
-            f"SG status_code={response.status_code}, body={response.body}, headers={response.headers}"
-        )
+        driver_updates = format_for_email(driver_id_by_driver_number, update_row_data, df)
+        print("Row insertion successful, data is:")
+        print(driver_updates)
+        # sg = sendgrid.SendGridAPIClient(api_key=sendgrid_api_key)
+        # response = sg.client.mail.send.post(request_body=mail.get())
+        # print(
+        #     f"SG status_code={response.status_code}, body={response.body}, headers={response.headers}"
+        # )
     else:
         print(
             f"Row insertion failed. Reason={insert_rows.reason}, Error={insert_rows.raise_for_status()}"
