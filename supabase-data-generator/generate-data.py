@@ -31,7 +31,7 @@ points_map = {
 }
 
 api_key = os.environ["SUPABASE_SERVICE_ROLE_KEY"]
-sendgrid_api_key = os.environ["SENDGRID_API_KEY_2"]
+sendgrid_api_key = os.environ["SENDGRID_API_KEY"]
 season = os.environ["SEASON"]
 api_base_url = "https://agvtgmdvbvjnmlooagll.supabase.co/rest/v1"
 get_headers = {"apikey": api_key, "Authorization": f"Bearer {api_key}"}

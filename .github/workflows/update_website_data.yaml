@@ -16,7 +16,7 @@ jobs:
       - name: Update website data from fastf1 python package
         env:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-          SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
+          SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY_2 }}
           SEASON: 2025
         run: |
           pip install -r supabase-data-generator/requirements.txt
