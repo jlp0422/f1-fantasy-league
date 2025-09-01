@@ -31,7 +31,7 @@ points_map = {
 }
 
 api_key = os.environ["SUPABASE_SERVICE_ROLE_KEY"]
-sendgrid_api_key = os.environ["SENDGRID_API_KEY"]
+sendgrid_api_key = os.environ["SENDGRID_API_KEY_2"]
 season = os.environ["SEASON"]
 api_base_url = "https://agvtgmdvbvjnmlooagll.supabase.co/rest/v1"
 get_headers = {"apikey": api_key, "Authorization": f"Bearer {api_key}"}
@@ -217,12 +217,12 @@ def do_the_update():
     most_recent_race_id = race_ids_by_race_name[most_recent_event_name]
     existing_data = get_existing_race_data(most_recent_race_id)
 
-    if len(existing_data) > 0:
-        print(
-            f"Found existing data for Race: {most_recent_event_name} (ID: {most_recent_race_id}), no update needed..."
-        )
-        print("Pinging database anyway...")
-        return ping_database()
+    # if len(existing_data) > 0:
+    #     print(
+    #         f"Found existing data for Race: {most_recent_event_name} (ID: {most_recent_race_id}), no update needed..."
+    #     )
+    #     print("Pinging database anyway...")
+    #     return ping_database()
 
     session = fastf1.get_session(int(season), most_recent_event["Location"], "R")
     session.load()
@@ -289,14 +289,16 @@ def do_the_update():
     update_row_data = get_data_to_update_rows(df, most_recent_race_id)
     print(f"Updating rows with data={update_row_data}")
 
-    insert_rows = requests.request(
-        POST,
-        f"{api_base_url}/driver_race_result",
-        headers=post_headers,
-        data=json.dumps(update_row_data),
-    )
+    success = True
+    # insert_rows = requests.request(
+    #     POST,
+    #     f"{api_base_url}/driver_race_result",
+    #     headers=post_headers,
+    #     data=json.dumps(update_row_data),
+    # )
 
-    if insert_rows.status_code == 201:
+    # if insert_rows.status_code == 201:
+    if success:
         sg = sendgrid.SendGridAPIClient(api_key=sendgrid_api_key)
         mail = format_for_email(driver_id_by_driver_number, update_row_data, df)
         response = sg.client.mail.send.post(request_body=mail.get())
