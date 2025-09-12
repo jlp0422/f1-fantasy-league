@@ -1,12 +1,9 @@
-import logging
 import requests
 import fastf1
 import pandas as pd
 import os
 from datetime import datetime
 import json
-import sendgrid
-from sendgrid.helpers.mail import To, Email, Content, Mail
 
 points_map = {
     "1.0": 20,
@@ -310,7 +307,7 @@ def do_the_update():
                                        "to": TO_EMAIL_ADDRESS, "subject": EMAIL_SUBJECT, "text": driver_updates})
             if resp.status_code == 200:
                 print(f"Successfully sent an email to '{TO_EMAIL_ADDRESS}' via Mailgun API.")
-            else:  # error
+            else:
                 print(f"Could not send the email, reason: {resp.text}")
 
         except Exception as e:
@@ -320,33 +317,4 @@ def do_the_update():
             f"Row insertion failed. Reason={insert_rows.reason}, Error={insert_rows.raise_for_status()}"
         )
 
-
-def send_mailgun():
-    try:
-        resp = requests.post(MAILGUN_API_URL, auth=("api", mg_api_key),
-                                 data={"from": FROM_EMAIL_ADDRESS,
-                                       "to": TO_EMAIL_ADDRESS, "subject": EMAIL_SUBJECT, "text": "testing send from mg using api key"})
-        if resp.status_code == 200:
-            print(f"Successfully sent an email to '{TO_EMAIL_ADDRESS}' via Mailgun API.")
-        else:  # error
-            print(f"Could not send the email, reason: {resp.text}")
-
-    except Exception as e:
-        print(f"Error sending email: {e}")
-
-    try:
-        resp = requests.post(MAILGUN_API_URL, auth=("api", mg_sending_api_key),
-                                 data={"from": FROM_EMAIL_ADDRESS,
-                                       "to": TO_EMAIL_ADDRESS, "subject": EMAIL_SUBJECT, "text": "testing send from mg using sending api key"})
-        if resp.status_code == 200:
-            print(f"Successfully sent an email to '{TO_EMAIL_ADDRESS}' via Mailgun API.")
-        else:  # error
-            print(f"Could not send the email, reason: {resp.text}")
-
-    except Exception as e:
-        print(f"Error sending email: {e}")
-
-
-# do_the_update()
-
-send_mailgun()
+do_the_update()
