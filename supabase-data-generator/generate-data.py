@@ -325,7 +325,19 @@ def send_mailgun():
     try:
         resp = requests.post(MAILGUN_API_URL, auth=("api", mg_api_key),
                                  data={"from": FROM_EMAIL_ADDRESS,
-                                       "to": TO_EMAIL_ADDRESS, "subject": EMAIL_SUBJECT, "text": "testing send from mg"})
+                                       "to": TO_EMAIL_ADDRESS, "subject": EMAIL_SUBJECT, "text": "testing send from mg using api key"})
+        if resp.status_code == 200:
+            print(f"Successfully sent an email to '{TO_EMAIL_ADDRESS}' via Mailgun API.")
+        else:  # error
+            print(f"Could not send the email, reason: {resp.text}")
+
+    except Exception as e:
+        print(f"Error sending email: {e}")
+
+    try:
+        resp = requests.post(MAILGUN_API_URL, auth=("api", mg_sending_api_key),
+                                 data={"from": FROM_EMAIL_ADDRESS,
+                                       "to": TO_EMAIL_ADDRESS, "subject": EMAIL_SUBJECT, "text": "testing send from mg using sending api key"})
         if resp.status_code == 200:
             print(f"Successfully sent an email to '{TO_EMAIL_ADDRESS}' via Mailgun API.")
         else:  # error
