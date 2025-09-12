@@ -4,8 +4,6 @@ import pandas as pd
 import os
 from datetime import datetime
 import json
-import sendgrid
-from sendgrid.helpers.mail import To, Email, Content, Mail
 
 points_map = {
     "1.0": 20,
@@ -31,7 +29,7 @@ points_map = {
 }
 
 api_key = os.environ["SUPABASE_SERVICE_ROLE_KEY"]
-sendgrid_api_key = os.environ["SENDGRID_API_KEY"]
+mg_api_key = os.environ["MG_API_KEY"]
 season = os.environ["SEASON"]
 api_base_url = "https://agvtgmdvbvjnmlooagll.supabase.co/rest/v1"
 get_headers = {"apikey": api_key, "Authorization": f"Bearer {api_key}"}
@@ -39,6 +37,11 @@ post_headers = get_headers.copy()
 post_headers["Content-Type"] = "application/json"
 GET = "GET"
 POST = "POST"
+
+MAILGUN_API_URL = "https://api.mailgun.net/v3/mail.jeremyphilipson.com/messages"
+FROM_EMAIL_ADDRESS = "JLP Mailgun <postmaster@mail.jeremyphilipson.com>"
+TO_EMAIL_ADDRESS = "jeremyphilipson@gmail.com"
+EMAIL_SUBJECT = "Race Standings Update"
 
 
 def get_race_ids_by_race_name(season_id):
@@ -198,12 +201,7 @@ def format_for_email(driver_id_by_driver_number, update_row_data, df):
             string
             + f'{int(grid_pos) if int(grid_pos) > 0 else "Pit Lane (20th)"}) {driver_abbrev}\n'
         )
-    # from_email = Email("f1fantasy2022@em5638.m.jeremyphilipson.com")
-    # to_email = To("jeremyphilipson@gmail.com")
-    # subject = "Race Standings Update"
-    # content = Content("text/plain", string)
     return string
-    # return Mail(from_email, to_email, subject, content)
 
 
 def do_the_update():
@@ -301,15 +299,21 @@ def do_the_update():
         driver_updates = format_for_email(driver_id_by_driver_number, update_row_data, df)
         print("Row insertion successful, data is:")
         print(driver_updates)
-        # sg = sendgrid.SendGridAPIClient(api_key=sendgrid_api_key)
-        # response = sg.client.mail.send.post(request_body=mail.get())
-        # print(
-        #     f"SG status_code={response.status_code}, body={response.body}, headers={response.headers}"
-        # )
+
+        try:
+            resp = requests.post(MAILGUN_API_URL, auth=("api", mg_api_key),
+                                 data={"from": FROM_EMAIL_ADDRESS,
+                                       "to": TO_EMAIL_ADDRESS, "subject": EMAIL_SUBJECT, "text": driver_updates})
+            if resp.status_code == 200:
+                print(f"Successfully sent an email to '{TO_EMAIL_ADDRESS}' via Mailgun API.")
+            else:
+                print(f"Could not send the email, reason: {resp.text}")
+
+        except Exception as e:
+            print(f"Error sending email: {e}")
     else:
         print(
             f"Row insertion failed. Reason={insert_rows.reason}, Error={insert_rows.raise_for_status()}"
         )
-
 
 do_the_update()
