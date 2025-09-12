@@ -30,7 +30,6 @@ points_map = {
 
 api_key = os.environ["SUPABASE_SERVICE_ROLE_KEY"]
 mg_api_key = os.environ["MG_API_KEY"]
-mg_sending_api_key = os.environ["MG_SENDING_API_KEY"]
 season = os.environ["SEASON"]
 api_base_url = "https://agvtgmdvbvjnmlooagll.supabase.co/rest/v1"
 get_headers = {"apikey": api_key, "Authorization": f"Bearer {api_key}"}
