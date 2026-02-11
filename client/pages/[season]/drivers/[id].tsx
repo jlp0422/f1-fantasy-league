@@ -14,9 +14,8 @@ import { Race } from '@/types/Race'
 import {
   ConstructorDriverWithJoins,
   DriverRaceResultWithJoins,
-  DriverWithSeason,
 } from '@/types/Unions'
-import { GetServerSidePropsContext, GetStaticPropsContext } from 'next'
+import { GetServerSidePropsContext } from 'next'
 import Image from 'next/image'
 import { useRouter } from 'next/router'
 import { useState } from 'react'
