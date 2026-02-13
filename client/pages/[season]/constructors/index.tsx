@@ -23,10 +23,6 @@ const ConstructorsPage = ({ constructors }: Props) => {
   const { query } = useRouter()
   const season = query.season as string
   const hasImages = HAS_IMAGES_BY_SEASON[season]
-  console.log(
-    'Constructors:',
-    constructors.map((c) => c.name).map(normalizeConstructorName)
-  )
   return (
     <Layout documentTitle='Constructors'>
       <div className='grid grid-cols-1 gap-y-8 gap-x-4 justify-items-center sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'>
