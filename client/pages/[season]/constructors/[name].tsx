@@ -149,7 +149,7 @@ const Constructor = ({
         label='Detailed Points'
         checked={showDetail}
         onChange={() => setShowDetail((current) => !current)}
-        className='mt-2 sm:mt-10'
+        className='mt-2 sm:mt-10 text-gray-900'
       />
 
       {/* mobile points table */}

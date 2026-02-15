@@ -71,7 +71,7 @@ const DriversPage = ({ races, driverRaceResults }: Props) => {
           label='Detailed Points'
           checked={showDetail}
           onChange={() => setShowDetail((current) => !current)}
-          className='mb-1'
+          className='mb-1 text-gray-900'
         />
         <div className='relative overflow-x-auto overflow-y-hidden rounded-lg'>
           <table className='w-full text-base text-left text-gray-300 uppercase bg-gray-800 font-secondary'>

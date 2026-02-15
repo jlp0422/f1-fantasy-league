@@ -7,6 +7,13 @@ export const normalizeConstructorName = (constructor: string) =>
     .join('-')
     .replace(/[^\w-]/g, '')
 
+export const normalizeRaceLocation = (location: string) =>
+  location
+    .toLowerCase()
+    .split(' ')
+    .join('-')
+    .replace(/[^\w-]/g, '')
+
 const keyStr =
   'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/='
 
@@ -41,6 +48,17 @@ export const getCloudinaryNumberUrl = (
   const baseUrl = 'https://res.cloudinary.com/jlp0422/image/upload'
   const path = `/v1677193392/f1-fantasy-league/${season}/numbers`
   return `${baseUrl}${resize}${path}/${constructorName}.${format}`
+}
+
+export const getCloudinaryCircuitUrl = (
+  location: string,
+  season: string,
+  { format = 'jpg', resize = '' }: CloudinaryOptions = {}
+) => {
+  const baseUrl = 'https://res.cloudinary.com/jlp0422/image/upload'
+  const path = `/v1677193400/f1-fantasy-league/${season}/circuits`
+  const normalizedLocation = normalizeRaceLocation(location)
+  return `${baseUrl}${resize}${path}/${normalizedLocation}.${format}`
 }
 
 export const SIZES = {

@@ -58,3 +58,4 @@ const getParam = (param: string) => (context: GetServerSidePropsContext) => {
 export const getSeasonParam = getParam('season')
 export const getIdParam = getParam('id')
 export const getNameParam = getParam('name')
+export const getLocationParam = getParam('location')
