@@ -53,6 +53,17 @@ interface Props {
 
 const TABS = ['teams', 'drivers'] as const
 
+const getGradient = (location: string) => {
+  let hash = 0
+  for (let i = 0; i < location.length; i++) {
+    hash = location.charCodeAt(i) + ((hash << 5) - hash)
+  }
+  const hue1 = Math.abs(hash % 360)
+  const hue2 = (hue1 + 40) % 360
+  const hue3 = (hue1 + 80) % 360
+  return `linear-gradient(135deg, hsl(${hue1}, 45%, 25%) 0%, hsl(${hue2}, 40%, 20%) 50%, hsl(${hue3}, 45%, 22%) 100%)`
+}
+
 const formatDate = (dateString: string) => {
   const date = new Date(dateString)
   return date.toLocaleDateString('en-US', {
@@ -282,8 +293,7 @@ const RaceDetail = ({ race, teamStandings, driverStandings }: Props) => {
       <div
         className='w-screen absolute h-60 sm:h-96 left-0 top-[64px] sm:top-[72px]'
         style={{
-          background:
-            'linear-gradient(135deg, #1e3a5f 0%, #2d1b4e 50%, #4a1942 100%)',
+          background: getGradient(race.location),
         }}
       />
 
