@@ -1,5 +1,6 @@
 import Layout from '@/components/Layout'
 import Toggle from '@/components/Toggle'
+import Arrow from '@/components/icons/Arrow'
 import ConstructorLink from '@/components/ConstructorLink'
 import CarNumber from '@/components/CarNumber'
 import { COLORS_BY_CONSTRUCTOR } from '@/constants/index'
@@ -62,11 +63,37 @@ const formatDate = (dateString: string) => {
   })
 }
 
+type SortKey =
+  | 'total_points'
+  | 'finish_position_points'
+  | 'grid_difference_points'
+
 const RaceDetail = ({ race, teamStandings, driverStandings }: Props) => {
   const { query } = useRouter()
   const season = query.season as string
   const [activeTab, setActiveTab] = useState<string>('teams')
   const [showDetail, setShowDetail] = useState<boolean>(false)
+  const [sortBy, setSortBy] = useState<SortKey>('total_points')
+
+  const sortedTeams = sortArray(
+    teamStandings,
+    (a: TeamStanding, b: TeamStanding) => b[sortBy] - a[sortBy]
+  )
+
+  const sortedDrivers = sortArray(
+    driverStandings,
+    (a: DriverStanding, b: DriverStanding) => b[sortBy] - a[sortBy]
+  )
+
+  const renderSortButton = (label: string, key: SortKey) => (
+    <button
+      className='flex gap-0.5 uppercase items-center justify-center w-full'
+      onClick={() => setSortBy(key)}
+    >
+      {label}
+      {sortBy === key ? <Arrow /> : null}
+    </button>
+  )
 
   const renderTeamsTable = () => (
     <div className='relative mb-4 overflow-x-auto rounded-lg shadow-md'>
@@ -83,20 +110,22 @@ const RaceDetail = ({ race, teamStandings, driverStandings }: Props) => {
               scope='col'
               className='px-3 py-3 font-normal text-center sm:px-6'
             >
-              {showDetail ? 'Finish Pts' : 'Points'}
+              {showDetail
+                ? renderSortButton('Finish Pts', 'finish_position_points')
+                : renderSortButton('Points', 'total_points')}
             </th>
             {showDetail && (
               <th
                 scope='col'
                 className='px-3 py-3 font-normal text-center sm:px-6'
               >
-                Grid Pts
+                {renderSortButton('Grid Pts', 'grid_difference_points')}
               </th>
             )}
           </tr>
         </thead>
         <tbody>
-          {teamStandings.map((team, index) => {
+          {sortedTeams.map((team, index) => {
             const normalized = normalizeConstructorName(team.constructor_name)
             const { numberBackground } =
               COLORS_BY_CONSTRUCTOR[season]?.[normalized] || {}
@@ -168,20 +197,22 @@ const RaceDetail = ({ race, teamStandings, driverStandings }: Props) => {
               scope='col'
               className='px-3 py-3 font-normal text-center sm:px-6'
             >
-              {showDetail ? 'Finish Pts' : 'Points'}
+              {showDetail
+                ? renderSortButton('Finish Pts', 'finish_position_points')
+                : renderSortButton('Points', 'total_points')}
             </th>
             {showDetail && (
               <th
                 scope='col'
                 className='px-3 py-3 font-normal text-center sm:px-6'
               >
-                Grid Pts
+                {renderSortButton('Grid Pts', 'grid_difference_points')}
               </th>
             )}
           </tr>
         </thead>
         <tbody>
-          {driverStandings.map((driver, index) => {
+          {sortedDrivers.map((driver, index) => {
             const normalized = driver.constructor_name
               ? normalizeConstructorName(driver.constructor_name)
               : null
@@ -289,7 +320,12 @@ const RaceDetail = ({ race, teamStandings, driverStandings }: Props) => {
         <Toggle
           label='Detailed Points'
           checked={showDetail}
-          onChange={() => setShowDetail((current) => !current)}
+          onChange={() => {
+            setShowDetail((current) => {
+              if (current) setSortBy('total_points')
+              return !current
+            })
+          }}
           className='text-gray-200'
         />
       </div>
