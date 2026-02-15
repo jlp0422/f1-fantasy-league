@@ -280,7 +280,7 @@ const RaceDetail = ({ race, teamStandings, driverStandings }: Props) => {
     >
       {/* Race header */}
       <div
-        className='w-screen absolute h-48 sm:h-80 left-0 top-[64px] sm:top-[72px]'
+        className='w-screen absolute h-60 sm:h-96 left-0 top-[64px] sm:top-[72px]'
         style={{
           background:
             'linear-gradient(135deg, #1e3a5f 0%, #2d1b4e 50%, #4a1942 100%)',
