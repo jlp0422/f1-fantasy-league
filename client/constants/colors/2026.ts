@@ -1,0 +1,58 @@
+export const colors_2026 = {
+  'elizabeth-greif': {
+    numberBackground: '#1a1a2e',
+    numberText: '#eeeeff',
+    primary: '#16213e',
+    secondary: '#0f3460',
+    tertiary: '#e94560',
+  },
+  'mckenzie-collins': {
+    numberBackground: '#ff6b6b',
+    numberText: '#fef9ef',
+    primary: '#ee5a6f',
+    secondary: '#c44569',
+    tertiary: '#f4e2d8',
+  },
+  'david-ehrlich': {
+    numberBackground: '#2d4059',
+    numberText: '#ffd460',
+    primary: '#ea5455',
+    secondary: '#ffd460',
+    tertiary: '#f07b3f',
+  },
+  'andrew-greif': {
+    numberBackground: '#06d6a0',
+    numberText: '#073b4c',
+    primary: '#118ab2',
+    secondary: '#06d6a0',
+    tertiary: '#ffd166',
+  },
+  'steve-collins': {
+    numberBackground: '#f4f1bb',
+    numberText: '#2d3142',
+    primary: '#9f86c0',
+    secondary: '#e0b1cb',
+    tertiary: '#5e548e',
+  },
+  'jeremy-philipson': {
+    numberBackground: '#0b132b',
+    numberText: '#f4d35e',
+    primary: '#1c2541',
+    secondary: '#3a506b',
+    tertiary: '#ee964b',
+  },
+  'emily-ehrlich': {
+    numberBackground: '#f72585',
+    numberText: '#f0f3bd',
+    primary: '#b5179e',
+    secondary: '#7209b7',
+    tertiary: '#4cc9f0',
+  },
+  'carolyn-philipson': {
+    numberBackground: '#d8f3dc',
+    numberText: '#1b4332',
+    primary: '#52b788',
+    secondary: '#95d5b2',
+    tertiary: '#2d6a4f',
+  },
+}

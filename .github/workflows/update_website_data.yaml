@@ -17,7 +17,7 @@ jobs:
         env:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           MG_API_KEY: ${{ secrets.MG_API_KEY }}
-          SEASON: 2025
+          SEASON: 2026
         run: |
           pip install -r supabase-data-generator/requirements.txt
           python supabase-data-generator/generate-data.py
