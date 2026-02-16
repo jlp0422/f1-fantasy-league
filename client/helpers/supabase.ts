@@ -1,11 +1,12 @@
 export const raceColumns =
-  'id, location, country, start_date, season!inner(year)'
+  'id, name, location, country, start_date, season!inner(year)'
 
 export const constructorColumns =
   'id, name, team_principal, season!inner(id, year)'
 
 export const driverRaceResultColumns = `
   id,
+  constructor_id,
   finish_position_points,
   grid_difference_points,
   race!inner(

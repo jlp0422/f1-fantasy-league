@@ -120,7 +120,7 @@ const DriverPage = ({
         label='Detailed Points'
         checked={showDetail}
         onChange={() => setShowDetail((current) => !current)}
-        className='mt-2 sm:mt-10'
+        className='mt-2 sm:mt-10 text-gray-900'
       />
       {/* mobile points table */}
       <div className='relative visible block mb-4 overflow-x-auto rounded-lg shadow-md md:hidden md:invisible'>

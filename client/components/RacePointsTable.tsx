@@ -1,8 +1,10 @@
 import CarNumber from '@/components/CarNumber'
 import ConstructorLink from '@/components/ConstructorLink'
+import RaceLink from '@/components/RaceLink'
 import Arrow from '@/components/icons/Arrow'
+import ExternalLink from '@/components/icons/ExternalLink'
 import { COLORS_BY_CONSTRUCTOR } from '@/constants/index'
-import { normalizeConstructorName } from '@/helpers/cars'
+import { normalizeConstructorName, normalizeRaceLocation } from '@/helpers/cars'
 import { sortArray } from '@/helpers/utils'
 import {
   ConstructorsById,
@@ -85,7 +87,17 @@ const RacePointsTable = ({
               scope='col'
               className='px-6 py-3 font-normal text-center'
             >
-              {renderSortButton(race.country, race.id.toString())}
+              <div className='flex items-center justify-center gap-2'>
+                {renderSortButton(race.country, race.id.toString())}
+                <RaceLink
+                  normalizedLocation={normalizeRaceLocation(race.location)}
+                  raceId={race.id}
+                >
+                  <span className='text-gray-400 hover:text-gray-200 transition-colors'>
+                    <ExternalLink />
+                  </span>
+                </RaceLink>
+              </div>
             </th>
           ))}
         </tr>
