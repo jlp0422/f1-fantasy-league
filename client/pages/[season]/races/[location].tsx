@@ -291,15 +291,15 @@ const RaceDetail = ({ race, teamStandings, driverStandings }: Props) => {
     >
       {/* Race header */}
       <div
-        className='w-screen absolute h-60 sm:h-96 left-0 top-[64px] sm:top-[72px]'
+        className='w-screen absolute h-72 sm:h-96 left-0 top-[64px] sm:top-[72px]'
         style={{
           background: getGradient(race.location),
         }}
       />
 
       {/* Race info overlaid on hero */}
-      <div className='relative flex flex-col items-center justify-end text-center h-28 sm:h-56'>
-        <h1 className='text-4xl font-bold tracking-normal text-gray-200 uppercase sm:text-6xl lg:text-7xl xl:text-8xl font-primary'>
+      <div className='relative flex flex-col items-center justify-end text-center min-h-[7rem] pt-4 sm:min-h-[14rem] sm:pt-0'>
+        <h1 className='px-2 font-bold tracking-normal leading-tight text-gray-200 uppercase text-[clamp(1.5rem,8vw,2.25rem)] sm:text-6xl sm:leading-normal lg:text-7xl xl:text-8xl font-primary'>
           {race.name}
         </h1>
         <p className='mt-1 text-xl tracking-wide text-gray-300 sm:mt-2 sm:text-3xl lg:text-4xl font-tertiary'>
