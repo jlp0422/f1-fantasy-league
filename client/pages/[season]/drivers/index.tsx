@@ -1,6 +1,9 @@
 import Arrow from '@/components/icons/Arrow'
+import ExternalLink from '@/components/icons/ExternalLink'
 import Layout from '@/components/Layout'
+import RaceLink from '@/components/RaceLink'
 import Toggle from '@/components/Toggle'
+import { normalizeRaceLocation } from '@/helpers/cars'
 import { driverRaceResultColumns, raceColumns } from '@/helpers/supabase'
 import { getSeasonParam, makeName, sortArray, toNum } from '@/helpers/utils'
 import { supabase } from '@/lib/database'
@@ -71,7 +74,7 @@ const DriversPage = ({ races, driverRaceResults }: Props) => {
           label='Detailed Points'
           checked={showDetail}
           onChange={() => setShowDetail((current) => !current)}
-          className='mb-1'
+          className='mb-1 text-gray-900'
         />
         <div className='relative overflow-x-auto overflow-y-hidden rounded-lg'>
           <table className='w-full text-base text-left text-gray-300 uppercase bg-gray-800 font-secondary'>
@@ -103,7 +106,19 @@ const DriversPage = ({ races, driverRaceResults }: Props) => {
                     scope='col'
                     className='px-6 py-3 font-normal text-center'
                   >
-                    {renderSortButton(race.country, index.toString())}
+                    <div className='flex items-center justify-center gap-2'>
+                      {renderSortButton(race.country, index.toString())}
+                      <RaceLink
+                        normalizedLocation={normalizeRaceLocation(
+                          race.location
+                        )}
+                        raceId={race.id}
+                      >
+                        <span className='text-gray-400 hover:text-gray-200 transition-colors'>
+                          <ExternalLink />
+                        </span>
+                      </RaceLink>
+                    </div>
                   </th>
                 ))}
               </tr>
