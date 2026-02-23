@@ -6,7 +6,7 @@ export const colors_2026 = {
     secondary: '#0f3460',
     tertiary: '#e94560',
   },
-  'mckenzie-collins': {
+  'team-no-gas': {
     numberBackground: '#ff6b6b',
     numberText: '#fef9ef',
     primary: '#ee5a6f',
@@ -34,7 +34,7 @@ export const colors_2026 = {
     secondary: '#e0b1cb',
     tertiary: '#5e548e',
   },
-  'jeremy-philipson': {
+  'turbo-team-racing': {
     numberBackground: '#0b132b',
     numberText: '#f4d35e',
     primary: '#1c2541',
