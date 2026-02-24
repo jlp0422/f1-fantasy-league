@@ -205,24 +205,25 @@ const DriversPage = ({ races, driverRaceResults }: Props) => {
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const season = getSeasonParam(context)
-  const { data: races } = await supabase
-    .from('race')
-    .select(raceColumns)
-    .eq('season.year', season)
-    .order('start_date', { ascending: true })
-    .returns<RaceWithSeason[]>()
 
-  const { data: raceResults } = await supabase
-    .from('driver_race_result')
-    .select(driverRaceResultColumns)
-    .eq('race.season.year', season)
-    .order('start_date', { ascending: true, foreignTable: 'race' })
-    .returns<DriverRaceResultWithJoins[]>()
-
-  const { data: currentDrivers } = await supabase
-    .from('constructor_driver')
-    .select(
-      `
+  const [{ data: races }, { data: raceResults }, { data: currentDrivers }] =
+    await Promise.all([
+      supabase
+        .from('race')
+        .select(raceColumns)
+        .eq('season.year', season)
+        .order('start_date', { ascending: true })
+        .returns<RaceWithSeason[]>(),
+      supabase
+        .from('driver_race_result')
+        .select(driverRaceResultColumns)
+        .eq('race.season.year', season)
+        .order('start_date', { ascending: true, foreignTable: 'race' })
+        .returns<DriverRaceResultWithJoins[]>(),
+      supabase
+        .from('constructor_driver')
+        .select(
+          `
       id,
       driver_one_id,
       driver_two_id,
@@ -231,9 +232,10 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
         name
       ),
       season!inner(year)`
-    )
-    .eq('season.year', season)
-    .returns<ConstructorDriverWithJoins[]>()
+        )
+        .eq('season.year', season)
+        .returns<ConstructorDriverWithJoins[]>(),
+    ])
 
   const constructorByDriverId = currentDrivers!.reduce(
     (memo: Record<any, any>, d) => {
