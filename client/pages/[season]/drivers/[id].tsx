@@ -14,9 +14,8 @@ import { Race } from '@/types/Race'
 import {
   ConstructorDriverWithJoins,
   DriverRaceResultWithJoins,
-  DriverWithSeason,
 } from '@/types/Unions'
-import { GetServerSidePropsContext, GetStaticPropsContext } from 'next'
+import { GetServerSidePropsContext } from 'next'
 import Image from 'next/image'
 import { useRouter } from 'next/router'
 import { useState } from 'react'
@@ -120,7 +119,7 @@ const DriverPage = ({
         label='Detailed Points'
         checked={showDetail}
         onChange={() => setShowDetail((current) => !current)}
-        className='mt-2 sm:mt-10 text-gray-900'
+        className='mt-2 text-gray-900 sm:mt-10'
       />
       {/* mobile points table */}
       <div className='relative visible block mb-4 overflow-x-auto rounded-lg shadow-md md:hidden md:invisible'>
@@ -280,30 +279,19 @@ const DriverPage = ({
   )
 }
 
-// export async function getStaticPaths() {
-//   const { data: drivers } = await supabase
-//     .from('driver')
-//     .select('id, season!inner(id, year)')
-//     .returns<DriverWithSeason[]>()
-
-//   return {
-//     paths: drivers!.map((driver) => ({
-//       params: {
-//         id: driver.id.toString(),
-//         season: driver.season.year.toString(),
-//       },
-//     })),
-//     fallback: false,
-//   }
-// }
-
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const season = getSeasonParam(context)
   const driverId = getIdParam(context)
-  const { data: driver } = await supabase
-    .from('driver')
-    .select(
-      `
+  const [
+    { data: driver },
+    { data: raceResults },
+    { data: constructorDriverMatch },
+    { data: races },
+  ] = await Promise.all([
+    supabase
+      .from('driver')
+      .select(
+        `
       id,
       first_name,
       last_name,
@@ -312,16 +300,15 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       constructor_name,
       image_url
     `
-    )
-    .eq('id', driverId)
-    .limit(1)
-    .returns<Driver>()
-    .single()
-
-  const { data: raceResults } = await supabase
-    .from('driver_race_result')
-    .select(
-      `
+      )
+      .eq('id', driverId)
+      .limit(1)
+      .returns<Driver>()
+      .single(),
+    supabase
+      .from('driver_race_result')
+      .select(
+        `
     id,
     finish_position_points,
     grid_difference_points,
@@ -337,50 +324,33 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       )
     )
   `
-    )
-    .eq('race.season.year', season)
-    .eq('driver_id', driverId)
-    .order('start_date', { ascending: true, foreignTable: 'race' })
-    .returns<DriverRaceResultWithJoins[]>()
-
-  const { data: driverOneMatch } = await supabase
-    .from('constructor_driver')
-    .select(
-      `
+      )
+      .eq('race.season.year', season)
+      .eq('driver_id', driverId)
+      .order('start_date', { ascending: true, foreignTable: 'race' })
+      .returns<DriverRaceResultWithJoins[]>(),
+    supabase
+      .from('constructor_driver')
+      .select(
+        `
       id,
       driver_one_id,
       driver_two_id,
       constructor!inner(${constructorColumns}),
       season!inner(year)`
-    )
-    .eq('season.year', season)
-    .eq('driver_one_id', driverId)
-    .limit(1)
-    .returns<ConstructorDriverWithJoins>()
-    .single()
-
-  const { data: driverTwoMatch } = await supabase
-    .from('constructor_driver')
-    .select(
-      `
-      id,
-      driver_one_id,
-      driver_two_id,
-      constructor!inner(${constructorColumns}),
-      season!inner(year)`
-    )
-    .eq('season.year', season)
-    .eq('driver_two_id', driverId)
-    .limit(1)
-    .returns<ConstructorDriverWithJoins>()
-    .single()
-
-  const { data: races } = await supabase
-    .from('race')
-    .select(raceColumns)
-    .eq('season.year', season)
-    .order('start_date', { ascending: true })
-    .returns<Race[]>()
+      )
+      .eq('season.year', season)
+      .or(`driver_one_id.eq.${driverId},driver_two_id.eq.${driverId}`)
+      .limit(1)
+      .returns<ConstructorDriverWithJoins>()
+      .single(),
+    supabase
+      .from('race')
+      .select(raceColumns)
+      .eq('season.year', season)
+      .order('start_date', { ascending: true })
+      .returns<Race[]>(),
+  ])
 
   const racesById = indexBy('id')(races!)
 
@@ -425,17 +395,13 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     })
   )
 
-  const hasMatch = Boolean(driverOneMatch) || Boolean(driverTwoMatch)
-
   return {
     props: {
       driver,
       raceResults,
       seasonPoints,
       races,
-      constructor: hasMatch
-        ? (driverOneMatch ?? driverTwoMatch)!['constructor']
-        : {},
+      constructor: constructorDriverMatch?.['constructor'] ?? {},
       pointsByDriverChartData,
     },
   }

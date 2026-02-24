@@ -7,6 +7,7 @@ import { normalizeConstructorName } from '@/helpers/cars'
 import { sortAlpha, sortArray } from '@/helpers/utils'
 import { GenericObject } from '@/types/Common'
 import { Constructor } from '@/types/Constructor'
+import { memo } from 'react'
 import { useRouter } from 'next/router'
 import {
   CartesianGrid,
@@ -205,4 +206,4 @@ const RacePointsChart = ({
   )
 }
 
-export default RacePointsChart
+export default memo(RacePointsChart)
