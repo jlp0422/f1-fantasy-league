@@ -141,10 +141,34 @@ const RacePoints = ({
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const seasonParam = getSeasonParam(context)
-  const { data: totalPointsByConstructorByRace } = await supabase
-    .rpc('total_points_by_constructor_by_race', { season: seasonParam })
-    .select('*')
-    .returns<TotalPointsByConstructorByRace[]>()
+
+  const [
+    { data: totalPointsByConstructorByRace },
+    { data: races },
+    { data: constructors },
+    { data: standings },
+  ] = await Promise.all([
+    supabase
+      .rpc('total_points_by_constructor_by_race', { season: seasonParam })
+      .select('*')
+      .returns<TotalPointsByConstructorByRace[]>(),
+    supabase
+      .from('race')
+      .select(raceColumns)
+      .eq('season.year', seasonParam)
+      .order('start_date', { ascending: true })
+      .returns<RaceWithSeason[]>(),
+    supabase
+      .from('constructor')
+      .select(constructorColumns)
+      .eq('season.year', seasonParam)
+      .returns<ConstructorWithSeason[]>(),
+    supabase
+      .rpc('sum_constructor_points_by_season', { season: seasonParam })
+      .select('id, name, total_points')
+      .order('total_points', { ascending: false })
+      .returns<ConstructorTotalPoints[]>(),
+  ])
 
   const indexedRacePoints = totalPointsByConstructorByRace!.reduce(
     (memo: IndexedRacePoints, item) => {
@@ -169,25 +193,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     },
     {}
   )
-
-  const { data: races } = await supabase
-    .from('race')
-    .select(raceColumns)
-    .eq('season.year', seasonParam)
-    .order('start_date', { ascending: true })
-    .returns<RaceWithSeason[]>()
-
-  const { data: constructors } = await supabase
-    .from('constructor')
-    .select(constructorColumns)
-    .eq('season.year', seasonParam)
-    .returns<ConstructorWithSeason[]>()
-
-  const { data: standings } = await supabase
-    .rpc('sum_constructor_points_by_season', { season: seasonParam })
-    .select('id, name, total_points')
-    .order('total_points', { ascending: false })
-    .returns<ConstructorTotalPoints[]>()
 
   const constructorsById = indexBy('id')(standings!)
 

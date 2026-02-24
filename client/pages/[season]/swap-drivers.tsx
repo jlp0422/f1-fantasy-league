@@ -113,13 +113,21 @@ const SwapDrivers = ({
             disabled={disableButton}
             onClick={async () => {
               setIsSwapping(true)
-              const resp = await fetch(
-                `/api/drivers/swap?season=${season}&constructor_id=${constructorId}&old_driver_id=${oldDriverId}&new_driver_id=${newDriverId}`,
-                { method: 'POST' }
-              )
-              setIsSwapping(false)
-              const data = await resp.json()
-              setSwapResponse(data)
+              try {
+                const resp = await fetch(
+                  `/api/drivers/swap?season=${season}&constructor_id=${constructorId}&old_driver_id=${oldDriverId}&new_driver_id=${newDriverId}`,
+                  { method: 'POST' }
+                )
+                const data = await resp.json()
+                setSwapResponse(data)
+              } catch {
+                setSwapResponse({
+                  success: false,
+                  message: 'Network error, please try again',
+                })
+              } finally {
+                setIsSwapping(false)
+              }
             }}
           >
             Swap
@@ -133,17 +141,22 @@ const SwapDrivers = ({
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const season = getSeasonParam(context)
-  const { data: constructors } = await supabase
-    .from('constructor')
-    .select(constructorColumns)
-    .eq('season.year', season)
-    .order('name', { ascending: true })
-    .returns<ConstructorWithSeason[]>()
 
-  const { data: selectedDrivers } = await supabase
-    .from('constructor_driver')
-    .select(
-      `
+  const [
+    { data: constructors },
+    { data: selectedDrivers },
+    { data: allDrivers },
+  ] = await Promise.all([
+    supabase
+      .from('constructor')
+      .select(constructorColumns)
+      .eq('season.year', season)
+      .order('name', { ascending: true })
+      .returns<ConstructorWithSeason[]>(),
+    supabase
+      .from('constructor_driver')
+      .select(
+        `
         id,
         driver_one:driver_one_id(
           id,
@@ -157,23 +170,23 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
         ),
         constructor_id,
         season!inner(year)`
-    )
-    .eq('season.year', season)
-    .returns<ConstructorDriverWithJoins[]>()
-
-  const { data: allDrivers } = await supabase
-    .from('driver')
-    .select(
-      `
+      )
+      .eq('season.year', season)
+      .returns<ConstructorDriverWithJoins[]>(),
+    supabase
+      .from('driver')
+      .select(
+        `
         id,
         first_name,
         last_name,
         is_full_time,
         season!inner(year)`
-    )
-    .eq('season.year', season)
-    .order('last_name', { ascending: true })
-    .returns<DriverWithSeason[]>()
+      )
+      .eq('season.year', season)
+      .order('last_name', { ascending: true })
+      .returns<DriverWithSeason[]>(),
+  ])
 
   const selectedDriverIds = selectedDrivers!.flatMap((driver) => [
     driver.driver_one.id,
