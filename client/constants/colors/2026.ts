@@ -48,7 +48,7 @@ export const colors_2026 = {
     secondary: '#7209b7',
     tertiary: '#4cc9f0',
   },
-  'carolyn-philipson': {
+  'the-goat-and-the-bull': {
     numberBackground: '#d8f3dc',
     numberText: '#1b4332',
     primary: '#52b788',
