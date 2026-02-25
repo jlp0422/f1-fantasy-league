@@ -11,31 +11,25 @@ export type Database = {
     Tables: {
       constructor: {
         Row: {
-          car_image_url: string | null
           id: number
           name: string | null
           number: number | null
-          number_image_url: string | null
           season_id: number | null
           sponsor_list: string[] | null
           team_principal: string | null
         }
         Insert: {
-          car_image_url?: string | null
           id?: number
           name?: string | null
           number?: number | null
-          number_image_url?: string | null
           season_id?: number | null
           sponsor_list?: string[] | null
           team_principal?: string | null
         }
         Update: {
-          car_image_url?: string | null
           id?: number
           name?: string | null
           number?: number | null
-          number_image_url?: string | null
           season_id?: number | null
           sponsor_list?: string[] | null
           team_principal?: string | null

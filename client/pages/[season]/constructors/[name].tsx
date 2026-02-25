@@ -435,26 +435,30 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const constructorNameParam = decodeURIComponent(getNameParam(context))
   const constructorId = constructorNameParam.split('-')[0]
 
-  const { data: constructor } = await supabase
-    .from('constructor')
-    .select(constructorColumns)
-    .eq('season.year', season)
-    .eq('id', constructorId)
-    .limit(1)
-    .returns<ConstructorWithSeason[]>()
-    .single()
-
-  const { data: races } = await supabase
-    .from('race')
-    .select(raceColumns)
-    .eq('season.year', season)
-    .order('start_date', { ascending: true })
-    .returns<Race[]>()
-
-  const { data: currentDrivers } = await supabase
-    .from('constructor_driver')
-    .select(
-      `
+  const [
+    { data: constructor },
+    { data: races },
+    { data: currentDrivers },
+    { data: driverRaceResults },
+  ] = await Promise.all([
+    supabase
+      .from('constructor')
+      .select(constructorColumns)
+      .eq('season.year', season)
+      .eq('id', constructorId)
+      .limit(1)
+      .returns<ConstructorWithSeason[]>()
+      .single(),
+    supabase
+      .from('race')
+      .select(raceColumns)
+      .eq('season.year', season)
+      .order('start_date', { ascending: true })
+      .returns<Race[]>(),
+    supabase
+      .from('constructor_driver')
+      .select(
+        `
       id,
       driver_one:driver_one_id(
         id,
@@ -467,12 +471,24 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
         last_name
       ),
       season!inner(year)`
-    )
-    .eq('season.year', season)
-    .eq('constructor_id', constructorId)
-    .limit(1)
-    .returns<ConstructorDriverWithJoins>()
-    .single()
+      )
+      .eq('season.year', season)
+      .eq('constructor_id', constructorId)
+      .limit(1)
+      .returns<ConstructorDriverWithJoins>()
+      .single(),
+    supabase
+      .from('driver_race_result')
+      .select(driverRaceResultColumns)
+      .eq('race.season.year', season)
+      .eq('constructor_id', constructorId)
+      .order('start_date', { ascending: true, foreignTable: 'race' })
+      .returns<DriverRaceResultWithJoins[]>(),
+  ])
+
+  if (!constructor) {
+    return { notFound: true }
+  }
 
   const currentDriverNames = [
     makeName(currentDrivers?.['driver_one']),
@@ -480,14 +496,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   ]
 
   const racesById = indexBy('id')(races!)
-
-  const { data: driverRaceResults } = await supabase
-    .from('driver_race_result')
-    .select(driverRaceResultColumns)
-    .eq('race.season.year', constructor!.season.year)
-    .eq('constructor_id', constructor!.id)
-    .order('start_date', { ascending: true, foreignTable: 'race' })
-    .returns<DriverRaceResultWithJoins[]>()
 
   const racePointsByDriver = driverRaceResults!.reduce(
     (memo: Record<string, DriverPoints>, item: DriverRaceResultWithJoins) => {
@@ -555,12 +563,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     .map(([driver, { total, id }]) => ({ driver, total, driverId: id }))
     .sort((a, b) => b.total - a.total)
     .map(({ driver, driverId }) => ({ name: driver, id: driverId }))
-
-  if (!constructor) {
-    return {
-      notFound: true,
-    }
-  }
 
   return {
     props: {
