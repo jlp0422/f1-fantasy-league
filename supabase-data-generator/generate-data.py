@@ -216,7 +216,9 @@ def do_the_update():
             return 0
         row_grid = row["GridPosition"]
         row_pos = row["Position"]
-        # 0 indicates a pit lane start, treat as starting last (20th)
+        # GridPosition == 0 was used by older FastF1 versions to indicate a pit lane start.
+        # Modern FastF1 assigns penalized back-of-grid positions instead, so this branch
+        # is likely never triggered, but kept for backwards compatibility.
         if int(row_grid) == 0:
             return 20 - row_pos
         return row_grid - row_pos
