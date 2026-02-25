@@ -44,7 +44,7 @@ const Header = () => {
   const routes = [
     { href: `/${season}/standings`, title: 'Standings' },
     { href: `/${season}/race-points`, title: 'Race Points' },
-    ...(myTeamHref ? [{ href: myTeamHref, title: 'My Team' }] : []),
+    { href: myTeamHref ?? `/${season}/identity`, title: 'My Team' },
     { href: `/${season}/drivers`, title: 'Drivers' },
     { href: `/${season}/draft`, title: 'Draft' },
   ]
