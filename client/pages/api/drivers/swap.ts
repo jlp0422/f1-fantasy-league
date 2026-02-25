@@ -41,16 +41,16 @@ export default async function handler(
     return createResponse(400, 'Invalid parameters, missing "new_driver_id"')
   }
 
+  if (+old_driver_id === +new_driver_id) {
+    return createResponse(400, 'Old and new driver cannot be the same')
+  }
+
   try {
     const { data: constructorDriverResp } = await supabase
       .from('constructor_driver')
       .select(
         `
         id,
-        constructor!inner(
-          id,
-          name
-        ),
         driver_one_id,
         driver_two_id,
         season!inner(year)
