@@ -13,7 +13,7 @@ export const colors_2026 = {
     secondary: '#c44569',
     tertiary: '#f4e2d8',
   },
-  'david-ehrlich': {
+  'the-villains': {
     numberBackground: '#2d4059',
     numberText: '#ffd460',
     primary: '#ea5455',
@@ -27,7 +27,7 @@ export const colors_2026 = {
     secondary: '#06d6a0',
     tertiary: '#ffd166',
   },
-  'steve-collins': {
+  'oscar-you-kidding-me': {
     numberBackground: '#f4f1bb',
     numberText: '#2d3142',
     primary: '#9f86c0',
@@ -48,7 +48,7 @@ export const colors_2026 = {
     secondary: '#7209b7',
     tertiary: '#4cc9f0',
   },
-  'carolyn-philipson': {
+  'the-goat-and-the-bull': {
     numberBackground: '#d8f3dc',
     numberText: '#1b4332',
     primary: '#52b788',

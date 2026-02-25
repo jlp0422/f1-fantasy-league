@@ -35,7 +35,7 @@ import hexRgb from 'hex-rgb'
 import { GetServerSidePropsContext } from 'next'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   CartesianGrid,
   Legend,
@@ -81,6 +81,15 @@ const Constructor = ({
   const season = query.season as string
   const hasImages = HAS_IMAGES_BY_SEASON[season]
   const [showDetail, setShowDetail] = useState<boolean>(false)
+  const [isManagedByUser, setIsManagedByUser] = useState<boolean>(false)
+
+  useEffect(() => {
+    const stored = localStorage.getItem('f1fl_identity')
+    if (stored) {
+      const parsed = JSON.parse(stored)
+      setIsManagedByUser(parsed[season]?.id === constructor.id)
+    }
+  }, [season, constructor.id])
   const data = [
     {
       value: constructor.name,
@@ -145,12 +154,23 @@ const Constructor = ({
         </div>
       </div>
 
-      <Toggle
-        label='Detailed Points'
-        checked={showDetail}
-        onChange={() => setShowDetail((current) => !current)}
-        className='mt-2 sm:mt-10 text-gray-900'
-      />
+      <div className='flex items-center justify-between mt-2 sm:mt-10'>
+        <Toggle
+          label='Detailed Points'
+          checked={showDetail}
+          onChange={() => setShowDetail((current) => !current)}
+          className='text-gray-900'
+        />
+        {isManagedByUser && (
+          <Link
+            href={`/${season}/swap-drivers`}
+            className='inline-flex items-center gap-1 text-base font-secondary text-gray-700 hover:text-gray-900 transition-colors'
+          >
+            <span>↔</span>
+            <span className='uppercase tracking-wide'>Swap Drivers</span>
+          </Link>
+        )}
+      </div>
 
       {/* mobile points table */}
       <div className='relative visible block mb-4 overflow-x-auto rounded-lg shadow-md md:hidden md:invisible'>
