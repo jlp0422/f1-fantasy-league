@@ -13,7 +13,7 @@ export const colors_2026 = {
     secondary: '#c44569',
     tertiary: '#f4e2d8',
   },
-  'david-ehrlich': {
+  'the-villains': {
     numberBackground: '#2d4059',
     numberText: '#ffd460',
     primary: '#ea5455',
@@ -27,7 +27,7 @@ export const colors_2026 = {
     secondary: '#06d6a0',
     tertiary: '#ffd166',
   },
-  'steve-collins': {
+  'oscar-you-kidding-me': {
     numberBackground: '#f4f1bb',
     numberText: '#2d3142',
     primary: '#9f86c0',
