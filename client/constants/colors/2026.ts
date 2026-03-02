@@ -41,7 +41,7 @@ export const colors_2026 = {
     secondary: '#3a506b',
     tertiary: '#ee964b',
   },
-  'emily-ehrlich': {
+  'not-so-winning-formula': {
     numberBackground: '#f72585',
     numberText: '#f0f3bd',
     primary: '#b5179e',
