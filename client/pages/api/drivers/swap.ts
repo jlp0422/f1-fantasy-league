@@ -1,7 +1,6 @@
 import { normalizeConstructorName } from '@/helpers/cars'
 import { makeName } from '@/helpers/utils'
 import { supabase } from '@/lib/database'
-import { ConstructorDriver } from '@/types/ConstructorDriver'
 import { Driver } from '@/types/Driver'
 import { ConstructorDriverWithJoins } from '@/types/Unions'
 import type { NextApiRequest, NextApiResponse } from 'next'
@@ -41,16 +40,16 @@ export default async function handler(
     return createResponse(400, 'Invalid parameters, missing "new_driver_id"')
   }
 
+  if (+old_driver_id === +new_driver_id) {
+    return createResponse(400, 'Old and new driver cannot be the same')
+  }
+
   try {
     const { data: constructorDriverResp } = await supabase
       .from('constructor_driver')
       .select(
         `
         id,
-        constructor!inner(
-          id,
-          name
-        ),
         driver_one_id,
         driver_two_id,
         season!inner(year)
@@ -121,35 +120,14 @@ export default async function handler(
       return createResponse(400, 'New Driver does not exist')
     }
 
-    const { data: driverOneMatch } = await supabase
+    const { data: existingDriverMatch } = await supabase
       .from('constructor_driver')
-      .select(
-        `
-        id,
-        driver_one_id,
-        season!inner(year)`
-      )
+      .select(`id, season!inner(year)`)
       .eq('season.year', season)
-      .eq('driver_one_id', new_driver_id)
+      .or(`driver_one_id.eq.${new_driver_id},driver_two_id.eq.${new_driver_id}`)
       .limit(1)
-      .returns<ConstructorDriver>()
-      .single()
 
-    const { data: driverTwoMatch } = await supabase
-      .from('constructor_driver')
-      .select(
-        `
-        id,
-        driver_two_id,
-        season!inner(year)`
-      )
-      .eq('season.year', season)
-      .eq('driver_two_id', new_driver_id)
-      .limit(1)
-      .returns<ConstructorDriver>()
-      .single()
-
-    if (driverOneMatch || driverTwoMatch) {
+    if (existingDriverMatch && existingDriverMatch.length > 0) {
       return createResponse(
         400,
         `New Driver is already assigned to a constructor`

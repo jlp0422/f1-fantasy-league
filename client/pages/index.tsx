@@ -39,7 +39,8 @@ const HomePage = ({ seasons }: Props) => {
 export async function getStaticProps() {
   const { data: seasons } = await supabase
     .from('season')
-    .select('*')
+    .select('id, year')
+    .limit(50)
     .returns<Season[]>()
 
   return {

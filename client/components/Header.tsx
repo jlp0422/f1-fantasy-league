@@ -1,10 +1,12 @@
 import Dismiss from '@/components/icons/Dismiss'
+import Gear from '@/components/icons/Gear'
 import Hamburger from '@/components/icons/Hamburger'
+import { IDENTITY_KEY, IdentityValue } from '@/pages/[season]/identity'
 import headerLogo from '@/public/fate-eight.png'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 const checkIfRoutesAreEqual = (pathname: string, href: string) => {
   const splitPath = pathname.split('/')
@@ -16,19 +18,45 @@ const checkIfRoutesAreEqual = (pathname: string, href: string) => {
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState<boolean>(false)
+  const [myTeam, setMyTeam] = useState<IdentityValue | null>(null)
   const { pathname, query } = useRouter()
+  const season = query.season as string | undefined
+
+  useEffect(() => {
+    if (!season) return
+    const stored = localStorage.getItem(IDENTITY_KEY)
+    if (stored) {
+      const parsed = JSON.parse(stored)
+      const val: IdentityValue | undefined = parsed[season]
+      setMyTeam(val ?? null)
+    } else {
+      setMyTeam(null)
+    }
+  }, [season, pathname])
+
+  const myTeamHref =
+    myTeam && season
+      ? `/${season}/constructors/${myTeam.id}-${encodeURIComponent(
+          myTeam.normalized
+        )}`
+      : null
+
   const routes = [
-    { href: `/${query.season}/standings`, title: 'Standings' },
-    { href: `/${query.season}/race-points`, title: 'Points by Race' },
-    { href: `/${query.season}/constructors`, title: 'Constructors' },
-    { href: `/${query.season}/drivers`, title: 'Drivers' },
-    { href: `/${query.season}/draft`, title: 'Draft' },
+    { href: `/${season}/standings`, title: 'Standings' },
+    { href: `/${season}/race-points`, title: 'Race Points' },
+    { href: myTeamHref ?? `/${season}/identity`, title: 'My Team' },
+    { href: `/${season}/drivers`, title: 'Drivers' },
+    { href: `/${season}/draft`, title: 'Draft' },
   ]
+
+  const identityHref = `/${season}/identity`
+  const isIdentityRoute = checkIfRoutesAreEqual(pathname, identityHref)
+  const isMyTeamRoute = pathname === '/[season]/constructors/[name]'
 
   return (
     <nav className='relative z-10 px-2 py-6 border-gray-200 md:px-8 bg-fate-black'>
       <div className='flex flex-wrap items-center justify-between mx-auto max-w-7xl'>
-        {query.season ? (
+        {season ? (
           <button
             data-collapse-toggle='mobile-menu'
             type='button'
@@ -51,14 +79,29 @@ const Header = () => {
             <Image src={headerLogo} alt='Fate of the Eight' />
           </Link>
         </div>
+        {season ? (
+          <Link
+            href={identityHref}
+            className={`absolute right-2 top-4 inline-flex items-center p-2 rounded-lg md:hidden focus:outline-none focus:ring-2 hover:bg-gray-700 focus:ring-gray-600 ${
+              isIdentityRoute ? 'text-white' : 'text-gray-400'
+            }`}
+            onClick={() => setIsOpen(false)}
+          >
+            <span className='sr-only'>Manage identity</span>
+            <Gear />
+          </Link>
+        ) : null}
         <div
           className={`${isOpen ? 'block' : 'hidden'} w-full md:block md:w-auto`}
           id='mobile-menu'
         >
-          {query.season ? (
-            <ul className='flex flex-col mt-6 md:flex-row md:space-x-4 md:mt-0 md:text-sm md:font-medium'>
+          {season ? (
+            <ul className='flex flex-col mt-6 md:flex-row md:space-x-4 md:mt-0 md:text-sm md:font-medium md:items-center'>
               {routes.map(({ href, title }) => {
-                const isActiveRoute = checkIfRoutesAreEqual(pathname, href)
+                const isActiveRoute =
+                  title === 'My Team'
+                    ? isMyTeamRoute
+                    : checkIfRoutesAreEqual(pathname, href)
                 return (
                   <li key={`${href}-${title}`}>
                     <Link
@@ -73,6 +116,17 @@ const Header = () => {
                   </li>
                 )
               })}
+              <li className='hidden md:flex md:items-center md:ml-2'>
+                <Link
+                  href={identityHref}
+                  className={`inline-flex items-center p-1 rounded hover:bg-gray-700 ${
+                    isIdentityRoute ? 'text-white' : 'text-gray-400'
+                  }`}
+                  onClick={() => setIsOpen((open) => !open)}
+                >
+                  <Gear />
+                </Link>
+              </li>
             </ul>
           ) : (
             <ul className='flex flex-col mt-6 md:flex-row md:space-x-6 md:mt-0 md:text-sm md:font-medium'>

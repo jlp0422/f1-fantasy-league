@@ -13,7 +13,7 @@ import {
 } from '@/types/Common'
 import { Race } from '@/types/Race'
 import { useRouter } from 'next/router'
-import { useState } from 'react'
+import { memo, useMemo, useState } from 'react'
 
 interface Props {
   races: Race[]
@@ -43,9 +43,11 @@ const RacePointsTable = ({
   const { query } = useRouter()
   const season = query.season as string
   const [sortBy, setSortBy] = useState<string>('points')
-  const sortFn =
-    sortingFns[sortBy] || sortingFns.default(sortBy, indexedRacePoints)
-  const sortedStandings: ConstructorTotalPoints[] = sortArray(standings, sortFn)
+  const sortedStandings: ConstructorTotalPoints[] = useMemo(() => {
+    const sortFn =
+      sortingFns[sortBy] || sortingFns.default(sortBy, indexedRacePoints)
+    return sortArray(standings, sortFn)
+  }, [sortBy, standings, indexedRacePoints])
 
   const renderSortButton = (label: string, sortKey: string) => (
     <button
@@ -158,4 +160,4 @@ const RacePointsTable = ({
   )
 }
 
-export default RacePointsTable
+export default memo(RacePointsTable)
