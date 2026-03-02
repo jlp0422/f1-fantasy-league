@@ -64,5 +64,5 @@ export const HAS_IMAGES_BY_SEASON: Record<string, boolean> = {
   2023: true,
   2024: false,
   2025: false,
-  2026: false,
+  2026: true,
 }
