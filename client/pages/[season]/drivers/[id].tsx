@@ -66,22 +66,14 @@ const DriverPage = ({
     ? COLORS_BY_CONSTRUCTOR[season][normalized]
     : COLORS_BY_SEASON[season]
 
-  const data = [
-    {
-      value: fullName,
-      label: 'Driver',
-      classNames: 'text-5xl sm:text-4xl md:text-5xl lg:text-6xl',
-    },
+  const stats = [
     {
       value: seasonPoints.finishPoints + seasonPoints.gridPoints,
       label: 'Total Points',
-      classNames: 'text-4xl sm:text-3xl md:text-4xl lg:text-5xl',
     },
-    {
-      value: constructor.name ?? 'N/A',
-      label: 'Constructor',
-      classNames: 'text-4xl sm:text-3xl md:text-4xl lg:text-5xl',
-    },
+    { value: constructor.name ?? 'N/A', label: 'Constructor' },
+    { value: driver.number, label: 'Number' },
+    { value: driver.constructor_name, label: 'Racing Team' },
   ]
 
   const hasImages = HAS_IMAGES_BY_SEASON[season]
@@ -110,18 +102,21 @@ const DriverPage = ({
           className='rounded-lg shadow-lg w-72 h-72'
         />
         <div className='mx-4 my-2 text-center sm:mx-8 sm:text-left'>
-          {data.map(({ value, label, classNames }) => (
-            <div key={label} className='flex flex-col mt-4 lg:mt-2'>
-              <h2
-                className={`font-bold tracking-normal font-primary uppercase sm:text-gray-200 marker:text-gray-900 ${classNames}`}
-              >
-                {value}
-              </h2>
-              <p className='text-2xl leading-none tracking-wide text-gray-600 font-tertiary sm:text-gray-300'>
-                {label}
-              </p>
-            </div>
-          ))}
+          <h2 className='font-bold tracking-normal font-primary uppercase text-gray-900 sm:text-gray-200 text-5xl sm:text-4xl md:text-5xl lg:text-6xl mt-4 lg:mt-2'>
+            {fullName}
+          </h2>
+          <div className='grid grid-cols-2 gap-x-8 gap-y-2 mt-4'>
+            {stats.map(({ value, label }) => (
+              <div key={label} className='flex flex-col'>
+                <h3 className='text-3xl font-bold tracking-normal font-primary uppercase text-gray-900 sm:text-gray-200 sm:text-2xl md:text-3xl'>
+                  {value}
+                </h3>
+                <p className='text-xl leading-none tracking-wide text-gray-600 font-tertiary sm:text-gray-300'>
+                  {label}
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -235,7 +230,7 @@ const DriverPage = ({
 
       <div className='invisible hidden sm:visible sm:block'>
         <h2 className='text-xl font-bold tracking-tight text-gray-900 font-secondary md:text-2xl lg:text-3xl'>
-          Driver Points by Race
+          Points by Race
         </h2>
         <div className='w-full mt-4 rounded-lg bg-slate-600 h-500'>
           <ResponsiveContainer>
