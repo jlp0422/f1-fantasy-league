@@ -90,7 +90,7 @@ const IdentityPage = ({ constructors }: Props) => {
         </div>
       )}
 
-      <div className='grid grid-cols-1 gap-y-8 gap-x-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'>
+      <div className='grid grid-cols-2 gap-y-6 gap-x-3 lg:grid-cols-3 xl:grid-cols-4'>
         {constructors.map((constructor) => {
           const normalized = normalizeConstructorName(constructor.name)
           const { primary } = COLORS_BY_CONSTRUCTOR[season][normalized]
@@ -107,26 +107,26 @@ const IdentityPage = ({ constructors }: Props) => {
               className='relative flex flex-col items-center justify-center group w-fit'
             >
               <div
-                className='bg-contain rounded-lg h-72 w-72 shadow-inset-black-6 group-hover:shadow-inset-black-7 transition-shadow'
+                className='bg-contain rounded-lg h-40 w-40 sm:h-72 sm:w-72 shadow-inset-black-6 group-hover:shadow-inset-black-7 transition-shadow'
                 style={{
                   backgroundImage: `url(${imageUrl})`,
                   outline: isSelected ? `3px solid ${primary}` : undefined,
                   outlineOffset: isSelected ? '3px' : undefined,
                 }}
               />
-              <h2 className='absolute px-4 text-4xl font-bold text-center text-gray-100 uppercase font-primary'>
+              <h2 className='absolute px-2 text-xl sm:text-4xl font-bold text-center text-gray-100 uppercase font-primary'>
                 {constructor.name}
               </h2>
               {isSelected && (
                 <span
-                  className='mt-2 text-sm font-secondary uppercase tracking-widest font-bold'
+                  className='mt-2 text-xs sm:text-sm font-secondary uppercase tracking-widest font-bold'
                   style={{ color: primary }}
                 >
                   ✓ Selected
                 </span>
               )}
               {!isSelected && (
-                <span className='mt-2 text-sm font-secondary uppercase tracking-widest text-gray-500'>
+                <span className='mt-2 text-xs sm:text-sm font-secondary uppercase tracking-widest text-gray-500'>
                   {constructor.team_principal}
                 </span>
               )}
