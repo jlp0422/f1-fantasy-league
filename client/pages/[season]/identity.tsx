@@ -1,10 +1,15 @@
 import Layout from '@/components/Layout'
-import { COLORS_BY_CONSTRUCTOR } from '@/constants/index'
-import { normalizeConstructorName } from '@/helpers/cars'
+import { COLORS_BY_CONSTRUCTOR, HAS_IMAGES_BY_SEASON } from '@/constants/index'
+import {
+  getCloudinaryCarUrl,
+  normalizeConstructorName,
+  rgbDataURL,
+} from '@/helpers/cars'
 import { constructorColumns } from '@/helpers/supabase'
 import { getSeasonParam } from '@/helpers/utils'
 import { supabase } from '@/lib/database'
 import { ConstructorWithSeason } from '@/types/Unions'
+import hexRgb from 'hex-rgb'
 import { GetServerSidePropsContext } from 'next'
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
@@ -52,9 +57,7 @@ const IdentityPage = ({ constructors }: Props) => {
     router.replace(redirect)
   }
 
-  const currentConstructor = constructors.find(
-    (c) => c.id === currentIdentityId
-  )
+  const hasImages = HAS_IMAGES_BY_SEASON[season]
 
   return (
     <Layout
@@ -65,52 +68,50 @@ const IdentityPage = ({ constructors }: Props) => {
         <h1 className='text-4xl font-bold font-primary uppercase text-gray-900 mb-2'>
           Select Your Team
         </h1>
-        <p className='text-gray-600 font-secondary mb-6'>
+        <p className='text-gray-600 font-secondary mb-8'>
           Choose the constructor you manage to unlock driver swap controls.
         </p>
 
-        {currentConstructor && (
-          <div className='mb-8 px-4 py-3 bg-gray-800 rounded-lg border border-gray-600 inline-block'>
-            <p className='text-gray-400 font-secondary text-sm uppercase tracking-wide'>
-              Currently Managing
-            </p>
-            <p className='text-gray-100 font-primary uppercase text-2xl'>
-              {currentConstructor.name}
-            </p>
-            <p className='text-gray-300 font-secondary text-sm'>
-              {currentConstructor.team_principal}
-            </p>
-          </div>
-        )}
-
-        <div className='grid grid-cols-2 md:grid-cols-4 gap-4 mt-2'>
+        <div className='grid grid-cols-1 gap-y-8 gap-x-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'>
           {constructors.map((constructor) => {
             const normalized = normalizeConstructorName(constructor.name)
-            const colors = COLORS_BY_CONSTRUCTOR[season]?.[normalized]
-            const primaryColor = colors?.primary || '#6b7280'
+            const { primary } = COLORS_BY_CONSTRUCTOR[season][normalized]
+            const { red, blue, green } = hexRgb(primary)
+            const imageUrl = hasImages
+              ? getCloudinaryCarUrl(normalized, season, { format: 'webp' })
+              : rgbDataURL(red, green, blue)
             const isSelected = constructor.id === currentIdentityId
 
             return (
               <button
                 key={constructor.id}
                 onClick={() => handleSelect(constructor)}
-                className='bg-gray-800 rounded-lg p-6 text-left border-2 transition-all hover:bg-gray-700'
-                style={{
-                  borderColor: isSelected ? primaryColor : '#4b5563',
-                }}
+                className='relative flex flex-col items-center justify-center group w-fit'
               >
-                <p
-                  className='text-2xl font-bold font-primary uppercase'
-                  style={{ color: primaryColor }}
-                >
+                <div
+                  className='bg-contain rounded-lg h-72 w-72 shadow-inset-black-6 group-hover:shadow-inset-black-7'
+                  style={{
+                    backgroundImage: `url(${imageUrl})`,
+                    outline: isSelected ? `3px solid ${primary}` : undefined,
+                    outlineOffset: isSelected ? '3px' : undefined,
+                  }}
+                />
+                <h2 className='absolute px-4 text-4xl font-bold text-center text-gray-100 uppercase font-primary'>
                   {constructor.name}
-                </p>
-                <p className='text-gray-100 font-secondary mt-2'>
-                  {constructor.team_principal}
-                </p>
-                <p className='text-gray-400 font-secondary text-sm mt-1 uppercase tracking-wide'>
-                  Team Principal
-                </p>
+                </h2>
+                {isSelected && (
+                  <span
+                    className='mt-2 text-sm font-secondary uppercase tracking-widest font-bold'
+                    style={{ color: primary }}
+                  >
+                    ✓ Selected
+                  </span>
+                )}
+                {!isSelected && (
+                  <span className='mt-2 text-sm font-secondary uppercase tracking-widest text-gray-500'>
+                    {constructor.team_principal}
+                  </span>
+                )}
               </button>
             )
           })}
