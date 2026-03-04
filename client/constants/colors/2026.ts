@@ -1,5 +1,5 @@
 export const colors_2026 = {
-  'james-vowels-is-my-spirit-animal': {
+  'james-vowles-spirit-animal': {
     numberBackground: '#1a1a2e',
     numberText: '#eeeeff',
     primary: '#16213e',
