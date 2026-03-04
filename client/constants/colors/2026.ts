@@ -1,5 +1,5 @@
 export const colors_2026 = {
-  'elizabeth-greif': {
+  'james-vowles-spirit-animal': {
     numberBackground: '#1a1a2e',
     numberText: '#eeeeff',
     primary: '#16213e',
@@ -20,7 +20,7 @@ export const colors_2026 = {
     secondary: '#ffd460',
     tertiary: '#f07b3f',
   },
-  'andrew-greif': {
+  'tanking-for-2027': {
     numberBackground: '#06d6a0',
     numberText: '#073b4c',
     primary: '#118ab2',
