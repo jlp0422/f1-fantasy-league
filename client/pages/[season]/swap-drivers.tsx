@@ -88,15 +88,58 @@ const SwapDrivers = ({
   const primaryColor = colors?.primary ?? '#6b7280'
   const { red, blue, green } = hexRgb(primaryColor)
   const hasImages = HAS_IMAGES_BY_SEASON[season]
-  const carImageUrl = normalized
-    ? hasImages
+  const carImageUrl =
+    normalized && hasImages
       ? getCloudinaryCarUrl(normalized, season, { format: 'webp' })
       : rgbDataURL(red, green, blue)
-    : rgbDataURL(red, green, blue)
 
   const filteredAvailableDrivers = localAvailableDrivers.filter((d) =>
     makeName(d).toLowerCase().includes(driverSearch.toLowerCase())
   )
+
+  const handleSwap = async () => {
+    setIsSwapping(true)
+    try {
+      const resp = await fetch(
+        `/api/drivers/swap?season=${season}&constructor_id=${constructorId}&old_driver_id=${oldDriverId}&new_driver_id=${newDriverId}${
+          isAdmin ? '&admin=true' : ''
+        }`,
+        { method: 'POST' }
+      )
+      const data = await resp.json()
+      setSwapResponse(data)
+      if (data.success) {
+        setLocalSelectedDrivers((prev) =>
+          prev.map((cd) => {
+            if (cd.constructor_id !== constructorId) return cd
+            return {
+              ...cd,
+              driver_one:
+                cd.driver_one.id === oldDriverId ? newDriver! : cd.driver_one,
+              driver_two:
+                cd.driver_two.id === oldDriverId ? newDriver! : cd.driver_two,
+            }
+          })
+        )
+        setLocalAvailableDrivers((prev) =>
+          [
+            ...prev.filter((d) => d.id !== newDriverId),
+            oldDriver! as unknown as DriverWithSeason,
+          ].sort((a, b) => a.last_name.localeCompare(b.last_name))
+        )
+        setOldDriverId(undefined)
+        setNewDriverId(undefined)
+        setDriverSearch('')
+      }
+    } catch {
+      setSwapResponse({
+        success: false,
+        message: 'Network error, please try again',
+      })
+    } finally {
+      setIsSwapping(false)
+    }
+  }
 
   if (!identityLoaded) {
     return (
@@ -315,54 +358,7 @@ const SwapDrivers = ({
           <button
             type='button'
             disabled={disableButton}
-            onClick={async () => {
-              setIsSwapping(true)
-              try {
-                const resp = await fetch(
-                  `/api/drivers/swap?season=${season}&constructor_id=${constructorId}&old_driver_id=${oldDriverId}&new_driver_id=${newDriverId}${
-                    isAdmin ? '&admin=true' : ''
-                  }`,
-                  { method: 'POST' }
-                )
-                const data = await resp.json()
-                setSwapResponse(data)
-                if (data.success) {
-                  setLocalSelectedDrivers((prev) =>
-                    prev.map((cd) => {
-                      if (cd.constructor_id !== constructorId) return cd
-                      return {
-                        ...cd,
-                        driver_one:
-                          cd.driver_one.id === oldDriverId
-                            ? newDriver!
-                            : cd.driver_one,
-                        driver_two:
-                          cd.driver_two.id === oldDriverId
-                            ? newDriver!
-                            : cd.driver_two,
-                      }
-                    })
-                  )
-                  setLocalAvailableDrivers((prev) => {
-                    const withoutNew = prev.filter((d) => d.id !== newDriverId)
-                    return [
-                      ...withoutNew,
-                      oldDriver! as unknown as DriverWithSeason,
-                    ].sort((a, b) => a.last_name.localeCompare(b.last_name))
-                  })
-                  setOldDriverId(undefined)
-                  setNewDriverId(undefined)
-                  setDriverSearch('')
-                }
-              } catch {
-                setSwapResponse({
-                  success: false,
-                  message: 'Network error, please try again',
-                })
-              } finally {
-                setIsSwapping(false)
-              }
-            }}
+            onClick={handleSwap}
             className='mt-6 w-full px-6 py-3 text-xl text-white bg-green-700 rounded-lg hover:bg-green-800 focus:outline-none focus:ring-4 focus:ring-green-300 disabled:opacity-50 disabled:cursor-not-allowed font-secondary'
           >
             {isSwapping ? 'Swapping...' : 'Confirm Swap'}
