@@ -25,7 +25,7 @@ export default async function handler(
     return createResponse(405, 'Method not allowed')
   }
 
-  const { season, constructor_id, old_driver_id, new_driver_id, is_admin } =
+  const { season, constructor_id, old_driver_id, new_driver_id, admin } =
     req.query
 
   if (!season) {
@@ -157,7 +157,7 @@ export default async function handler(
         current_driver_id: +old_driver_id,
         replacement_driver_id: +new_driver_id,
         transaction_type: 'WAIVER',
-        is_admin: is_admin === 'true',
+        is_admin: admin === 'true',
       })
 
     if (transactionError) {
