@@ -29,7 +29,7 @@ const IdentityPage = ({ constructors }: Props) => {
   const router = useRouter()
   const { query } = router
   const season = query.season as string
-  const redirect = (query.redirect as string) || `/${season}/standings`
+  const redirect = query.redirect as string | undefined
   const hasImages = HAS_IMAGES_BY_SEASON[season]
   const [currentIdentityId, setCurrentIdentityId] = useState<number | null>(
     null
@@ -55,7 +55,12 @@ const IdentityPage = ({ constructors }: Props) => {
       IDENTITY_KEY,
       JSON.stringify({ ...current, [season]: value })
     )
-    router.replace(redirect)
+    const destination =
+      redirect ||
+      `/${season}/constructors/${constructor.id}-${encodeURIComponent(
+        normalizeConstructorName(constructor.name)
+      )}`
+    router.replace(destination)
   }
 
   const currentConstructor = constructors.find(

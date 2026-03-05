@@ -25,7 +25,8 @@ export default async function handler(
     return createResponse(405, 'Method not allowed')
   }
 
-  const { season, constructor_id, old_driver_id, new_driver_id } = req.query
+  const { season, constructor_id, old_driver_id, new_driver_id, is_admin } =
+    req.query
 
   if (!season) {
     return createResponse(400, 'Invalid parameters, missing "season"')
@@ -146,6 +147,21 @@ export default async function handler(
 
     if (error) {
       throw new Error(error as any)
+    }
+
+    const { error: transactionError } = await supabase
+      .from('transaction')
+      .insert({
+        constructor_id: constructorDriver.constructor_id,
+        season_id: constructorDriver.season_id,
+        current_driver_id: +old_driver_id,
+        replacement_driver_id: +new_driver_id,
+        transaction_type: 'WAIVER',
+        is_admin: is_admin === 'true',
+      })
+
+    if (transactionError) {
+      console.error('** transaction log error', transactionError)
     }
 
     return res.status(201).json({
