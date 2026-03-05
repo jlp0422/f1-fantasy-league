@@ -43,6 +43,8 @@ const SwapDrivers = ({
   const [swapResponse, setSwapResponse] = useState<Data>()
   const [identityLoaded, setIdentityLoaded] = useState<boolean>(false)
   const [driverSearch, setDriverSearch] = useState<string>('')
+  const [localSelectedDrivers, setLocalSelectedDrivers] =
+    useState(selectedDrivers)
 
   useEffect(() => {
     if (!season) return
@@ -66,7 +68,7 @@ const SwapDrivers = ({
   }, [season, isAdmin])
 
   const managingConstructor = constructors.find((c) => c.id === constructorId)
-  const currentDrivers = selectedDrivers.find(
+  const currentDrivers = localSelectedDrivers.find(
     (cd) => cd.constructor_id === constructorId
   )
   const currentDriverList = currentDrivers
@@ -323,6 +325,22 @@ const SwapDrivers = ({
                 const data = await resp.json()
                 setSwapResponse(data)
                 if (data.success) {
+                  setLocalSelectedDrivers((prev) =>
+                    prev.map((cd) => {
+                      if (cd.constructor_id !== constructorId) return cd
+                      return {
+                        ...cd,
+                        driver_one:
+                          cd.driver_one.id === oldDriverId
+                            ? newDriver!
+                            : cd.driver_one,
+                        driver_two:
+                          cd.driver_two.id === oldDriverId
+                            ? newDriver!
+                            : cd.driver_two,
+                      }
+                    })
+                  )
                   setOldDriverId(undefined)
                   setNewDriverId(undefined)
                   setDriverSearch('')
