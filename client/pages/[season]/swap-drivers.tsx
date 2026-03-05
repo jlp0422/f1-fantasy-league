@@ -45,6 +45,8 @@ const SwapDrivers = ({
   const [driverSearch, setDriverSearch] = useState<string>('')
   const [localSelectedDrivers, setLocalSelectedDrivers] =
     useState(selectedDrivers)
+  const [localAvailableDrivers, setLocalAvailableDrivers] =
+    useState(availableDrivers)
 
   useEffect(() => {
     if (!season) return
@@ -75,7 +77,7 @@ const SwapDrivers = ({
     ? [currentDrivers.driver_one, currentDrivers.driver_two]
     : []
   const oldDriver = currentDriverList.find((d) => d?.id === oldDriverId)
-  const newDriver = availableDrivers.find((d) => d.id === newDriverId)
+  const newDriver = localAvailableDrivers.find((d) => d.id === newDriverId)
   const disableButton =
     !constructorId || !oldDriverId || !newDriverId || isSwapping
 
@@ -92,7 +94,7 @@ const SwapDrivers = ({
       : rgbDataURL(red, green, blue)
     : rgbDataURL(red, green, blue)
 
-  const filteredAvailableDrivers = availableDrivers.filter((d) =>
+  const filteredAvailableDrivers = localAvailableDrivers.filter((d) =>
     makeName(d).toLowerCase().includes(driverSearch.toLowerCase())
   )
 
@@ -341,6 +343,13 @@ const SwapDrivers = ({
                       }
                     })
                   )
+                  setLocalAvailableDrivers((prev) => {
+                    const withoutNew = prev.filter((d) => d.id !== newDriverId)
+                    return [
+                      ...withoutNew,
+                      oldDriver! as unknown as DriverWithSeason,
+                    ].sort((a, b) => a.last_name.localeCompare(b.last_name))
+                  })
                   setOldDriverId(undefined)
                   setNewDriverId(undefined)
                   setDriverSearch('')
