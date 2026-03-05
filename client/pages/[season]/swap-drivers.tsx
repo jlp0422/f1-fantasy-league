@@ -322,6 +322,11 @@ const SwapDrivers = ({
                 )
                 const data = await resp.json()
                 setSwapResponse(data)
+                if (data.success) {
+                  setOldDriverId(undefined)
+                  setNewDriverId(undefined)
+                  setDriverSearch('')
+                }
               } catch {
                 setSwapResponse({
                   success: false,
