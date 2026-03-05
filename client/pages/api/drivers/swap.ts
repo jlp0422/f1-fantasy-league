@@ -51,6 +51,8 @@ export default async function handler(
       .select(
         `
         id,
+        constructor_id,
+        season_id,
         driver_one_id,
         driver_two_id,
         season!inner(year)
