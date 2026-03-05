@@ -2,8 +2,16 @@ import Layout from '@/components/Layout'
 import Toggle from '@/components/Toggle'
 import TickXAxis from '@/components/charts/TickXAxis'
 import TickYAxis from '@/components/charts/TickYAxis'
-import { COLORS_BY_CONSTRUCTOR, COLORS_BY_SEASON } from '@/constants/index'
-import { normalizeConstructorName } from '@/helpers/cars'
+import {
+  COLORS_BY_CONSTRUCTOR,
+  COLORS_BY_SEASON,
+  HAS_IMAGES_BY_SEASON,
+} from '@/constants/index'
+import {
+  getCloudinaryCarUrl,
+  normalizeConstructorName,
+  rgbDataURL,
+} from '@/helpers/cars'
 import { constructorColumns, raceColumns } from '@/helpers/supabase'
 import { getIdParam, getSeasonParam, indexBy, makeName } from '@/helpers/utils'
 import { supabase } from '@/lib/database'
@@ -15,6 +23,7 @@ import {
   ConstructorDriverWithJoins,
   DriverRaceResultWithJoins,
 } from '@/types/Unions'
+import hexRgb from 'hex-rgb'
 import { GetServerSidePropsContext } from 'next'
 import Image from 'next/image'
 import { useRouter } from 'next/router'
@@ -57,69 +66,65 @@ const DriverPage = ({
     ? COLORS_BY_CONSTRUCTOR[season][normalized]
     : COLORS_BY_SEASON[season]
 
-  const seasonData = [
+  const stats = [
     {
       value: seasonPoints.finishPoints + seasonPoints.gridPoints,
       label: 'Total Points',
     },
-    {
-      value: constructor.name ?? 'N/A',
-      label: 'Constructor',
-    },
-  ]
-  const driverData = [
-    {
-      value: driver.number,
-      label: 'Number',
-    },
-    {
-      value: driver.constructor_name,
-      label: 'Racing Team',
-    },
+    { value: constructor.name ?? 'N/A', label: 'Constructor' },
+    { value: driver.number, label: 'Number' },
+    { value: driver.constructor_name, label: 'Racing Team' },
   ]
 
-  const data = [seasonData, driverData]
+  const hasImages = HAS_IMAGES_BY_SEASON[season]
+  const { red, blue, green } = hexRgb(primaryColor)
+  const carImageUrl = constructor.name
+    ? getCloudinaryCarUrl(normalized, season, { format: 'webp' })
+    : rgbDataURL(red, green, blue)
 
   return (
     <Layout documentTitle={fullName}>
-      <div className='flex flex-col items-center'>
-        <div className='flex flex-col items-center justify-center'>
-          <Image
-            src={driver.image_url}
-            alt={fullName}
-            width={150}
-            height={150}
-          />
-          <h2 className='my-2 text-5xl font-bold tracking-normal text-center text-gray-900 uppercase font-primary sm:text-4xl md:text-5xl lg:text-6xl'>
+      <div
+        className='bg-cover bg-center w-screen absolute h-80 sm:h-[336px] left-0 top-[64px] sm:top-[72px] shadow-inset-black-7'
+        style={{
+          backgroundImage: `url(${
+            hasImages ? carImageUrl : rgbDataURL(red, green, blue)
+          })`,
+        }}
+      />
+      <div className='relative flex flex-col items-center sm:flex-row'>
+        <Image
+          src={driver.image_url}
+          alt={fullName}
+          width={288}
+          height={288}
+          priority
+          className='rounded-lg shadow-lg w-72 h-72'
+        />
+        <div className='mx-4 my-2 text-center sm:mx-8 sm:text-left'>
+          <h2 className='font-bold tracking-normal font-primary uppercase text-gray-900 sm:text-gray-200 text-5xl sm:text-4xl md:text-5xl lg:text-6xl mt-4 lg:mt-2'>
             {fullName}
           </h2>
-        </div>
-        {data.map((dataGroup, index) => (
-          <div
-            key={index}
-            className='flex flex-col gap-0 mx-4 my-2 mt-4 text-center last:mt-0 sm:flex-row sm:gap-16 space-between sm:mx-8'
-          >
-            {dataGroup.map(({ value, label }) => {
-              return (
-                <div key={label} className='flex flex-col'>
-                  <h2 className='text-4xl font-bold tracking-normal text-gray-900 uppercase font-primary sm:text-3xl md:text-4xl lg:text-5xl'>
-                    {value}
-                  </h2>
-                  <p className='text-2xl leading-none tracking-wide text-gray-600 font-tertiary'>
-                    {label}
-                  </p>
-                </div>
-              )
-            })}
+          <div className='grid grid-cols-2 gap-x-8 gap-y-2 mt-4'>
+            {stats.map(({ value, label }) => (
+              <div key={label} className='flex flex-col'>
+                <h3 className='text-3xl font-bold tracking-normal font-primary uppercase text-gray-900 sm:text-gray-200 sm:text-2xl md:text-3xl'>
+                  {value}
+                </h3>
+                <p className='text-xl leading-none tracking-wide text-gray-600 font-tertiary sm:text-gray-300'>
+                  {label}
+                </p>
+              </div>
+            ))}
           </div>
-        ))}
+        </div>
       </div>
 
       <Toggle
         label='Detailed Points'
         checked={showDetail}
         onChange={() => setShowDetail((current) => !current)}
-        className='mt-2 text-gray-900 sm:mt-10'
+        className='mt-2 text-gray-900 sm:mt-10 flex items-center'
       />
       {/* mobile points table */}
       <div className='relative visible block mb-4 overflow-x-auto rounded-lg shadow-md md:hidden md:invisible'>
@@ -225,7 +230,7 @@ const DriverPage = ({
 
       <div className='invisible hidden sm:visible sm:block'>
         <h2 className='text-xl font-bold tracking-tight text-gray-900 font-secondary md:text-2xl lg:text-3xl'>
-          Driver Points by Race
+          Points by Race
         </h2>
         <div className='w-full mt-4 rounded-lg bg-slate-600 h-500'>
           <ResponsiveContainer>
