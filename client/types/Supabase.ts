@@ -277,12 +277,14 @@ export type Database = {
           }
         ]
       }
-      driver_transaction: {
+      transaction: {
         Row: {
           constructor_id: number | null
           created_at: string | null
           current_driver_id: number | null
           id: number
+          is_admin: boolean
+          notes: string | null
           replacement_driver_id: number | null
           season_id: number | null
           transaction_type: string
@@ -292,6 +294,8 @@ export type Database = {
           created_at?: string | null
           current_driver_id?: number | null
           id?: number
+          is_admin?: boolean
+          notes?: string | null
           replacement_driver_id?: number | null
           season_id?: number | null
           transaction_type?: string
@@ -301,6 +305,8 @@ export type Database = {
           created_at?: string | null
           current_driver_id?: number | null
           id?: number
+          is_admin?: boolean
+          notes?: string | null
           replacement_driver_id?: number | null
           season_id?: number | null
           transaction_type?: string

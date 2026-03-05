@@ -1,4 +1,3 @@
-import { normalizeConstructorName } from '@/helpers/cars'
 import { makeName } from '@/helpers/utils'
 import { supabase } from '@/lib/database'
 import { Driver } from '@/types/Driver'
@@ -25,7 +24,8 @@ export default async function handler(
     return createResponse(405, 'Method not allowed')
   }
 
-  const { season, constructor_id, old_driver_id, new_driver_id } = req.query
+  const { season, constructor_id, old_driver_id, new_driver_id, admin } =
+    req.query
 
   if (!season) {
     return createResponse(400, 'Invalid parameters, missing "season"')
@@ -50,6 +50,8 @@ export default async function handler(
       .select(
         `
         id,
+        constructor_id,
+        season_id,
         driver_one_id,
         driver_two_id,
         season!inner(year)
@@ -60,38 +62,54 @@ export default async function handler(
       .limit(1)
       .returns<ConstructorDriverWithJoins>()
       .single()
+    const constructorDriver =
+      constructorDriverResp as unknown as ConstructorDriverWithJoins
 
-    if (!constructorDriverResp) {
+    if (!constructorDriver) {
       return createResponse(400, 'Constructor does not exist')
     }
 
-    const constructorDriver =
-      constructorDriverResp as ConstructorDriverWithJoins
+    const [
+      { data: oldDriverResp },
+      { data: newDriverResp },
+      { data: existingDriverMatch },
+    ] = await Promise.all([
+      supabase
+        .from('driver')
+        .select(`id, first_name, last_name, abbreviation, season!inner(year)`)
+        .eq('id', old_driver_id)
+        .eq('season.year', season)
+        .limit(1)
+        .returns<Driver>()
+        .single(),
+      supabase
+        .from('driver')
+        .select(`id, first_name, last_name, abbreviation, season!inner(year)`)
+        .eq('id', new_driver_id)
+        .eq('season.year', season)
+        .limit(1)
+        .returns<Driver>()
+        .single(),
+      supabase
+        .from('constructor_driver')
+        .select(`id, season!inner(year)`)
+        .eq('season.year', season)
+        .or(
+          `driver_one_id.eq.${new_driver_id},driver_two_id.eq.${new_driver_id}`
+        )
+        .limit(1),
+    ])
 
-    const { data: oldDriver } = await supabase
-      .from('driver')
-      .select(
-        `
-        id,
-        first_name,
-        last_name,
-        abbreviation,
-        season!inner(year)
-      `
-      )
-      .eq('id', old_driver_id)
-      .eq('season.year', season)
-      .limit(1)
-      .returns<Driver>()
-      .single()
+    const oldDriver = oldDriverResp as unknown as Driver
+    const newDriver = newDriverResp as unknown as Driver
 
     if (!oldDriver) {
       return createResponse(400, 'Old Driver does not exist')
     }
 
     if (
-      constructorDriver.driver_one_id !== (oldDriver as Driver).id &&
-      constructorDriver.driver_two_id !== (oldDriver as Driver).id
+      constructorDriver.driver_one_id !== oldDriver.id &&
+      constructorDriver.driver_two_id !== oldDriver.id
     ) {
       return createResponse(
         400,
@@ -99,38 +117,14 @@ export default async function handler(
       )
     }
 
-    const { data: newDriver } = await supabase
-      .from('driver')
-      .select(
-        `
-        id,
-        abbreviation,
-        first_name,
-        last_name,
-        season!inner(year)
-      `
-      )
-      .eq('id', new_driver_id)
-      .eq('season.year', season)
-      .limit(1)
-      .returns<Driver>()
-      .single()
-
     if (!newDriver) {
       return createResponse(400, 'New Driver does not exist')
     }
 
-    const { data: existingDriverMatch } = await supabase
-      .from('constructor_driver')
-      .select(`id, season!inner(year)`)
-      .eq('season.year', season)
-      .or(`driver_one_id.eq.${new_driver_id},driver_two_id.eq.${new_driver_id}`)
-      .limit(1)
-
     if (existingDriverMatch && existingDriverMatch.length > 0) {
       return createResponse(
         400,
-        `New Driver is already assigned to a constructor`
+        'New Driver is already assigned to a constructor'
       )
     }
 
@@ -146,6 +140,21 @@ export default async function handler(
 
     if (error) {
       throw new Error(error as any)
+    }
+
+    const { error: transactionError } = await supabase
+      .from('transaction')
+      .insert({
+        constructor_id: constructorDriver.constructor_id,
+        season_id: constructorDriver.season_id,
+        current_driver_id: +old_driver_id,
+        replacement_driver_id: +new_driver_id,
+        transaction_type: 'WAIVER',
+        is_admin: admin === 'true',
+      })
+
+    if (transactionError) {
+      console.error('** transaction log error', transactionError)
     }
 
     return res.status(201).json({
