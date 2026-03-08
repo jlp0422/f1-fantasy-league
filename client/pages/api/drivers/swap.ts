@@ -24,6 +24,35 @@ export default async function handler(
     return createResponse(405, 'Method not allowed')
   }
 
+  // Swaps are only allowed Tuesday 6am ET through Saturday 6am ET
+  // Use Intl to resolve ET correctly regardless of server timezone (handles DST too)
+  const now = new Date()
+  const etParts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/New_York',
+    weekday: 'short',
+    hour: 'numeric',
+    minute: 'numeric',
+    hour12: false,
+  }).formatToParts(now)
+  const etDay = etParts.find((p) => p.type === 'weekday')!.value // 'Mon', 'Tue', etc.
+  const etHour =
+    parseInt(etParts.find((p) => p.type === 'hour')!.value, 10) % 24
+  const etMinute = parseInt(etParts.find((p) => p.type === 'minute')!.value, 10)
+  const minutesSinceMidnight = etHour * 60 + etMinute
+  const isSwapWindowOpen =
+    (etDay === 'Tue' && minutesSinceMidnight >= 6 * 60) ||
+    etDay === 'Wed' ||
+    etDay === 'Thu' ||
+    etDay === 'Fri' ||
+    (etDay === 'Sat' && minutesSinceMidnight < 6 * 60)
+
+  if (!isSwapWindowOpen) {
+    return createResponse(
+      403,
+      'Driver swaps are only allowed Tuesday 6am ET through Saturday 6am ET'
+    )
+  }
+
   const { season, constructor_id, old_driver_id, new_driver_id, admin } =
     req.query
 
