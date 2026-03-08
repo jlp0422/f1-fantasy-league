@@ -1,0 +1,31 @@
+name: Data Generator Tests
+
+on:
+  push:
+    paths:
+      - 'supabase-data-generator/**'
+  pull_request:
+    paths:
+      - 'supabase-data-generator/**'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: supabase-data-generator
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: supabase-data-generator/requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt pytest
+
+      - name: Run tests
+        run: pytest test_generate_data.py -v
