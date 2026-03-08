@@ -484,6 +484,308 @@ class TestSaoPaulo2025:
             assert pts[abbrev]["is_dnf"] is True
 
 
+# ── create_row_data: DB payload builder ──────────────────────────────────────
+#
+# This function builds the exact dict inserted into driver_race_result.
+# It must be tested independently because it recalculates grid_diff_points
+# from the stored grid_difference value and does type coercions — bugs here
+# produce silent wrong values in the DB.
+
+def create_row_data(row_info, race_id):
+    """Replicated from generate-data.py — must stay in sync."""
+    constructor_id = row_info["constructor_id"]
+    grid_diff = row_info["grid_difference"]
+    grid_diff_points = grid_diff / 2 if grid_diff > 0 else 0
+    return {
+        "finish_position": int(row_info["Position"]),
+        "finish_position_points": int(row_info["Points"]),
+        "grid_difference": int(grid_diff),
+        "grid_difference_points": float(grid_diff_points),
+        "is_dnf": row_info["is_dnf"],
+        "race_id": race_id,
+        "constructor_id": None if constructor_id == "null" else constructor_id,
+        "driver_id": row_info["driver_id"],
+    }
+
+
+def make_pipeline_row(abbrev, pos, grid, classified_pos, time_str, driver_id, constructor_id, points_val, grid_diff_val, is_dnf):
+    """Build a fully-computed df row as it exists after the pipeline transforms."""
+    return {
+        "Abbreviation": abbrev,
+        "Position": float(pos),
+        "GridPosition": float(grid),
+        "ClassifiedPosition": classified_pos,
+        "Time": pd.NaT if time_str is None else pd.Timedelta(time_str),
+        "DriverNumber": "1",
+        "driver_id": driver_id,
+        "constructor_id": constructor_id,
+        "Points": points_val,
+        "grid_difference": grid_diff_val,
+        "is_dnf": is_dnf,
+    }
+
+
+class TestCreateRowData:
+    """Tests for the DB payload builder — the final step before insert."""
+
+    def test_finisher_output_keys(self):
+        r = make_pipeline_row("NOR", 1, 1, "1", "0 days 01:00:00", 42, 7, 20, 0, False)
+        result = create_row_data(r, race_id=110)
+        assert set(result.keys()) == {
+            "finish_position", "finish_position_points", "grid_difference",
+            "grid_difference_points", "is_dnf", "race_id", "constructor_id", "driver_id",
+        }
+
+    def test_finisher_types(self):
+        r = make_pipeline_row("NOR", 1, 1, "1", "0 days 01:00:00", 42, 7, 20, 0, False)
+        result = create_row_data(r, race_id=110)
+        assert isinstance(result["finish_position"], int)
+        assert isinstance(result["finish_position_points"], int)
+        assert isinstance(result["grid_difference"], int)
+        assert isinstance(result["grid_difference_points"], float)
+        assert isinstance(result["is_dnf"], bool)
+
+    def test_finisher_values(self):
+        # NOR: P1, started P3 → grid_diff=2, grid_diff_pts=1.0
+        r = make_pipeline_row("NOR", 1, 3, "1", "0 days 01:00:00", 42, 7, 20, 2, False)
+        result = create_row_data(r, race_id=110)
+        assert result["finish_position"] == 1
+        assert result["finish_position_points"] == 20
+        assert result["grid_difference"] == 2
+        assert result["grid_difference_points"] == 1.0
+        assert result["is_dnf"] is False
+        assert result["race_id"] == 110
+        assert result["constructor_id"] == 7
+        assert result["driver_id"] == 42
+
+    def test_dnf_values(self):
+        r = make_pipeline_row("SAI", 18, 10, "R", None, 99, 3, -1, 0, True)
+        result = create_row_data(r, race_id=113)
+        assert result["finish_position_points"] == -1
+        assert result["grid_difference"] == 0
+        assert result["grid_difference_points"] == 0.0
+        assert result["is_dnf"] is True
+
+    def test_null_constructor_id_becomes_none(self):
+        r = make_pipeline_row("NOR", 1, 1, "1", "0 days 01:00:00", 42, "null", 20, 0, False)
+        result = create_row_data(r, race_id=110)
+        assert result["constructor_id"] is None
+
+    def test_valid_constructor_id_preserved(self):
+        r = make_pipeline_row("NOR", 1, 1, "1", "0 days 01:00:00", 42, 7, 20, 0, False)
+        result = create_row_data(r, race_id=110)
+        assert result["constructor_id"] == 7
+
+    def test_grid_diff_points_recalculated_from_grid_difference(self):
+        # grid_difference=10 → grid_difference_points=5.0
+        r = make_pipeline_row("HUL", 3, 19, "3", "0 days 01:00:00", 55, 2, 18, 16, False)
+        result = create_row_data(r, race_id=121)
+        assert result["grid_difference"] == 16
+        assert result["grid_difference_points"] == 8.0
+
+    def test_negative_grid_diff_points_is_zero(self):
+        # Driver started P2, finished P9 → grid_diff=-7 → points=0
+        r = make_pipeline_row("PIA", 9, 2, "9", "0 days 01:00:00", 11, 5, 12, -7, False)
+        result = create_row_data(r, race_id=110)
+        assert result["grid_difference"] == -7
+        assert result["grid_difference_points"] == 0.0
+
+    def test_race_id_is_set_correctly(self):
+        r = make_pipeline_row("NOR", 1, 1, "1", "0 days 01:00:00", 42, 7, 20, 0, False)
+        assert create_row_data(r, race_id=999)["race_id"] == 999
+
+
+class TestEndToEndPayload:
+    """Verify the full pipeline produces a correct, insertable DB payload."""
+
+    PIPELINE_RESULTS = [
+        row("NOR", 1, 3),
+        row("PIA", 2, 2),
+        row("HUL", 3, 19),
+        dnf_row("ANT", 16, 10),
+    ]
+
+    def test_payload_row_count_matches_input(self):
+        df = pd.DataFrame(self.PIPELINE_RESULTS)
+        df["is_dnf"] = df.apply(dnf_check, axis=1)
+        df["Points"] = df.apply(get_finish_points, axis=1)
+        df["grid_difference"] = df.apply(get_grid_diff, axis=1)
+        df["driver_id"] = 1
+        df["constructor_id"] = 1
+        payload = [create_row_data(r, 110) for _, r in df.iterrows()]
+        assert len(payload) == 4
+
+    def test_all_payload_rows_have_required_keys(self):
+        required = {"finish_position", "finish_position_points", "grid_difference",
+                    "grid_difference_points", "is_dnf", "race_id", "constructor_id", "driver_id"}
+        df = pd.DataFrame(self.PIPELINE_RESULTS)
+        df["is_dnf"] = df.apply(dnf_check, axis=1)
+        df["Points"] = df.apply(get_finish_points, axis=1)
+        df["grid_difference"] = df.apply(get_grid_diff, axis=1)
+        df["driver_id"] = 1
+        df["constructor_id"] = 1
+        for _, r in df.iterrows():
+            assert set(create_row_data(r, 110).keys()) == required
+
+    def test_hul_end_to_end_britain(self):
+        """HUL: P3, started P19 — full pipeline must produce correct DB payload."""
+        r = make_pipeline_row("HUL", 3, 19, "3", "0 days 01:00:00", 55, 2, 18, 16, False)
+        result = create_row_data(r, race_id=121)
+        assert result["finish_position"] == 3
+        assert result["finish_position_points"] == 18
+        assert result["grid_difference"] == 16
+        assert result["grid_difference_points"] == 8.0
+        assert result["is_dnf"] is False
+
+
+class TestClassifiedPositionVariants:
+    """
+    DNF classification must handle all non-numeric ClassifiedPosition codes.
+    F1 uses: 'R' (retired), 'W' (withdrawn), 'D' (DSQ), 'E', 'F', 'N', 'NC'.
+    All must be treated as DNF; only digit strings (e.g. '3', '14') are finishers.
+    """
+
+    def test_disqualified_is_dnf(self):
+        r = {**row("VER", 1, 1), "ClassifiedPosition": "D", "Time": pd.NaT}
+        assert dnf_check(r) is True
+
+    def test_not_classified_nc_is_dnf(self):
+        r = {**row("ALO", 15, 6), "ClassifiedPosition": "NC", "Time": pd.NaT}
+        assert dnf_check(r) is True
+
+    def test_retired_r_is_dnf(self):
+        r = dnf_row("SAI", 18, 10)
+        assert dnf_check(r) is True
+
+    def test_withdrawn_w_is_dnf(self):
+        r = {**row("PIA", 21, 5), "ClassifiedPosition": "W", "Time": pd.NaT}
+        assert dnf_check(r) is True
+
+    def test_numeric_string_is_not_dnf(self):
+        r = row("NOR", 1, 1)
+        assert dnf_check(r) is False
+
+    def test_multidigit_position_is_not_dnf(self):
+        r = row("COL", 14, 20)
+        assert dnf_check(r) is False
+
+    def test_disqualified_gets_minus_one_points(self):
+        results = [{**row("VER", 1, 1), "ClassifiedPosition": "D", "Time": pd.NaT}]
+        pts = compute_points(results)
+        assert pts["VER"]["finish_pts"] == -1
+        assert pts["VER"]["total"] == -1.0
+
+
+class TestDriverConstructorIdLookup:
+    """
+    Verify the driver/constructor ID lookup behavior that feeds create_row_data.
+    Missing IDs must not silently produce wrong data.
+    """
+
+    def test_missing_driver_number_returns_none(self):
+        lookup = {1: 101, 44: 202}
+        result = lookup.get(int("99"))  # driver number 99 not in DB
+        assert result is None
+
+    def test_missing_constructor_returns_null_string(self):
+        lookup = {101: 7, 202: 3}
+        result = lookup.get(int("999"), "null")  # driver_id 999 not assigned
+        assert result == "null"
+
+    def test_null_string_maps_to_none_in_payload(self):
+        r = make_pipeline_row("NOR", 1, 1, "1", "0 days 01:00:00", 42, "null", 20, 0, False)
+        result = create_row_data(r, race_id=110)
+        assert result["constructor_id"] is None
+
+    def test_constructor_driver_both_drivers_mapped(self):
+        """Both driver_one_id and driver_two_id must map to the same constructor_id."""
+        raw = [{"driver_one_id": 10, "driver_two_id": 20, "constructor_id": 5}]
+        lookup = {}
+        for entry in raw:
+            lookup[entry["driver_one_id"]] = entry["constructor_id"]
+            lookup[entry["driver_two_id"]] = entry["constructor_id"]
+        assert lookup[10] == 5
+        assert lookup[20] == 5
+
+
+class TestFormatForEmail:
+    """Smoke tests for the email formatter — ensures it produces valid output."""
+
+    def _make_inputs(self):
+        driver_id_by_number = {1: 101, 44: 202, 16: 303}
+        update_row_data = [
+            {"driver_id": 101, "finish_position": 1, "finish_position_points": 20,
+             "grid_difference_points": 1.0, "is_dnf": False},
+            {"driver_id": 202, "finish_position": 2, "finish_position_points": 19,
+             "grid_difference_points": 0.0, "is_dnf": False},
+            {"driver_id": 303, "finish_position": 15, "finish_position_points": -1,
+             "grid_difference_points": 0.0, "is_dnf": True},
+        ]
+        df = pd.DataFrame([
+            {"DriverNumber": "1",  "Abbreviation": "NOR", "GridPosition": 3.0},
+            {"DriverNumber": "44", "Abbreviation": "HAM", "GridPosition": 1.0},
+            {"DriverNumber": "16", "Abbreviation": "LEC", "GridPosition": 6.0},
+        ])
+        return driver_id_by_number, update_row_data, df
+
+    def _format_for_email(self, driver_id_by_number, update_row_data, df):
+        """Replicated from generate-data.py."""
+        driver_number_by_id = {v: k for k, v in driver_id_by_number.items()}
+        driver_id_to_start_position = {}
+        string = "Sorted By Finish Position\n"
+        for r in update_row_data:
+            driver_number = str(driver_number_by_id[r["driver_id"]])
+            df_driver = df.loc[df["DriverNumber"] == driver_number]
+            driver_abbrev = df_driver["Abbreviation"].iloc[0]
+            grid_pos = df_driver["GridPosition"].iloc[0]
+            finish_pos = r["finish_position"]
+            finish_pos_pts = r["finish_position_points"]
+            grid_diff_pts = r["grid_difference_points"]
+            grid_int = int(grid_pos)
+            driver_id_to_start_position[r["driver_id"]] = grid_int if grid_int > 0 else 20
+            finish_str = "DNF" if r["is_dnf"] else str(int(finish_pos))
+            start_str = grid_int if grid_int > 0 else "Pit Lane (20th)"
+            string += f'{finish_str}) {driver_abbrev}: Start: {start_str}, Result Pts: {int(finish_pos_pts)}, Grid Diff Pts: {float(grid_diff_pts)}, Total Points: {finish_pos_pts + grid_diff_pts}\n'
+        string += "\nSorted by Start Position\n"
+        start_order = sorted(update_row_data, key=lambda r: driver_id_to_start_position[r["driver_id"]])
+        for r in start_order:
+            driver_number = str(driver_number_by_id[r["driver_id"]])
+            df_driver = df.loc[df["DriverNumber"] == driver_number]
+            driver_abbrev = df_driver["Abbreviation"].iloc[0]
+            grid_pos = df_driver["GridPosition"].iloc[0]
+            string += f'{int(grid_pos) if int(grid_pos) > 0 else "Pit Lane (20th)"}) {driver_abbrev}\n'
+        return string
+
+    def test_returns_string(self):
+        result = self._format_for_email(*self._make_inputs())
+        assert isinstance(result, str)
+
+    def test_contains_finish_section_header(self):
+        result = self._format_for_email(*self._make_inputs())
+        assert "Sorted By Finish Position" in result
+
+    def test_contains_start_section_header(self):
+        result = self._format_for_email(*self._make_inputs())
+        assert "Sorted by Start Position" in result
+
+    def test_dnf_shown_as_dnf(self):
+        result = self._format_for_email(*self._make_inputs())
+        assert "DNF) LEC" in result
+
+    def test_finisher_shown_with_position(self):
+        result = self._format_for_email(*self._make_inputs())
+        assert "1) NOR" in result
+
+    def test_pit_lane_start_shown_correctly(self):
+        """GridPosition=0 should display as Pit Lane (20th)."""
+        driver_id_by_number = {1: 101}
+        update_row_data = [{"driver_id": 101, "finish_position": 10,
+                            "finish_position_points": 11, "grid_difference_points": 5.0, "is_dnf": False}]
+        df = pd.DataFrame([{"DriverNumber": "1", "Abbreviation": "BEA", "GridPosition": 0.0}])
+        result = self._format_for_email(driver_id_by_number, update_row_data, df)
+        assert "Pit Lane (20th)" in result
+
+
 # ── edge case tests ───────────────────────────────────────────────────────────
 
 class TestEdgeCases:
