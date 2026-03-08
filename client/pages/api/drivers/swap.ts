@@ -24,6 +24,31 @@ export default async function handler(
     return createResponse(405, 'Method not allowed')
   }
 
+  // Swaps are only allowed Tuesday 6am ET through Saturday 6am ET
+  const now = new Date()
+  const etOffset = -5 * 60 // ET is UTC-5 (standard); adjust for DST if needed
+  const etNow = new Date(
+    now.getTime() + (now.getTimezoneOffset() + etOffset) * 60000
+  )
+  const day = etNow.getDay() // 0=Sun, 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat
+  const hour = etNow.getHours()
+  const minutesSinceMidnight = hour * 60 + etNow.getMinutes()
+  const tuesdayOpen = minutesSinceMidnight >= 6 * 60 // Tue >= 6:00am
+  const saturdayClose = minutesSinceMidnight < 6 * 60 // Sat < 6:00am
+  const isSwapWindowOpen =
+    (day === 2 && tuesdayOpen) ||
+    day === 3 ||
+    day === 4 ||
+    day === 5 ||
+    (day === 6 && saturdayClose)
+
+  if (!isSwapWindowOpen) {
+    return createResponse(
+      403,
+      'Driver swaps are only allowed Tuesday 6am ET through Saturday 6am ET'
+    )
+  }
+
   const { season, constructor_id, old_driver_id, new_driver_id, admin } =
     req.query
 
