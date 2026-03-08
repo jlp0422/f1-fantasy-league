@@ -25,22 +25,26 @@ export default async function handler(
   }
 
   // Swaps are only allowed Tuesday 6am ET through Saturday 6am ET
+  // Use Intl to resolve ET correctly regardless of server timezone (handles DST too)
   const now = new Date()
-  const etOffset = -5 * 60 // ET is UTC-5 (standard); adjust for DST if needed
-  const etNow = new Date(
-    now.getTime() + (now.getTimezoneOffset() + etOffset) * 60000
-  )
-  const day = etNow.getDay() // 0=Sun, 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat
-  const hour = etNow.getHours()
-  const minutesSinceMidnight = hour * 60 + etNow.getMinutes()
-  const tuesdayOpen = minutesSinceMidnight >= 6 * 60 // Tue >= 6:00am
-  const saturdayClose = minutesSinceMidnight < 6 * 60 // Sat < 6:00am
+  const etParts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/New_York',
+    weekday: 'short',
+    hour: 'numeric',
+    minute: 'numeric',
+    hour12: false,
+  }).formatToParts(now)
+  const etDay = etParts.find((p) => p.type === 'weekday')!.value // 'Mon', 'Tue', etc.
+  const etHour =
+    parseInt(etParts.find((p) => p.type === 'hour')!.value, 10) % 24
+  const etMinute = parseInt(etParts.find((p) => p.type === 'minute')!.value, 10)
+  const minutesSinceMidnight = etHour * 60 + etMinute
   const isSwapWindowOpen =
-    (day === 2 && tuesdayOpen) ||
-    day === 3 ||
-    day === 4 ||
-    day === 5 ||
-    (day === 6 && saturdayClose)
+    (etDay === 'Tue' && minutesSinceMidnight >= 6 * 60) ||
+    etDay === 'Wed' ||
+    etDay === 'Thu' ||
+    etDay === 'Fri' ||
+    (etDay === 'Sat' && minutesSinceMidnight < 6 * 60)
 
   if (!isSwapWindowOpen) {
     return createResponse(
