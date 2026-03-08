@@ -26,6 +26,8 @@ points_map = {
     18: 3,
     19: 2,
     20: 1,
+    21: 0,
+    22: 0,
 }
 
 api_key = os.environ["SUPABASE_SERVICE_ROLE_KEY"]
@@ -179,6 +181,10 @@ def do_the_update():
 
     if len(session.results) == 0:
         print(f"Found no results for Race: {session.event.EventName}, no update needed...")
+        return
+
+    if (session.results["GridPosition"] == -1).all():
+        print(f"Grid position data not yet available for Race: {session.event.EventName}. Skipping update until accurate grid positions are loaded.")
         return
 
     print(f"Running update for Race: {session.event.EventName}...")
