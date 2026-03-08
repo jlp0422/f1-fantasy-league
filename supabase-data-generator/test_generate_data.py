@@ -1,12 +1,10 @@
 """
 Regression tests for generate-data.py point calculation logic.
 
-Fixtures were captured from FastF1 live data for 5 spread-out 2025 races.
-Run with: pytest test_generate_data.py -v
+Fixtures were captured from FastF1 live data and cross-checked against the DB
+for 10 races across the 2025 season. Run with: pytest test_generate_data.py -v
 """
-import pytest
 import pandas as pd
-from unittest.mock import patch, MagicMock
 
 # ── replicate the logic under test ────────────────────────────────────────────
 
@@ -332,6 +330,158 @@ class TestAbuDhabi2025:
         assert pts["COL"]["finish_pts"] == 1
         assert pts["COL"]["grid_diff_pts"] == 0.0
         assert pts["COL"]["total"] == 1.0
+
+
+# ── regression fixtures: additional 2025 races ───────────────────────────────
+
+class TestChina2025:
+    """
+    NOTE: BOR/HUL/TSU were classified 14th/15th/16th by FastF1 but the DB
+    records them as DNF — likely due to post-race steward exclusions/penalties.
+    Tests here reflect DB truth (DNF for those three).
+    """
+    RESULTS = [
+        row("PIA", 1, 1), row("NOR", 2, 3), row("RUS", 3, 2), row("VER", 4, 4),
+        row("OCO", 5, 11), row("ANT", 6, 8), row("ALB", 7, 10), row("BEA", 8, 17),
+        row("STR", 9, 14), row("SAI", 10, 15), row("HAD", 11, 7), row("LAW", 12, 20),
+        row("DOO", 13, 18),
+        dnf_row("BOR", 14, 19), dnf_row("HUL", 15, 12), dnf_row("TSU", 16, 9),
+        dnf_row("ALO", 17, 13), dnf_row("LEC", 18, 6), dnf_row("HAM", 19, 5),
+        dnf_row("GAS", 20, 16),
+    ]
+
+    def test_winner(self):
+        pts = compute_points(self.RESULTS)
+        assert pts["PIA"]["total"] == 20.0
+
+    def test_ocos_grid_gain(self):
+        pts = compute_points(self.RESULTS)
+        assert pts["OCO"]["grid_diff_pts"] == 3.0   # (11-5)/2
+
+    def test_bea_grid_gain(self):
+        pts = compute_points(self.RESULTS)
+        assert pts["BEA"]["grid_diff_pts"] == 4.5   # (17-8)/2
+
+    def test_bor_hul_tsu_dnf(self):
+        pts = compute_points(self.RESULTS)
+        for abbrev in ["BOR", "HUL", "TSU"]:
+            assert pts[abbrev]["is_dnf"] is True
+            assert pts[abbrev]["finish_pts"] == -1
+
+
+class TestJapan2025:
+    RESULTS = [
+        row("VER", 1, 1), row("NOR", 2, 2), row("PIA", 3, 3), row("LEC", 4, 4),
+        row("RUS", 5, 5), row("ANT", 6, 6), row("HAM", 7, 8), row("HAD", 8, 7),
+        row("ALB", 9, 9), row("BEA", 10, 10), row("ALO", 11, 12), row("TSU", 12, 14),
+        row("GAS", 13, 11), row("SAI", 14, 15), row("DOO", 15, 19), row("HUL", 16, 16),
+        row("LAW", 17, 13), row("OCO", 18, 18), row("BOR", 19, 17), row("STR", 20, 20),
+    ]
+
+    def test_winner(self):
+        pts = compute_points(self.RESULTS)
+        assert pts["VER"]["total"] == 20.0
+
+    def test_no_dnfs(self):
+        pts = compute_points(self.RESULTS)
+        assert all(not v["is_dnf"] for v in pts.values())
+
+    def test_top6_no_grid_gain(self):
+        pts = compute_points(self.RESULTS)
+        for abbrev in ["VER", "NOR", "PIA", "LEC", "RUS", "ANT"]:
+            assert pts[abbrev]["grid_diff_pts"] == 0.0
+
+    def test_doo_grid_gain(self):
+        pts = compute_points(self.RESULTS)
+        assert pts["DOO"]["grid_diff_pts"] == 2.0   # (19-15)/2
+
+
+class TestBritain2025:
+    RESULTS = [
+        row("NOR", 1, 3), row("PIA", 2, 2), row("HUL", 3, 19), row("HAM", 4, 5),
+        row("VER", 5, 1), row("GAS", 6, 8), row("STR", 7, 17), row("ALB", 8, 13),
+        row("ALO", 9, 7), row("RUS", 10, 4), row("BEA", 11, 18), row("SAI", 12, 9),
+        row("OCO", 13, 14), row("LEC", 14, 6), row("TSU", 15, 11),
+        dnf_row("ANT", 16, 10), dnf_row("HAD", 17, 12), dnf_row("BOR", 18, 16),
+        dnf_row("LAW", 19, 15), dnf_row("COL", 20, 20),
+    ]
+
+    def test_winner(self):
+        pts = compute_points(self.RESULTS)
+        assert pts["NOR"]["total"] == 21.0   # grid diff bonus
+
+    def test_hul_massive_grid_gain(self):
+        pts = compute_points(self.RESULTS)
+        assert pts["HUL"]["grid_diff_pts"] == 8.0   # (19-3)/2
+        assert pts["HUL"]["total"] == 26.0
+
+    def test_str_grid_gain(self):
+        pts = compute_points(self.RESULTS)
+        assert pts["STR"]["grid_diff_pts"] == 5.0   # (17-7)/2
+
+    def test_dnfs(self):
+        pts = compute_points(self.RESULTS)
+        for abbrev in ["ANT", "HAD", "BOR", "LAW", "COL"]:
+            assert pts[abbrev]["is_dnf"] is True
+
+
+class TestSingapore2025:
+    RESULTS = [
+        row("RUS", 1, 1), row("VER", 2, 2), row("NOR", 3, 5), row("PIA", 4, 3),
+        row("ANT", 5, 4), row("LEC", 6, 7), row("ALO", 7, 10), row("HAM", 8, 6),
+        row("BEA", 9, 9), row("SAI", 10, 18), row("HAD", 11, 8), row("TSU", 12, 13),
+        row("STR", 13, 15), row("ALB", 14, 20), row("LAW", 15, 12), row("COL", 16, 16),
+        row("BOR", 17, 14), row("OCO", 18, 17), row("GAS", 19, 19), row("HUL", 20, 11),
+    ]
+
+    def test_winner(self):
+        pts = compute_points(self.RESULTS)
+        assert pts["RUS"]["total"] == 20.0
+
+    def test_no_dnfs(self):
+        pts = compute_points(self.RESULTS)
+        assert all(not v["is_dnf"] for v in pts.values())
+
+    def test_sai_grid_gain(self):
+        pts = compute_points(self.RESULTS)
+        assert pts["SAI"]["grid_diff_pts"] == 4.0   # (18-10)/2
+
+    def test_alb_grid_gain(self):
+        pts = compute_points(self.RESULTS)
+        assert pts["ALB"]["grid_diff_pts"] == 3.0   # (20-14)/2
+
+    def test_hul_lost_positions(self):
+        pts = compute_points(self.RESULTS)
+        assert pts["HUL"]["grid_diff_pts"] == 0.0   # started 11, finished 20
+
+
+class TestSaoPaulo2025:
+    RESULTS = [
+        row("NOR", 1, 1), row("ANT", 2, 2), row("VER", 3, 19), row("RUS", 4, 6),
+        row("PIA", 5, 4), row("BEA", 6, 8), row("LAW", 7, 7), row("HAD", 8, 5),
+        row("HUL", 9, 10), row("GAS", 10, 9), row("ALB", 11, 12), row("OCO", 12, 20),
+        row("SAI", 13, 15), row("ALO", 14, 11), row("COL", 15, 16), row("STR", 16, 14),
+        row("TSU", 17, 17),
+        dnf_row("HAM", 18, 13), dnf_row("LEC", 19, 3), dnf_row("BOR", 20, 18),
+    ]
+
+    def test_winner(self):
+        pts = compute_points(self.RESULTS)
+        assert pts["NOR"]["total"] == 20.0
+
+    def test_ver_massive_grid_gain(self):
+        pts = compute_points(self.RESULTS)
+        assert pts["VER"]["grid_diff_pts"] == 8.0   # (19-3)/2
+        assert pts["VER"]["total"] == 26.0
+
+    def test_oco_grid_gain(self):
+        pts = compute_points(self.RESULTS)
+        assert pts["OCO"]["grid_diff_pts"] == 4.0   # (20-12)/2
+
+    def test_dnfs(self):
+        pts = compute_points(self.RESULTS)
+        for abbrev in ["HAM", "LEC", "BOR"]:
+            assert pts[abbrev]["is_dnf"] is True
 
 
 # ── edge case tests ───────────────────────────────────────────────────────────
