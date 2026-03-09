@@ -18,9 +18,7 @@ POINTS_MAP = {
 
 
 def dnf_check(row):
-    not_classified = not str(row["ClassifiedPosition"]).isdigit()
-    invalid_time = pd.isna(row["Time"])
-    return not_classified or invalid_time
+    return not str(row["ClassifiedPosition"]).isdigit()
 
 
 def get_finish_points(row):
@@ -836,37 +834,18 @@ class TestEdgeCases:
         assert POINTS_MAP.get(23, 0) == 0
 
     def test_no_valid_results_blocks_insert(self):
-        """If no driver has both a numeric ClassifiedPosition and a valid Time, block insert."""
+        """If all drivers are DNF (non-numeric ClassifiedPosition), block insert."""
         results = [dnf_row("RUS", 1, 1), dnf_row("NOR", 2, 2), dnf_row("LEC", 3, 3)]
         df = pd.DataFrame(results)
-        has_valid = any(
-            str(r["ClassifiedPosition"]).isdigit() and not pd.isna(r["Time"])
-            for _, r in df.iterrows()
-        )
-        assert not has_valid
+        df["is_dnf"] = df.apply(dnf_check, axis=1)
+        assert df["is_dnf"].all()
 
     def test_finishers_with_dnfs_has_valid_results(self):
-        """At least one finisher with valid Time means race data is available — proceed."""
+        """At least one finisher (numeric ClassifiedPosition) means race data is available — proceed."""
         results = [row("RUS", 1, 1), row("LEC", 2, 4), dnf_row("NOR", 3, 6), dnf_row("HAM", 4, 7)]
         df = pd.DataFrame(results)
-        has_valid = any(
-            str(r["ClassifiedPosition"]).isdigit() and not pd.isna(r["Time"])
-            for _, r in df.iterrows()
-        )
-        assert has_valid
-
-    def test_all_classified_but_all_nat_times_blocks_insert(self):
-        """Numeric ClassifiedPositions but all NaT Times (transitional state) — block insert."""
-        results = [
-            {**row("RUS", 1, 1), "Time": pd.NaT},
-            {**row("NOR", 2, 3), "Time": pd.NaT},
-        ]
-        df = pd.DataFrame(results)
-        has_valid = any(
-            str(r["ClassifiedPosition"]).isdigit() and not pd.isna(r["Time"])
-            for _, r in df.iterrows()
-        )
-        assert not has_valid
+        df["is_dnf"] = df.apply(dnf_check, axis=1)
+        assert not df["is_dnf"].all()
 
     def test_get_most_recent_event_uses_timezone_aware_datetime(self):
         """Session5Date from FastF1 is UTC-aware; comparison must use aware datetime."""

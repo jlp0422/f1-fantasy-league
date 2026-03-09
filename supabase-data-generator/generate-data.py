@@ -198,11 +198,8 @@ def do_the_update():
     ].copy()
 
     def dnf_check(row):
-        # ClassifiedPosition is an int string if classified, otherwise a non-numeric string
-        # Time is NaT if the driver did not finish
-        not_classified = not str(row["ClassifiedPosition"]).isdigit()
-        invalid_time = pd.isna(row["Time"])
-        return not_classified or invalid_time
+        # ClassifiedPosition is numeric (e.g. '3', '14') if classified, otherwise 'R', 'W', 'D', 'NC', etc.
+        return not str(row["ClassifiedPosition"]).isdigit()
 
     def get_finish_points(row):
         if row["is_dnf"]:
@@ -235,13 +232,8 @@ def do_the_update():
 
     df["is_dnf"] = df.apply(dnf_check, axis=1)
 
-    # Only block if no driver has both a numeric ClassifiedPosition and a valid Time
-    has_valid_results = any(
-        str(row["ClassifiedPosition"]).isdigit() and not pd.isna(row["Time"])
-        for _, row in df.iterrows()
-    )
-    if not has_valid_results:
-        print(f"No valid race results available for Race: {session.event.EventName}. Timing data is likely incomplete — skipping update.")
+    if df["is_dnf"].all():
+        print(f"No valid race results for Race: {session.event.EventName}. Timing data is likely incomplete — skipping update.")
         return
 
     df["driver_id"] = df["DriverNumber"].map(get_driver_id)
