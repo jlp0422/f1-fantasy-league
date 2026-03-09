@@ -36,6 +36,8 @@ def get_grid_diff(row):
     if row["is_dnf"]:
         return 0
     grid = int(row["GridPosition"])
+    if grid == -1:
+        return 0
     if grid == 0:
         return 22 - int(row["Position"])
     return grid - int(row["Position"])
@@ -808,13 +810,18 @@ class TestFormatForEmail:
 
 class TestEdgeCases:
     def test_all_negative_grid_pos_detected(self):
-        """Guard: if all GridPositions are -1, script should not update DB."""
+        """All -1 GridPositions should be detected so the email warning is appended."""
         results = [
             {**row("NOR", 1, 1), "GridPosition": -1.0},
             {**row("VER", 2, 3), "GridPosition": -1.0},
         ]
         df = pd.DataFrame(results)
         assert (df["GridPosition"] == -1).all()
+
+    def test_grid_diff_returns_zero_when_grid_pos_is_negative_one(self):
+        """GridPosition=-1 means unknown — grid diff must be 0, not a garbage negative value."""
+        r = {**row("RUS", 1, 1), "GridPosition": -1.0, "is_dnf": False}
+        assert get_grid_diff(r) == 0
 
     def test_partial_grid_pos_not_blocked(self):
         """Partial -1s (e.g. pit lane start edge case) should not trigger block."""

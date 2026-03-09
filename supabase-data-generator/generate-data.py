@@ -184,9 +184,9 @@ def do_the_update():
         print(f"Found no results for Race: {session.event.EventName}, no update needed...")
         return
 
-    if (session.results["GridPosition"] == -1).all():
-        print(f"Grid position data not yet available for Race: {session.event.EventName}. Skipping update until accurate grid positions are loaded.")
-        return
+    missing_grid_positions = (session.results["GridPosition"] == -1).all()
+    if missing_grid_positions:
+        print(f"Grid position data not yet available for Race: {session.event.EventName}. Proceeding with insert — grid difference points will be 0 and backfill will be needed.")
 
     print(f"Running update for Race: {session.event.EventName}...")
 
@@ -223,6 +223,9 @@ def do_the_update():
             return 0
         row_grid = row["GridPosition"]
         row_pos = row["Position"]
+        # GridPosition == -1 means data not yet published — no diff calculable.
+        if int(row_grid) == -1:
+            return 0
         # GridPosition == 0 was used by older FastF1 versions to indicate a pit lane start.
         # Modern FastF1 assigns penalized back-of-grid positions instead, so this branch
         # is likely never triggered, but kept for backwards compatibility.
@@ -252,6 +255,8 @@ def do_the_update():
 
     if insert_rows.status_code == 201:
         driver_updates = format_for_email(driver_id_by_driver_number, update_row_data, df)
+        if missing_grid_positions:
+            driver_updates += "\n⚠️  Grid positions were unavailable (all -1) — grid difference points are 0 for all drivers. Backfill required once data is published.\n"
         print("Row insertion successful, data is:")
         print(driver_updates)
 
