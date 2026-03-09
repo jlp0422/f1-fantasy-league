@@ -235,8 +235,9 @@ def do_the_update():
 
     df["is_dnf"] = df.apply(dnf_check, axis=1)
 
-    if df["is_dnf"].all():
-        print(f"All drivers flagged as DNF for Race: {session.event.EventName}. Timing data is likely incomplete — skipping update.")
+    # Only block if no driver has a valid classified position — truly incomplete data
+    if df["ClassifiedPosition"].apply(lambda p: not str(p).isdigit()).all():
+        print(f"No classified positions available for Race: {session.event.EventName}. Timing data is likely incomplete — skipping update.")
         return
 
     df["driver_id"] = df["DriverNumber"].map(get_driver_id)

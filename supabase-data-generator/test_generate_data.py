@@ -835,19 +835,19 @@ class TestEdgeCases:
     def test_position_beyond_22_gets_zero(self):
         assert POINTS_MAP.get(23, 0) == 0
 
-    def test_all_dnf_guard(self):
-        """If all drivers are flagged DNF, timing data is incomplete — must not insert."""
+    def test_no_classified_positions_blocks_insert(self):
+        """If no driver has a numeric ClassifiedPosition, data is truly incomplete — must not insert."""
         results = [dnf_row("RUS", 1, 1), dnf_row("NOR", 2, 2), dnf_row("LEC", 3, 3)]
         df = pd.DataFrame(results)
-        df["is_dnf"] = df.apply(dnf_check, axis=1)
-        assert df["is_dnf"].all(), "All-DNF guard should trigger when all Times are NaT"
+        all_unclassified = df["ClassifiedPosition"].apply(lambda p: not str(p).isdigit()).all()
+        assert all_unclassified
 
-    def test_partial_dnf_does_not_trigger_guard(self):
-        """A race with some DNFs but at least one finisher should proceed normally."""
-        results = [row("RUS", 1, 1), dnf_row("NOR", 2, 2)]
+    def test_valid_classified_positions_with_dnfs_proceeds(self):
+        """Finishers with valid ClassifiedPosition should proceed even with some NaT Times (DNFs)."""
+        results = [row("RUS", 1, 1), row("LEC", 2, 4), dnf_row("NOR", 3, 6), dnf_row("HAM", 4, 7)]
         df = pd.DataFrame(results)
-        df["is_dnf"] = df.apply(dnf_check, axis=1)
-        assert not df["is_dnf"].all()
+        any_classified = not df["ClassifiedPosition"].apply(lambda p: not str(p).isdigit()).all()
+        assert any_classified
 
     def test_get_most_recent_event_uses_timezone_aware_datetime(self):
         """Session5Date from FastF1 is UTC-aware; comparison must use aware datetime."""
