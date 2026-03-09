@@ -18,9 +18,7 @@ POINTS_MAP = {
 
 
 def dnf_check(row):
-    not_classified = not str(row["ClassifiedPosition"]).isdigit()
-    invalid_time = pd.isna(row["Time"])
-    return not_classified or invalid_time
+    return not str(row["ClassifiedPosition"]).isdigit()
 
 
 def get_finish_points(row):
@@ -36,6 +34,8 @@ def get_grid_diff(row):
     if row["is_dnf"]:
         return 0
     grid = int(row["GridPosition"])
+    if grid == -1:
+        return 0
     if grid == 0:
         return 22 - int(row["Position"])
     return grid - int(row["Position"])
@@ -808,13 +808,18 @@ class TestFormatForEmail:
 
 class TestEdgeCases:
     def test_all_negative_grid_pos_detected(self):
-        """Guard: if all GridPositions are -1, script should not update DB."""
+        """All -1 GridPositions should be detected so the email warning is appended."""
         results = [
             {**row("NOR", 1, 1), "GridPosition": -1.0},
             {**row("VER", 2, 3), "GridPosition": -1.0},
         ]
         df = pd.DataFrame(results)
         assert (df["GridPosition"] == -1).all()
+
+    def test_grid_diff_returns_zero_when_grid_pos_is_negative_one(self):
+        """GridPosition=-1 means unknown — grid diff must be 0, not a garbage negative value."""
+        r = {**row("RUS", 1, 1), "GridPosition": -1.0, "is_dnf": False}
+        assert get_grid_diff(r) == 0
 
     def test_partial_grid_pos_not_blocked(self):
         """Partial -1s (e.g. pit lane start edge case) should not trigger block."""
@@ -828,16 +833,16 @@ class TestEdgeCases:
     def test_position_beyond_22_gets_zero(self):
         assert POINTS_MAP.get(23, 0) == 0
 
-    def test_all_dnf_guard(self):
-        """If all drivers are flagged DNF, timing data is incomplete — must not insert."""
+    def test_no_valid_results_blocks_insert(self):
+        """If all drivers are DNF (non-numeric ClassifiedPosition), block insert."""
         results = [dnf_row("RUS", 1, 1), dnf_row("NOR", 2, 2), dnf_row("LEC", 3, 3)]
         df = pd.DataFrame(results)
         df["is_dnf"] = df.apply(dnf_check, axis=1)
-        assert df["is_dnf"].all(), "All-DNF guard should trigger when all Times are NaT"
+        assert df["is_dnf"].all()
 
-    def test_partial_dnf_does_not_trigger_guard(self):
-        """A race with some DNFs but at least one finisher should proceed normally."""
-        results = [row("RUS", 1, 1), dnf_row("NOR", 2, 2)]
+    def test_finishers_with_dnfs_has_valid_results(self):
+        """At least one finisher (numeric ClassifiedPosition) means race data is available — proceed."""
+        results = [row("RUS", 1, 1), row("LEC", 2, 4), dnf_row("NOR", 3, 6), dnf_row("HAM", 4, 7)]
         df = pd.DataFrame(results)
         df["is_dnf"] = df.apply(dnf_check, axis=1)
         assert not df["is_dnf"].all()
