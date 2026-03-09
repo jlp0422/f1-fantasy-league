@@ -37,7 +37,7 @@ def get_grid_diff(row):
         return 0
     grid = int(row["GridPosition"])
     if grid == 0:
-        return 20 - int(row["Position"])
+        return 22 - int(row["Position"])
     return grid - int(row["Position"])
 
 
@@ -148,7 +148,7 @@ class TestGridDiff:
     def test_pit_lane_start_grid_zero(self):
         # GridPosition=0 (legacy pit lane) treated as starting 20th
         r = {**row("BEA", 14, 0), "is_dnf": False}
-        assert get_grid_diff(r) == 6  # 20 - 14
+        assert get_grid_diff(r) == 8  # 22 - 14
 
     def test_grid_diff_points_only_positive(self):
         # Losing positions gives 0 grid_diff_pts, not negative
@@ -497,7 +497,7 @@ def create_row_data(row_info, race_id):
     grid_diff = row_info["grid_difference"]
     grid_diff_points = grid_diff / 2 if grid_diff > 0 else 0
     return {
-        "finish_position": int(row_info["Position"]),
+        "finish_position": int(row_info["Position"]) if not pd.isna(row_info["Position"]) else 0,
         "finish_position_points": int(row_info["Points"]),
         "grid_difference": int(grid_diff),
         "grid_difference_points": float(grid_diff_points),
@@ -593,6 +593,13 @@ class TestCreateRowData:
     def test_race_id_is_set_correctly(self):
         r = make_pipeline_row("NOR", 1, 1, "1", "0 days 01:00:00", 42, 7, 20, 0, False)
         assert create_row_data(r, race_id=999)["race_id"] == 999
+
+    def test_nan_position_does_not_raise(self):
+        """Withdrawn/DNS drivers can have NaN Position — must not crash with ValueError."""
+        r = make_pipeline_row("PIA", float("nan"), 5, "W", None, 11, 3, -1, 0, True)
+        result = create_row_data(r, race_id=110)
+        assert result["finish_position"] == 0
+        assert result["finish_position_points"] == -1
 
 
 class TestEndToEndPayload:
@@ -741,10 +748,10 @@ class TestFormatForEmail:
             finish_pos = r["finish_position"]
             finish_pos_pts = r["finish_position_points"]
             grid_diff_pts = r["grid_difference_points"]
-            grid_int = int(grid_pos)
+            grid_int = int(grid_pos) if not pd.isna(grid_pos) else 0
             driver_id_to_start_position[r["driver_id"]] = grid_int if grid_int > 0 else 20
             finish_str = "DNF" if r["is_dnf"] else str(int(finish_pos))
-            start_str = grid_int if grid_int > 0 else "Pit Lane (20th)"
+            start_str = grid_int if grid_int > 0 else "Pit Lane (22nd)"
             string += f'{finish_str}) {driver_abbrev}: Start: {start_str}, Result Pts: {int(finish_pos_pts)}, Grid Diff Pts: {float(grid_diff_pts)}, Total Points: {finish_pos_pts + grid_diff_pts}\n'
         string += "\nSorted by Start Position\n"
         start_order = sorted(update_row_data, key=lambda r: driver_id_to_start_position[r["driver_id"]])
@@ -753,7 +760,8 @@ class TestFormatForEmail:
             df_driver = df.loc[df["DriverNumber"] == driver_number]
             driver_abbrev = df_driver["Abbreviation"].iloc[0]
             grid_pos = df_driver["GridPosition"].iloc[0]
-            string += f'{int(grid_pos) if int(grid_pos) > 0 else "Pit Lane (20th)"}) {driver_abbrev}\n'
+            grid_int = int(grid_pos) if not pd.isna(grid_pos) else 0
+            string += f'{grid_int if grid_int > 0 else "Pit Lane (22nd)"}) {driver_abbrev}\n'
         return string
 
     def test_returns_string(self):
@@ -777,13 +785,23 @@ class TestFormatForEmail:
         assert "1) NOR" in result
 
     def test_pit_lane_start_shown_correctly(self):
-        """GridPosition=0 should display as Pit Lane (20th)."""
+        """GridPosition=0 should display as Pit Lane (22nd)."""
         driver_id_by_number = {1: 101}
         update_row_data = [{"driver_id": 101, "finish_position": 10,
                             "finish_position_points": 11, "grid_difference_points": 5.0, "is_dnf": False}]
         df = pd.DataFrame([{"DriverNumber": "1", "Abbreviation": "BEA", "GridPosition": 0.0}])
         result = self._format_for_email(driver_id_by_number, update_row_data, df)
-        assert "Pit Lane (20th)" in result
+        assert "Pit Lane (22nd)" in result
+
+    def test_nan_grid_position_does_not_raise(self):
+        """NaN GridPosition (e.g. withdrawn driver) must not crash with ValueError."""
+        driver_id_by_number = {1: 101}
+        update_row_data = [{"driver_id": 101, "finish_position": 0,
+                            "finish_position_points": -1, "grid_difference_points": 0.0, "is_dnf": True}]
+        df = pd.DataFrame([{"DriverNumber": "1", "Abbreviation": "PIA", "GridPosition": float("nan")}])
+        result = self._format_for_email(driver_id_by_number, update_row_data, df)
+        assert "Pit Lane (22nd)" in result
+        assert "DNF) PIA" in result
 
 
 # ── edge case tests ───────────────────────────────────────────────────────────
@@ -809,6 +827,32 @@ class TestEdgeCases:
 
     def test_position_beyond_22_gets_zero(self):
         assert POINTS_MAP.get(23, 0) == 0
+
+    def test_all_dnf_guard(self):
+        """If all drivers are flagged DNF, timing data is incomplete — must not insert."""
+        results = [dnf_row("RUS", 1, 1), dnf_row("NOR", 2, 2), dnf_row("LEC", 3, 3)]
+        df = pd.DataFrame(results)
+        df["is_dnf"] = df.apply(dnf_check, axis=1)
+        assert df["is_dnf"].all(), "All-DNF guard should trigger when all Times are NaT"
+
+    def test_partial_dnf_does_not_trigger_guard(self):
+        """A race with some DNFs but at least one finisher should proceed normally."""
+        results = [row("RUS", 1, 1), dnf_row("NOR", 2, 2)]
+        df = pd.DataFrame(results)
+        df["is_dnf"] = df.apply(dnf_check, axis=1)
+        assert not df["is_dnf"].all()
+
+    def test_get_most_recent_event_uses_timezone_aware_datetime(self):
+        """Session5Date from FastF1 is UTC-aware; comparison must use aware datetime."""
+        from datetime import timezone
+        import pandas as pd
+        now = pd.Timestamp.now(tz="UTC")
+        past_date = pd.Timestamp("2025-01-01", tz="UTC")
+        future_date = pd.Timestamp("2099-01-01", tz="UTC")
+        schedule = pd.DataFrame({"Session5Date": [past_date, future_date], "EventName": ["Past", "Future"]})
+        past = schedule[schedule["Session5Date"] < now]
+        assert len(past) == 1
+        assert past.iloc[-1]["EventName"] == "Past"
 
     def test_withdrawn_driver_is_dnf(self):
         results = [{

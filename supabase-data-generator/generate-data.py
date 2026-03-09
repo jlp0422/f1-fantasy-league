@@ -2,7 +2,7 @@ import requests
 import fastf1
 import pandas as pd
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 import json
 
 points_map = {
@@ -60,7 +60,7 @@ def get_season_id(szn):
 
 
 def get_most_recent_event(schedule):
-    past = schedule[schedule["Session5Date"] < datetime.now()]
+    past = schedule[schedule["Session5Date"] < datetime.now(timezone.utc)]
     return past.iloc[-1]
 
 
@@ -100,7 +100,7 @@ def create_row_data(rowInfo, most_recent_race_id):
     grid_diff = rowInfo["grid_difference"]
     grid_diff_points = grid_diff / 2 if grid_diff > 0 else 0
     return {
-        "finish_position": int(rowInfo["Position"]),
+        "finish_position": int(rowInfo["Position"]) if not pd.isna(rowInfo["Position"]) else 0,
         "finish_position_points": int(rowInfo["Points"]),
         "grid_difference": int(grid_diff),
         "grid_difference_points": float(grid_diff_points),
@@ -138,11 +138,11 @@ def format_for_email(driver_id_by_driver_number, update_row_data, df):
         finish_pos = row["finish_position"]
         finish_pos_pts = row["finish_position_points"]
         grid_diff_pts = row["grid_difference_points"]
-        grid_int = int(grid_pos)
+        grid_int = int(grid_pos) if not pd.isna(grid_pos) else 0
         driver_id_to_start_position[row["driver_id"]] = grid_int if grid_int > 0 else 20
 
         finish_str = "DNF" if row["is_dnf"] else str(int(finish_pos))
-        start_str = grid_int if grid_int > 0 else "Pit Lane (20th)"
+        start_str = grid_int if grid_int > 0 else "Pit Lane (22nd)"
         string += f'{finish_str}) {driver_abbrev}: Start: {start_str}, Result Pts: {int(finish_pos_pts)}, Grid Diff Pts: {float(grid_diff_pts)}, Total Points: {finish_pos_pts + grid_diff_pts}\n'
 
     string += "\nSorted by Start Position\n"
@@ -154,7 +154,8 @@ def format_for_email(driver_id_by_driver_number, update_row_data, df):
         df_driver = df.loc[df["DriverNumber"] == driver_number]
         driver_abbrev = df_driver["Abbreviation"].iloc[0]
         grid_pos = df_driver["GridPosition"].iloc[0]
-        string += f'{int(grid_pos) if int(grid_pos) > 0 else "Pit Lane (20th)"}) {driver_abbrev}\n'
+        grid_int = int(grid_pos) if not pd.isna(grid_pos) else 0
+        string += f'{grid_int if grid_int > 0 else "Pit Lane (22nd)"}) {driver_abbrev}\n'
 
     return string
 
@@ -226,10 +227,15 @@ def do_the_update():
         # Modern FastF1 assigns penalized back-of-grid positions instead, so this branch
         # is likely never triggered, but kept for backwards compatibility.
         if int(row_grid) == 0:
-            return 20 - row_pos
+            return 22 - row_pos
         return row_grid - row_pos
 
     df["is_dnf"] = df.apply(dnf_check, axis=1)
+
+    if df["is_dnf"].all():
+        print(f"All drivers flagged as DNF for Race: {session.event.EventName}. Timing data is likely incomplete — skipping update.")
+        return
+
     df["driver_id"] = df["DriverNumber"].map(get_driver_id)
     df["constructor_id"] = df["driver_id"].map(get_constructor_id)
     df["Points"] = df.apply(get_finish_points, axis=1)
