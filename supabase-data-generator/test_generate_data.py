@@ -810,6 +810,18 @@ class TestEdgeCases:
     def test_position_beyond_22_gets_zero(self):
         assert POINTS_MAP.get(23, 0) == 0
 
+    def test_get_most_recent_event_uses_timezone_aware_datetime(self):
+        """Session5Date from FastF1 is UTC-aware; comparison must use aware datetime."""
+        from datetime import timezone
+        import pandas as pd
+        now = pd.Timestamp.now(tz="UTC")
+        past_date = pd.Timestamp("2025-01-01", tz="UTC")
+        future_date = pd.Timestamp("2099-01-01", tz="UTC")
+        schedule = pd.DataFrame({"Session5Date": [past_date, future_date], "EventName": ["Past", "Future"]})
+        past = schedule[schedule["Session5Date"] < now]
+        assert len(past) == 1
+        assert past.iloc[-1]["EventName"] == "Past"
+
     def test_withdrawn_driver_is_dnf(self):
         results = [{
             "Abbreviation": "PIA",

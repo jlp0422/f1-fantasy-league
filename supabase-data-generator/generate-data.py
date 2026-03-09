@@ -2,7 +2,7 @@ import requests
 import fastf1
 import pandas as pd
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 import json
 
 points_map = {
@@ -60,7 +60,7 @@ def get_season_id(szn):
 
 
 def get_most_recent_event(schedule):
-    past = schedule[schedule["Session5Date"] < datetime.now()]
+    past = schedule[schedule["Session5Date"] < datetime.now(timezone.utc)]
     return past.iloc[-1]
 
 
