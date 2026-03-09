@@ -100,7 +100,7 @@ def create_row_data(rowInfo, most_recent_race_id):
     grid_diff = rowInfo["grid_difference"]
     grid_diff_points = grid_diff / 2 if grid_diff > 0 else 0
     return {
-        "finish_position": int(rowInfo["Position"]),
+        "finish_position": int(rowInfo["Position"]) if not pd.isna(rowInfo["Position"]) else 0,
         "finish_position_points": int(rowInfo["Points"]),
         "grid_difference": int(grid_diff),
         "grid_difference_points": float(grid_diff_points),

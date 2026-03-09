@@ -497,7 +497,7 @@ def create_row_data(row_info, race_id):
     grid_diff = row_info["grid_difference"]
     grid_diff_points = grid_diff / 2 if grid_diff > 0 else 0
     return {
-        "finish_position": int(row_info["Position"]),
+        "finish_position": int(row_info["Position"]) if not pd.isna(row_info["Position"]) else 0,
         "finish_position_points": int(row_info["Points"]),
         "grid_difference": int(grid_diff),
         "grid_difference_points": float(grid_diff_points),
@@ -593,6 +593,13 @@ class TestCreateRowData:
     def test_race_id_is_set_correctly(self):
         r = make_pipeline_row("NOR", 1, 1, "1", "0 days 01:00:00", 42, 7, 20, 0, False)
         assert create_row_data(r, race_id=999)["race_id"] == 999
+
+    def test_nan_position_does_not_raise(self):
+        """Withdrawn/DNS drivers can have NaN Position — must not crash with ValueError."""
+        r = make_pipeline_row("PIA", float("nan"), 5, "W", None, 11, 3, -1, 0, True)
+        result = create_row_data(r, race_id=110)
+        assert result["finish_position"] == 0
+        assert result["finish_position_points"] == -1
 
 
 class TestEndToEndPayload:
