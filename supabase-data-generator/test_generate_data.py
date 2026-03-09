@@ -835,19 +835,38 @@ class TestEdgeCases:
     def test_position_beyond_22_gets_zero(self):
         assert POINTS_MAP.get(23, 0) == 0
 
-    def test_no_classified_positions_blocks_insert(self):
-        """If no driver has a numeric ClassifiedPosition, data is truly incomplete — must not insert."""
+    def test_no_valid_results_blocks_insert(self):
+        """If no driver has both a numeric ClassifiedPosition and a valid Time, block insert."""
         results = [dnf_row("RUS", 1, 1), dnf_row("NOR", 2, 2), dnf_row("LEC", 3, 3)]
         df = pd.DataFrame(results)
-        all_unclassified = df["ClassifiedPosition"].apply(lambda p: not str(p).isdigit()).all()
-        assert all_unclassified
+        has_valid = any(
+            str(r["ClassifiedPosition"]).isdigit() and not pd.isna(r["Time"])
+            for _, r in df.iterrows()
+        )
+        assert not has_valid
 
-    def test_valid_classified_positions_with_dnfs_proceeds(self):
-        """Finishers with valid ClassifiedPosition should proceed even with some NaT Times (DNFs)."""
+    def test_finishers_with_dnfs_has_valid_results(self):
+        """At least one finisher with valid Time means race data is available — proceed."""
         results = [row("RUS", 1, 1), row("LEC", 2, 4), dnf_row("NOR", 3, 6), dnf_row("HAM", 4, 7)]
         df = pd.DataFrame(results)
-        any_classified = not df["ClassifiedPosition"].apply(lambda p: not str(p).isdigit()).all()
-        assert any_classified
+        has_valid = any(
+            str(r["ClassifiedPosition"]).isdigit() and not pd.isna(r["Time"])
+            for _, r in df.iterrows()
+        )
+        assert has_valid
+
+    def test_all_classified_but_all_nat_times_blocks_insert(self):
+        """Numeric ClassifiedPositions but all NaT Times (transitional state) — block insert."""
+        results = [
+            {**row("RUS", 1, 1), "Time": pd.NaT},
+            {**row("NOR", 2, 3), "Time": pd.NaT},
+        ]
+        df = pd.DataFrame(results)
+        has_valid = any(
+            str(r["ClassifiedPosition"]).isdigit() and not pd.isna(r["Time"])
+            for _, r in df.iterrows()
+        )
+        assert not has_valid
 
     def test_get_most_recent_event_uses_timezone_aware_datetime(self):
         """Session5Date from FastF1 is UTC-aware; comparison must use aware datetime."""
