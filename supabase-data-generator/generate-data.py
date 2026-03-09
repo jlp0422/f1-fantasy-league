@@ -231,6 +231,11 @@ def do_the_update():
         return row_grid - row_pos
 
     df["is_dnf"] = df.apply(dnf_check, axis=1)
+
+    if df["is_dnf"].all():
+        print(f"All drivers flagged as DNF for Race: {session.event.EventName}. Timing data is likely incomplete — skipping update.")
+        return
+
     df["driver_id"] = df["DriverNumber"].map(get_driver_id)
     df["constructor_id"] = df["driver_id"].map(get_constructor_id)
     df["Points"] = df.apply(get_finish_points, axis=1)
