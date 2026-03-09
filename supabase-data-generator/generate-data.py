@@ -253,7 +253,7 @@ def do_the_update():
     if insert_rows.status_code == 201:
         driver_updates = format_for_email(driver_id_by_driver_number, update_row_data, df)
         if missing_grid_positions:
-            driver_updates += "\n⚠️  Grid positions were unavailable (all -1) — grid difference points are 0 for all drivers. Backfill required once data is published.\n"
+            driver_updates = "⚠️  Grid positions were unavailable (all -1) — grid difference points are 0 for all drivers. Backfill required once data is published.\n\n" + driver_updates
         print("Row insertion successful, data is:")
         print(driver_updates)
 
