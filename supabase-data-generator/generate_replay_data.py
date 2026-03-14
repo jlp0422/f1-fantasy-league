@@ -30,7 +30,7 @@ def generate_replay(season, race_location, supabase_url, supabase_service_role_k
     for driver_number in session.drivers:
         try:
             drv_laps = session.laps.pick_drivers(driver_number)
-            pos = drv_laps.get_pos_data(pad=1, pad_side="both")
+            pos = drv_laps.get_pos_data()
         except Exception as e:
             print(f"Warning: Could not get pos_data for driver {driver_number}: {e}")
             continue
@@ -69,35 +69,30 @@ def generate_replay(season, race_location, supabase_url, supabase_service_role_k
                 team = row.get("TeamName", row.get("Constructor", ""))
                 constructor_by_number[num] = str(team).lower().replace(" ", "-") if team else ""
 
-    session_start = None
     driver_series = {}
 
     for driver_number, df in driver_dfs.items():
-        if not isinstance(df.index, pd.DatetimeIndex):
-            if "Time" in df.columns:
-                df = df.set_index("Time")
-            else:
-                continue
-        if session_start is None:
-            session_start = df.index.min()
+        # FastF1 pos_data uses a TimedeltaIndex (relative to session start)
+        if "Time" in df.columns and not isinstance(df.index, pd.TimedeltaIndex):
+            df = df.set_index("Time")
+        # Drop negative times (before race start)
+        df = df[df.index >= pd.Timedelta(0)]
+        if df.empty:
+            continue
         df_resampled = df[["X", "Y"]].resample("1s").mean().interpolate(method="linear")
         driver_series[driver_number] = df_resampled
 
-    if session_start is None:
-        print("Warning: Could not determine session start time. Exiting.")
+    if not driver_series:
+        print("Warning: No resampled data found. Exiting.")
         return
 
     all_indices = []
     for df in driver_series.values():
         all_indices.extend(df.index.tolist())
 
-    if not all_indices:
-        print("Warning: No resampled data found. Exiting.")
-        return
-
-    t_min = min(all_indices)
+    t_min = max(pd.Timedelta(0), min(all_indices))
     t_max = max(all_indices)
-    time_index = pd.date_range(start=t_min, end=t_max, freq="1s")
+    time_index = pd.timedelta_range(start=t_min, end=t_max, freq="1s")
     duration_seconds = len(time_index)
 
     for driver_number in driver_series:
