@@ -6,7 +6,7 @@ import { RaceWithSeason } from '@/types/Unions'
 import { GetServerSidePropsContext } from 'next'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 interface DriverInfo {
   number: string
@@ -19,12 +19,28 @@ interface Frame {
   positions: Record<string, [number, number]>
 }
 
+interface LapEvent {
+  t: number
+  driver: string
+  lap: number
+  position: number | null
+}
+
 interface ReplayData {
   race_name: string
   duration_seconds: number
   sample_rate_hz: number
   drivers: DriverInfo[]
   frames: Frame[]
+  lap_events?: LapEvent[]
+}
+
+interface LeaderboardEntry {
+  position: number
+  abbrev: string
+  number: string
+  constructor: string
+  lap: number
 }
 
 interface Props {
@@ -32,7 +48,6 @@ interface Props {
   raceId: string
 }
 
-// Actual F1 team colors keyed by FastF1 team name slug
 const F1_TEAM_COLORS: Record<string, string> = {
   'red-bull-racing': '#3671C6',
   ferrari: '#E8002D',
@@ -77,7 +92,6 @@ const formatTime = (seconds: number) => {
 
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t
 
-// Internal multipliers: 1× label = 10 real frames/sec, 2× = 20, etc.
 const SPEEDS = [10, 20, 50, 100] as const
 type Speed = (typeof SPEEDS)[number]
 const SPEED_LABELS: Record<Speed, string> = {
@@ -94,23 +108,22 @@ const RaceReplay = ({ race, raceId }: Props) => {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const animFrameRef = useRef<number | null>(null)
   const lastTimestampRef = useRef<number | null>(null)
-  // Fractional frame position — drives smooth interpolation
   const frameFloatRef = useRef<number>(0)
-  const speedRef = useRef<Speed>(10) // 10 = "1×" label
+  const speedRef = useRef<Speed>(10)
   const playingRef = useRef<boolean>(false)
   const replayDataRef = useRef<ReplayData | null>(null)
-  // Pre-rendered track outline as an offscreen canvas
   const trackCanvasRef = useRef<HTMLCanvasElement | null>(null)
 
   const [replayData, setReplayData] = useState<ReplayData | null>(null)
   const [loading, setLoading] = useState(true)
   const [notAvailable, setNotAvailable] = useState(false)
-  // currentFrame state is only used by scrub bar / time display (~10fps updates)
   const [currentFrame, setCurrentFrame] = useState(0)
   const [playing, setPlaying] = useState(false)
   const [speed, setSpeed] = useState<Speed>(10)
 
   const driverColors = useRef<Record<string, string>>({})
+  // Per-driver sorted lap events for O(log n) lookup
+  const driverLapEvents = useRef<Map<string, LapEvent[]>>(new Map())
 
   useEffect(() => {
     fetch(`/api/races/${raceId}/replay`)
@@ -134,7 +147,6 @@ const RaceReplay = ({ race, raceId }: Props) => {
       })
   }, [raceId])
 
-  // Precompute driver colors and pre-render track outline
   useEffect(() => {
     if (!replayData) return
 
@@ -145,7 +157,15 @@ const RaceReplay = ({ race, raceId }: Props) => {
     }
     driverColors.current = colors
 
-    // Pre-render track outline onto an offscreen canvas
+    // Per-driver lap event lookup
+    const map = new Map<string, LapEvent[]>()
+    for (const evt of replayData.lap_events ?? []) {
+      if (!map.has(evt.driver)) map.set(evt.driver, [])
+      map.get(evt.driver)!.push(evt)
+    }
+    driverLapEvents.current = map
+
+    // Pre-render track outline
     const W = 900
     const H = 500
     const PAD = 40
@@ -153,7 +173,6 @@ const RaceReplay = ({ race, raceId }: Props) => {
     offscreen.width = W
     offscreen.height = H
     const ctx = offscreen.getContext('2d')!
-
     ctx.fillStyle = 'rgba(255,255,255,0.06)'
     const step = Math.max(1, Math.floor(replayData.frames.length / 3000))
     for (let i = 0; i < replayData.frames.length; i += step) {
@@ -166,7 +185,6 @@ const RaceReplay = ({ race, raceId }: Props) => {
     }
     trackCanvasRef.current = offscreen
 
-    // Draw initial frame
     drawFrameFloat(0, replayData)
   }, [replayData]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -181,16 +199,11 @@ const RaceReplay = ({ race, raceId }: Props) => {
     const PAD = 40
 
     ctx.clearRect(0, 0, W, H)
-
-    // Blit pre-rendered track outline
-    if (trackCanvasRef.current) {
-      ctx.drawImage(trackCanvasRef.current, 0, 0)
-    }
+    if (trackCanvasRef.current) ctx.drawImage(trackCanvasRef.current, 0, 0)
 
     const frameA = Math.floor(frameFloat)
     const frameB = Math.min(frameA + 1, data.frames.length - 1)
     const t = frameFloat - frameA
-
     const posA = data.frames[frameA].positions
     const posB = data.frames[frameB].positions
 
@@ -198,10 +211,8 @@ const RaceReplay = ({ race, raceId }: Props) => {
       const pA = posA[driver.number]
       const pB = posB[driver.number]
       if (!pA) continue
-      const p = pB ? pA : pA
       const px = PAD + lerp(pA[0], pB ? pB[0] : pA[0], t) * (W - PAD * 2)
       const py = PAD + (1 - lerp(pA[1], pB ? pB[1] : pA[1], t)) * (H - PAD * 2)
-
       const color = driverColors.current[driver.number] ?? '#888888'
 
       ctx.beginPath()
@@ -218,23 +229,54 @@ const RaceReplay = ({ race, raceId }: Props) => {
     }
   }
 
-  // Animation loop — runs entirely via refs, no React re-render per tick
+  // Binary search: last lap event for a driver with t <= frame
+  const getDriverLapState = (driverNum: string, frame: number) => {
+    const events = driverLapEvents.current.get(driverNum)
+    if (!events || events.length === 0) return null
+    let lo = 0,
+      hi = events.length - 1,
+      result = null
+    while (lo <= hi) {
+      const mid = (lo + hi) >> 1
+      if (events[mid].t <= frame) {
+        result = events[mid]
+        lo = mid + 1
+      } else {
+        hi = mid - 1
+      }
+    }
+    return result
+  }
+
+  // Leaderboard derived from currentFrame
+  const leaderboard = useMemo((): LeaderboardEntry[] => {
+    if (!replayData) return []
+    const entries: LeaderboardEntry[] = []
+    for (const driver of replayData.drivers) {
+      const state = getDriverLapState(driver.number, currentFrame)
+      entries.push({
+        position: state?.position ?? 99,
+        abbrev: driver.abbrev,
+        number: driver.number,
+        constructor: driver.constructor,
+        lap: state?.lap ?? 0,
+      })
+    }
+    return entries.sort((a, b) => a.position - b.position)
+  }, [currentFrame, replayData]) // eslint-disable-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     if (!playing || !replayData) return
-
     playingRef.current = true
     const totalFrames = replayData.frames.length
     let lastStateUpdate = 0
 
     const tick = (timestamp: number) => {
       if (!playingRef.current) return
-
-      if (lastTimestampRef.current === null) {
+      if (lastTimestampRef.current === null)
         lastTimestampRef.current = timestamp
-      }
-      const delta = Math.min(timestamp - lastTimestampRef.current, 100) // cap at 100ms to avoid jumps after tab switch
+      const delta = Math.min(timestamp - lastTimestampRef.current, 100)
       lastTimestampRef.current = timestamp
-
       frameFloatRef.current += (delta / 1000) * speedRef.current
 
       if (frameFloatRef.current >= totalFrames - 1) {
@@ -248,7 +290,6 @@ const RaceReplay = ({ race, raceId }: Props) => {
 
       drawFrameFloat(frameFloatRef.current, replayData)
 
-      // Throttle React state update to ~10fps to avoid re-render churn
       if (timestamp - lastStateUpdate > 100) {
         setCurrentFrame(Math.floor(frameFloatRef.current))
         lastStateUpdate = timestamp
@@ -258,7 +299,6 @@ const RaceReplay = ({ race, raceId }: Props) => {
     }
 
     animFrameRef.current = requestAnimationFrame(tick)
-
     return () => {
       playingRef.current = false
       if (animFrameRef.current !== null)
@@ -267,7 +307,6 @@ const RaceReplay = ({ race, raceId }: Props) => {
     }
   }, [playing, replayData]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Keep speedRef in sync without restarting the loop
   useEffect(() => {
     speedRef.current = speed
   }, [speed])
@@ -304,13 +343,11 @@ const RaceReplay = ({ race, raceId }: Props) => {
       documentTitle={`${race.name} Replay`}
       description={`Race replay for ${race.name}`}
     >
-      {/* Race header */}
       <div
         className='w-screen absolute h-48 sm:h-64 left-0 top-[64px] sm:top-[72px]'
         style={{ background: getGradient(race.location) }}
       />
 
-      {/* Race info */}
       <div className='relative flex flex-col items-center justify-end text-center min-h-[5rem] pt-4 sm:min-h-[10rem] sm:pt-0'>
         <h1 className='px-2 font-bold tracking-normal leading-tight text-gray-200 uppercase text-[clamp(1.25rem,6vw,2rem)] sm:text-5xl font-primary'>
           {race.name}
@@ -320,7 +357,6 @@ const RaceReplay = ({ race, raceId }: Props) => {
         </p>
       </div>
 
-      {/* Back link */}
       <div className='relative z-10 mx-2 mt-4 sm:mx-4'>
         <Link
           href={`/${season}/races/${query.location}`}
@@ -330,7 +366,6 @@ const RaceReplay = ({ race, raceId }: Props) => {
         </Link>
       </div>
 
-      {/* Main content */}
       <div className='relative z-10 mx-2 mt-4 sm:mx-4'>
         {loading && (
           <div className='flex items-center justify-center h-64 text-gray-400 font-tertiary text-xl'>
@@ -346,15 +381,55 @@ const RaceReplay = ({ race, raceId }: Props) => {
 
         {replayData && (
           <>
-            {/* Canvas */}
-            <div className='w-full rounded-lg overflow-hidden bg-gray-900 border border-gray-700'>
-              <canvas
-                ref={canvasRef}
-                width={900}
-                height={500}
-                className='w-full h-auto'
-                style={{ display: 'block' }}
-              />
+            {/* Canvas + leaderboard side by side on desktop */}
+            <div className='flex flex-col lg:flex-row gap-3'>
+              {/* Canvas */}
+              <div className='flex-1 min-w-0 rounded-lg overflow-hidden bg-gray-900 border border-gray-700'>
+                <canvas
+                  ref={canvasRef}
+                  width={900}
+                  height={500}
+                  className='w-full h-auto'
+                  style={{ display: 'block' }}
+                />
+              </div>
+
+              {/* Live leaderboard */}
+              {leaderboard.length > 0 && (
+                <div className='lg:w-44 rounded-lg bg-gray-900 border border-gray-700 overflow-hidden flex-shrink-0'>
+                  <div className='px-3 py-2 bg-gray-800 border-b border-gray-700'>
+                    <span className='text-white text-sm font-bold font-secondary uppercase tracking-wide'>
+                      Leaderboard
+                    </span>
+                  </div>
+                  <div className='divide-y divide-gray-800'>
+                    {leaderboard.map((entry, idx) => (
+                      <div
+                        key={entry.number}
+                        className='flex items-center gap-2 px-3 py-1.5'
+                      >
+                        <span className='text-gray-400 text-xs font-secondary w-5 text-right flex-shrink-0'>
+                          {entry.position < 99 ? entry.position : idx + 1}
+                        </span>
+                        <div
+                          className='w-2.5 h-2.5 rounded-full flex-shrink-0'
+                          style={{
+                            backgroundColor: getTeamColor(entry.constructor),
+                          }}
+                        />
+                        <span className='text-white text-sm font-bold font-secondary flex-1'>
+                          {entry.abbrev}
+                        </span>
+                        {entry.lap > 0 && (
+                          <span className='text-gray-400 text-xs font-secondary'>
+                            L{entry.lap}
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Controls */}
@@ -388,7 +463,6 @@ const RaceReplay = ({ race, raceId }: Props) => {
                 </span>
               </div>
 
-              {/* Scrub bar */}
               <input
                 type='range'
                 min={0}
@@ -399,14 +473,14 @@ const RaceReplay = ({ race, raceId }: Props) => {
               />
 
               {/* Driver legend */}
-              <div className='flex flex-wrap gap-x-3 gap-y-1.5 mt-2'>
+              <div className='flex flex-wrap gap-x-4 gap-y-2 mt-2'>
                 {replayData.drivers.map((d) => (
-                  <div key={d.number} className='flex items-center gap-1.5'>
+                  <div key={d.number} className='flex items-center gap-2'>
                     <div
-                      className='w-3 h-3 rounded-full border border-white/30 flex-shrink-0'
+                      className='w-3.5 h-3.5 rounded-full border border-white/40 flex-shrink-0'
                       style={{ backgroundColor: getTeamColor(d.constructor) }}
                     />
-                    <span className='text-gray-300 text-xs font-secondary uppercase'>
+                    <span className='text-white text-sm font-bold font-secondary uppercase'>
                       {d.abbrev}
                     </span>
                   </div>
