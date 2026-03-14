@@ -1,0 +1,30 @@
+name: "Generate Replay Data"
+on:
+  workflow_dispatch:
+    inputs:
+      season:
+        description: 'Season year (e.g. 2026)'
+        required: true
+        default: '2026'
+      race_location:
+        description: 'Race location as used by FastF1 (e.g. Melbourne)'
+        required: true
+
+jobs:
+  generate-replay-data:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3.1.0
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+      - name: Generate replay data and upload to Supabase Storage
+        env:
+          SEASON: ${{ github.event.inputs.season }}
+          RACE_LOCATION: ${{ github.event.inputs.race_location }}
+          SUPABASE_URL: https://agvtgmdvbvjnmlooagll.supabase.co
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          pip install -r supabase-data-generator/requirements.txt
+          python supabase-data-generator/generate_replay_data.py
