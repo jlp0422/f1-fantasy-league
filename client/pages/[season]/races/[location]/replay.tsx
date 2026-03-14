@@ -1,6 +1,4 @@
 import Layout from '@/components/Layout'
-import { COLORS_BY_CONSTRUCTOR } from '@/constants/index'
-import { normalizeConstructorName } from '@/helpers/cars'
 import { raceColumns } from '@/helpers/supabase'
 import { getLocationParam, getSeasonParam } from '@/helpers/utils'
 import { supabase } from '@/lib/database'
@@ -8,7 +6,7 @@ import { RaceWithSeason } from '@/types/Unions'
 import { GetServerSidePropsContext } from 'next'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 interface DriverInfo {
   number: string
@@ -34,6 +32,29 @@ interface Props {
   raceId: string
 }
 
+// Actual F1 team colors keyed by FastF1 team name slug
+const F1_TEAM_COLORS: Record<string, string> = {
+  'red-bull-racing': '#3671C6',
+  ferrari: '#E8002D',
+  mercedes: '#27F4D2',
+  mclaren: '#FF8000',
+  'aston-martin': '#229971',
+  alpine: '#FF87BC',
+  williams: '#64C4FF',
+  'haas-f1-team': '#B6BABD',
+  haas: '#B6BABD',
+  'visa-cash-app-rb': '#6692FF',
+  'racing-bulls': '#6692FF',
+  rb: '#6692FF',
+  'kick-sauber': '#52E252',
+  sauber: '#52E252',
+  audi: '#FF0000',
+  cadillac: '#CC1B17',
+}
+
+const getTeamColor = (constructorSlug: string) =>
+  F1_TEAM_COLORS[constructorSlug] ?? '#888888'
+
 const getGradient = (location: string) => {
   let hash = 0
   for (let i = 0; i < location.length; i++) {
@@ -54,6 +75,8 @@ const formatTime = (seconds: number) => {
   return `${m}:${String(s).padStart(2, '0')}`
 }
 
+const lerp = (a: number, b: number, t: number) => a + (b - a) * t
+
 const SPEEDS = [1, 2, 5, 10] as const
 type Speed = (typeof SPEEDS)[number]
 
@@ -64,16 +87,22 @@ const RaceReplay = ({ race, raceId }: Props) => {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const animFrameRef = useRef<number | null>(null)
   const lastTimestampRef = useRef<number | null>(null)
-  const accumulatedTimeRef = useRef<number>(0)
+  // Fractional frame position — drives smooth interpolation
+  const frameFloatRef = useRef<number>(0)
+  const speedRef = useRef<Speed>(1)
+  const playingRef = useRef<boolean>(false)
+  const replayDataRef = useRef<ReplayData | null>(null)
+  // Pre-rendered track outline as an offscreen canvas
+  const trackCanvasRef = useRef<HTMLCanvasElement | null>(null)
 
   const [replayData, setReplayData] = useState<ReplayData | null>(null)
   const [loading, setLoading] = useState(true)
   const [notAvailable, setNotAvailable] = useState(false)
+  // currentFrame state is only used by scrub bar / time display (~10fps updates)
   const [currentFrame, setCurrentFrame] = useState(0)
   const [playing, setPlaying] = useState(false)
   const [speed, setSpeed] = useState<Speed>(1)
 
-  // Derived driver colors
   const driverColors = useRef<Record<string, string>>({})
 
   useEffect(() => {
@@ -88,6 +117,7 @@ const RaceReplay = ({ race, raceId }: Props) => {
       })
       .then((data: ReplayData | null) => {
         if (!data) return
+        replayDataRef.current = data
         setReplayData(data)
         setLoading(false)
       })
@@ -97,20 +127,43 @@ const RaceReplay = ({ race, raceId }: Props) => {
       })
   }, [raceId])
 
-  // Precompute driver colors when data + season are available
+  // Precompute driver colors and pre-render track outline
   useEffect(() => {
-    if (!replayData || !season) return
+    if (!replayData) return
+
+    // Driver colors
     const colors: Record<string, string> = {}
     for (const d of replayData.drivers) {
-      const normalized = normalizeConstructorName(d.constructor)
-      const constructorColors = COLORS_BY_CONSTRUCTOR[season]?.[normalized]
-      colors[d.number] = constructorColors?.numberBackground ?? '#888888'
+      colors[d.number] = getTeamColor(d.constructor)
     }
     driverColors.current = colors
-  }, [replayData, season])
 
-  // Draw a single frame to canvas
-  const drawFrame = useCallback((frameIndex: number, data: ReplayData) => {
+    // Pre-render track outline onto an offscreen canvas
+    const W = 900
+    const H = 500
+    const PAD = 40
+    const offscreen = document.createElement('canvas')
+    offscreen.width = W
+    offscreen.height = H
+    const ctx = offscreen.getContext('2d')!
+
+    ctx.fillStyle = 'rgba(255,255,255,0.06)'
+    const step = Math.max(1, Math.floor(replayData.frames.length / 3000))
+    for (let i = 0; i < replayData.frames.length; i += step) {
+      const frame = replayData.frames[i]
+      for (const pos of Object.values(frame.positions)) {
+        const px = PAD + pos[0] * (W - PAD * 2)
+        const py = PAD + (1 - pos[1]) * (H - PAD * 2)
+        ctx.fillRect(px - 1, py - 1, 2, 2)
+      }
+    }
+    trackCanvasRef.current = offscreen
+
+    // Draw initial frame
+    drawFrameFloat(0, replayData)
+  }, [replayData]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const drawFrameFloat = (frameFloat: number, data: ReplayData) => {
     const canvas = canvasRef.current
     if (!canvas) return
     const ctx = canvas.getContext('2d')
@@ -118,114 +171,121 @@ const RaceReplay = ({ race, raceId }: Props) => {
 
     const W = canvas.width
     const H = canvas.height
-    const PAD = 32
+    const PAD = 40
 
     ctx.clearRect(0, 0, W, H)
 
-    // Draw track outline (all historical positions as faint dots, sampled)
-    ctx.fillStyle = 'rgba(255,255,255,0.04)'
-    const step = Math.max(1, Math.floor(data.frames.length / 2000))
-    for (let i = 0; i < data.frames.length; i += step) {
-      const frame = data.frames[i]
-      for (const pos of Object.values(frame.positions)) {
-        const px = PAD + pos[0] * (W - PAD * 2)
-        const py = PAD + (1 - pos[1]) * (H - PAD * 2)
-        ctx.fillRect(px - 1, py - 1, 2, 2)
-      }
+    // Blit pre-rendered track outline
+    if (trackCanvasRef.current) {
+      ctx.drawImage(trackCanvasRef.current, 0, 0)
     }
 
-    // Draw driver dots at current frame
-    const frame = data.frames[Math.min(frameIndex, data.frames.length - 1)]
+    const frameA = Math.floor(frameFloat)
+    const frameB = Math.min(frameA + 1, data.frames.length - 1)
+    const t = frameFloat - frameA
+
+    const posA = data.frames[frameA].positions
+    const posB = data.frames[frameB].positions
+
     for (const driver of data.drivers) {
-      const pos = frame.positions[driver.number]
-      if (!pos) continue
-      const px = PAD + pos[0] * (W - PAD * 2)
-      const py = PAD + (1 - pos[1]) * (H - PAD * 2)
+      const pA = posA[driver.number]
+      const pB = posB[driver.number]
+      if (!pA) continue
+      const p = pB ? pA : pA
+      const px = PAD + lerp(pA[0], pB ? pB[0] : pA[0], t) * (W - PAD * 2)
+      const py = PAD + (1 - lerp(pA[1], pB ? pB[1] : pA[1], t)) * (H - PAD * 2)
+
       const color = driverColors.current[driver.number] ?? '#888888'
 
-      // Dot
       ctx.beginPath()
       ctx.arc(px, py, 6, 0, Math.PI * 2)
       ctx.fillStyle = color
       ctx.fill()
-      ctx.strokeStyle = 'rgba(255,255,255,0.6)'
-      ctx.lineWidth = 1
+      ctx.strokeStyle = 'rgba(255,255,255,0.7)'
+      ctx.lineWidth = 1.5
       ctx.stroke()
 
-      // Label
-      ctx.fillStyle = 'rgba(255,255,255,0.9)'
+      ctx.fillStyle = 'rgba(255,255,255,0.95)'
       ctx.font = 'bold 10px monospace'
-      ctx.fillText(driver.abbrev, px + 8, py + 4)
+      ctx.fillText(driver.abbrev, px + 9, py + 4)
     }
-  }, [])
+  }
 
-  // Redraw when frame or data changes (while paused)
-  useEffect(() => {
-    if (!replayData) return
-    drawFrame(currentFrame, replayData)
-  }, [currentFrame, replayData, drawFrame])
-
-  // Animation loop
+  // Animation loop — runs entirely via refs, no React re-render per tick
   useEffect(() => {
     if (!playing || !replayData) return
 
+    playingRef.current = true
     const totalFrames = replayData.frames.length
+    let lastStateUpdate = 0
 
     const tick = (timestamp: number) => {
+      if (!playingRef.current) return
+
       if (lastTimestampRef.current === null) {
         lastTimestampRef.current = timestamp
       }
-      const delta = timestamp - lastTimestampRef.current
+      const delta = Math.min(timestamp - lastTimestampRef.current, 100) // cap at 100ms to avoid jumps after tab switch
       lastTimestampRef.current = timestamp
 
-      // Each real second advances `speed` frames (1Hz data, speed multiplier)
-      accumulatedTimeRef.current += (delta / 1000) * speed
+      frameFloatRef.current += (delta / 1000) * speedRef.current
 
-      const newFrame = Math.floor(accumulatedTimeRef.current)
-
-      if (newFrame >= totalFrames - 1) {
+      if (frameFloatRef.current >= totalFrames - 1) {
+        frameFloatRef.current = totalFrames - 1
+        drawFrameFloat(frameFloatRef.current, replayData)
         setCurrentFrame(totalFrames - 1)
         setPlaying(false)
-        lastTimestampRef.current = null
+        playingRef.current = false
         return
       }
 
-      setCurrentFrame(newFrame)
+      drawFrameFloat(frameFloatRef.current, replayData)
+
+      // Throttle React state update to ~10fps to avoid re-render churn
+      if (timestamp - lastStateUpdate > 100) {
+        setCurrentFrame(Math.floor(frameFloatRef.current))
+        lastStateUpdate = timestamp
+      }
+
       animFrameRef.current = requestAnimationFrame(tick)
     }
 
     animFrameRef.current = requestAnimationFrame(tick)
 
     return () => {
+      playingRef.current = false
       if (animFrameRef.current !== null)
         cancelAnimationFrame(animFrameRef.current)
       lastTimestampRef.current = null
     }
-  }, [playing, replayData, speed])
+  }, [playing, replayData]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Keep speedRef in sync without restarting the loop
+  useEffect(() => {
+    speedRef.current = speed
+  }, [speed])
 
   const handlePlayPause = () => {
     if (
       !playing &&
       replayData &&
-      currentFrame >= replayData.frames.length - 1
+      frameFloatRef.current >= replayData.frames.length - 1
     ) {
-      // Restart
-      accumulatedTimeRef.current = 0
+      frameFloatRef.current = 0
       setCurrentFrame(0)
     }
-    accumulatedTimeRef.current = currentFrame
     setPlaying((p) => !p)
   }
 
   const handleScrub = (e: React.ChangeEvent<HTMLInputElement>) => {
     const frame = Number(e.target.value)
-    accumulatedTimeRef.current = frame
+    frameFloatRef.current = frame
     setCurrentFrame(frame)
     if (playing) setPlaying(false)
+    if (replayData) drawFrameFloat(frame, replayData)
   }
 
   const handleSpeedChange = (s: Speed) => {
-    accumulatedTimeRef.current = currentFrame
     lastTimestampRef.current = null
     setSpeed(s)
   }
@@ -292,7 +352,6 @@ const RaceReplay = ({ race, raceId }: Props) => {
 
             {/* Controls */}
             <div className='mt-4 space-y-3'>
-              {/* Play/pause + speed + time */}
               <div className='flex flex-wrap items-center gap-3 font-tertiary'>
                 <button
                   onClick={handlePlayPause}
@@ -333,15 +392,12 @@ const RaceReplay = ({ race, raceId }: Props) => {
               />
 
               {/* Driver legend */}
-              <div className='flex flex-wrap gap-2 mt-2'>
+              <div className='flex flex-wrap gap-x-3 gap-y-1.5 mt-2'>
                 {replayData.drivers.map((d) => (
-                  <div key={d.number} className='flex items-center gap-1'>
+                  <div key={d.number} className='flex items-center gap-1.5'>
                     <div
                       className='w-3 h-3 rounded-full border border-white/30 flex-shrink-0'
-                      style={{
-                        backgroundColor:
-                          driverColors.current[d.number] ?? '#888',
-                      }}
+                      style={{ backgroundColor: getTeamColor(d.constructor) }}
                     />
                     <span className='text-gray-300 text-xs font-secondary uppercase'>
                       {d.abbrev}
