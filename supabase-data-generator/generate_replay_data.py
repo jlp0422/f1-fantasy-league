@@ -22,32 +22,33 @@ def generate_replay(season, race_location, supabase_url, supabase_service_role_k
     race_name = session.event.EventName
     print(f"Generating replay for: {race_name}")
 
-    try:
-        pos_data = session.pos_data
-    except Exception as e:
-        print(f"Warning: Could not load pos_data: {e}")
-        pos_data = {}
-
-    if not pos_data:
-        print("Warning: pos_data is empty or unavailable for this race. Exiting without upload.")
-        return
-
+    # Collect position data per driver via laps (FastF1 3.x compatible)
     all_x = []
     all_y = []
     driver_dfs = {}
 
-    for driver_number, df in pos_data.items():
-        if df is None or df.empty:
+    for driver_number in session.drivers:
+        try:
+            drv_laps = session.laps.pick_drivers(driver_number)
+            pos = drv_laps.get_pos_data(pad=1, pad_side="both")
+        except Exception as e:
+            print(f"Warning: Could not get pos_data for driver {driver_number}: {e}")
             continue
-        df = df.copy()
-        if "X" not in df.columns or "Y" not in df.columns:
+        if pos is None or pos.empty:
             continue
-        df = df.dropna(subset=["X", "Y"])
-        if df.empty:
+        pos = pos.copy()
+        if "X" not in pos.columns or "Y" not in pos.columns:
             continue
-        all_x.extend(df["X"].tolist())
-        all_y.extend(df["Y"].tolist())
-        driver_dfs[str(driver_number)] = df
+        pos = pos.dropna(subset=["X", "Y"])
+        if pos.empty:
+            continue
+        all_x.extend(pos["X"].tolist())
+        all_y.extend(pos["Y"].tolist())
+        driver_dfs[str(driver_number)] = pos
+
+    if not driver_dfs:
+        print("Warning: No valid positional data found for any driver. Exiting without upload.")
+        return
 
     if not all_x:
         print("Warning: No valid positional data found. Exiting without upload.")
