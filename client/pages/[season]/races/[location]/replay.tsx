@@ -77,8 +77,15 @@ const formatTime = (seconds: number) => {
 
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t
 
-const SPEEDS = [1, 2, 5, 10] as const
+// Internal multipliers: 1× label = 10 real frames/sec, 2× = 20, etc.
+const SPEEDS = [10, 20, 50, 100] as const
 type Speed = (typeof SPEEDS)[number]
+const SPEED_LABELS: Record<Speed, string> = {
+  10: '1×',
+  20: '2×',
+  50: '5×',
+  100: '10×',
+}
 
 const RaceReplay = ({ race, raceId }: Props) => {
   const { query } = useRouter()
@@ -89,7 +96,7 @@ const RaceReplay = ({ race, raceId }: Props) => {
   const lastTimestampRef = useRef<number | null>(null)
   // Fractional frame position — drives smooth interpolation
   const frameFloatRef = useRef<number>(0)
-  const speedRef = useRef<Speed>(1)
+  const speedRef = useRef<Speed>(10) // 10 = "1×" label
   const playingRef = useRef<boolean>(false)
   const replayDataRef = useRef<ReplayData | null>(null)
   // Pre-rendered track outline as an offscreen canvas
@@ -101,7 +108,7 @@ const RaceReplay = ({ race, raceId }: Props) => {
   // currentFrame state is only used by scrub bar / time display (~10fps updates)
   const [currentFrame, setCurrentFrame] = useState(0)
   const [playing, setPlaying] = useState(false)
-  const [speed, setSpeed] = useState<Speed>(1)
+  const [speed, setSpeed] = useState<Speed>(10)
 
   const driverColors = useRef<Record<string, string>>({})
 
@@ -371,7 +378,7 @@ const RaceReplay = ({ race, raceId }: Props) => {
                           : 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white'
                       }`}
                     >
-                      {s}×
+                      {SPEED_LABELS[s]}
                     </button>
                   ))}
                 </div>
