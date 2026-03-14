@@ -458,7 +458,7 @@ const RaceReplay = ({ race, raceId }: Props) => {
                   ))}
                 </div>
 
-                <span className='text-gray-300 text-base ml-auto'>
+                <span className='text-gray-900 text-base ml-auto'>
                   {formatTime(currentFrame)} / {formatTime(totalFrames)}
                 </span>
               </div>
@@ -477,10 +477,10 @@ const RaceReplay = ({ race, raceId }: Props) => {
                 {replayData.drivers.map((d) => (
                   <div key={d.number} className='flex items-center gap-2'>
                     <div
-                      className='w-3.5 h-3.5 rounded-full border border-white/40 flex-shrink-0'
+                      className='w-3.5 h-3.5 rounded-full border border-black/20 flex-shrink-0'
                       style={{ backgroundColor: getTeamColor(d.constructor) }}
                     />
-                    <span className='text-white text-sm font-bold font-secondary uppercase'>
+                    <span className='text-gray-900 text-sm font-bold font-secondary uppercase'>
                       {d.abbrev}
                     </span>
                   </div>

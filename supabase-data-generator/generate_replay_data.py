@@ -131,7 +131,9 @@ def generate_replay(season, race_location, supabase_url, supabase_service_role_k
                 position = lap.get("Position", None)
                 if pd.isna(lap_start) or pd.isna(lap_num):
                     continue
-                t_sec = int(lap_start.total_seconds())
+                # Normalize to frame index: subtract t_min so lap event t
+                # is in the same coordinate space as frame.t (0-indexed from telemetry start)
+                t_sec = int(lap_start.total_seconds()) - int(t_min.total_seconds())
                 lap_events.append({
                     "t": max(0, t_sec),
                     "driver": str(driver_number),
