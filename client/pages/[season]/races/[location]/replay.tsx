@@ -138,6 +138,15 @@ const RaceReplay = ({ race, raceId }: Props) => {
       .then((data: ReplayData | null) => {
         if (!data) return
         replayDataRef.current = data
+        console.log('[replay] frames:', data.frames.length)
+        console.log(
+          '[replay] lap_events count:',
+          data.lap_events?.length ?? 'MISSING'
+        )
+        console.log(
+          '[replay] lap_events sample (first 3):',
+          data.lap_events?.slice(0, 3)
+        )
         setReplayData(data)
         setLoading(false)
       })
