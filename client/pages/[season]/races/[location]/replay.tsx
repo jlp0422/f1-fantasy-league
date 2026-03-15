@@ -6,7 +6,7 @@ import { RaceWithSeason } from '@/types/Unions'
 import { GetServerSidePropsContext } from 'next'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 interface DriverInfo {
   number: string
@@ -19,28 +19,12 @@ interface Frame {
   positions: Record<string, [number, number]>
 }
 
-interface LapEvent {
-  t: number
-  driver: string
-  lap: number
-  position: number | null
-}
-
 interface ReplayData {
   race_name: string
   duration_seconds: number
   sample_rate_hz: number
   drivers: DriverInfo[]
   frames: Frame[]
-  lap_events?: LapEvent[]
-}
-
-interface LeaderboardEntry {
-  position: number
-  abbrev: string
-  number: string
-  constructor: string
-  lap: number
 }
 
 interface Props {
@@ -92,13 +76,13 @@ const formatTime = (seconds: number) => {
 
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t
 
-const SPEEDS = [10, 20, 50, 100] as const
+const SPEEDS = [2.5, 5, 10, 20] as const
 type Speed = (typeof SPEEDS)[number]
 const SPEED_LABELS: Record<Speed, string> = {
-  10: '1×',
-  20: '2×',
-  50: '5×',
-  100: '10×',
+  2.5: 'Slower',
+  5: 'Base',
+  10: 'Faster',
+  20: 'Fastest',
 }
 
 const RaceReplay = ({ race, raceId }: Props) => {
@@ -109,7 +93,7 @@ const RaceReplay = ({ race, raceId }: Props) => {
   const animFrameRef = useRef<number | null>(null)
   const lastTimestampRef = useRef<number | null>(null)
   const frameFloatRef = useRef<number>(0)
-  const speedRef = useRef<Speed>(10)
+  const speedRef = useRef<Speed>(5)
   const playingRef = useRef<boolean>(false)
   const replayDataRef = useRef<ReplayData | null>(null)
   const trackCanvasRef = useRef<HTMLCanvasElement | null>(null)
@@ -119,11 +103,9 @@ const RaceReplay = ({ race, raceId }: Props) => {
   const [notAvailable, setNotAvailable] = useState(false)
   const [currentFrame, setCurrentFrame] = useState(0)
   const [playing, setPlaying] = useState(false)
-  const [speed, setSpeed] = useState<Speed>(10)
+  const [speed, setSpeed] = useState<Speed>(5)
 
   const driverColors = useRef<Record<string, string>>({})
-  // Per-driver sorted lap events for O(log n) lookup
-  const driverLapEvents = useRef<Map<string, LapEvent[]>>(new Map())
 
   useEffect(() => {
     fetch(`/api/races/${raceId}/replay`)
@@ -156,14 +138,6 @@ const RaceReplay = ({ race, raceId }: Props) => {
       colors[d.number] = getTeamColor(d.constructor)
     }
     driverColors.current = colors
-
-    // Per-driver lap event lookup
-    const map = new Map<string, LapEvent[]>()
-    for (const evt of replayData.lap_events ?? []) {
-      if (!map.has(evt.driver)) map.set(evt.driver, [])
-      map.get(evt.driver)!.push(evt)
-    }
-    driverLapEvents.current = map
 
     // Pre-render track outline
     const W = 900
@@ -228,42 +202,6 @@ const RaceReplay = ({ race, raceId }: Props) => {
       ctx.fillText(driver.abbrev, px + 9, py + 4)
     }
   }
-
-  // Binary search: last lap event for a driver with t <= frame
-  const getDriverLapState = (driverNum: string, frame: number) => {
-    const events = driverLapEvents.current.get(driverNum)
-    if (!events || events.length === 0) return null
-    let lo = 0,
-      hi = events.length - 1,
-      result = null
-    while (lo <= hi) {
-      const mid = (lo + hi) >> 1
-      if (events[mid].t <= frame) {
-        result = events[mid]
-        lo = mid + 1
-      } else {
-        hi = mid - 1
-      }
-    }
-    return result
-  }
-
-  // Leaderboard derived from currentFrame
-  const leaderboard = useMemo((): LeaderboardEntry[] => {
-    if (!replayData) return []
-    const entries: LeaderboardEntry[] = []
-    for (const driver of replayData.drivers) {
-      const state = getDriverLapState(driver.number, currentFrame)
-      entries.push({
-        position: state?.position ?? 99,
-        abbrev: driver.abbrev,
-        number: driver.number,
-        constructor: driver.constructor,
-        lap: state?.lap ?? 0,
-      })
-    }
-    return entries.sort((a, b) => a.position - b.position)
-  }, [currentFrame, replayData]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!playing || !replayData) return
@@ -381,55 +319,14 @@ const RaceReplay = ({ race, raceId }: Props) => {
 
         {replayData && (
           <>
-            {/* Canvas + leaderboard side by side on desktop */}
-            <div className='flex flex-col lg:flex-row gap-3'>
-              {/* Canvas */}
-              <div className='flex-1 min-w-0 rounded-lg overflow-hidden bg-gray-900 border border-gray-700'>
-                <canvas
-                  ref={canvasRef}
-                  width={900}
-                  height={500}
-                  className='w-full h-auto'
-                  style={{ display: 'block' }}
-                />
-              </div>
-
-              {/* Live leaderboard */}
-              {leaderboard.length > 0 && (
-                <div className='lg:w-44 rounded-lg bg-gray-900 border border-gray-700 overflow-hidden flex-shrink-0'>
-                  <div className='px-3 py-2 bg-gray-800 border-b border-gray-700'>
-                    <span className='text-white text-sm font-bold font-secondary uppercase tracking-wide'>
-                      Leaderboard
-                    </span>
-                  </div>
-                  <div className='divide-y divide-gray-800'>
-                    {leaderboard.map((entry, idx) => (
-                      <div
-                        key={entry.number}
-                        className='flex items-center gap-2 px-3 py-1.5'
-                      >
-                        <span className='text-gray-400 text-xs font-secondary w-5 text-right flex-shrink-0'>
-                          {entry.position < 99 ? entry.position : idx + 1}
-                        </span>
-                        <div
-                          className='w-2.5 h-2.5 rounded-full flex-shrink-0'
-                          style={{
-                            backgroundColor: getTeamColor(entry.constructor),
-                          }}
-                        />
-                        <span className='text-white text-sm font-bold font-secondary flex-1'>
-                          {entry.abbrev}
-                        </span>
-                        {entry.lap > 0 && (
-                          <span className='text-gray-400 text-xs font-secondary'>
-                            L{entry.lap}
-                          </span>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+            <div className='rounded-lg overflow-hidden bg-gray-900 border border-gray-700'>
+              <canvas
+                ref={canvasRef}
+                width={900}
+                height={500}
+                className='w-full h-auto'
+                style={{ display: 'block' }}
+              />
             </div>
 
             {/* Controls */}
