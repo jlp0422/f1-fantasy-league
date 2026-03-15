@@ -94,12 +94,12 @@ def generate_replay(season, race_location, supabase_url, supabase_service_role_k
     t_max = max(all_indices)
 
     # Trim to race start: skip pre-race telemetry (formation lap, grid assembly).
-    # Use the earliest LapStartTime across all drivers as the effective start,
-    # with a 30-second buffer so the starting grid is visible.
+    # Formation laps have LapStartTime near 0; filter them out with a 5-min threshold.
     try:
         all_lap_starts = session.laps["LapStartTime"].dropna()
-        if not all_lap_starts.empty:
-            race_start = all_lap_starts.min() - pd.Timedelta(seconds=30)
+        racing_starts = all_lap_starts[all_lap_starts > pd.Timedelta(minutes=5)]
+        if not racing_starts.empty:
+            race_start = racing_starts.min() - pd.Timedelta(seconds=30)
             if race_start > t_min:
                 t_min = race_start
                 print(f"Trimming replay to race start: t_min={t_min}")
