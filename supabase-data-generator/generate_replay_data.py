@@ -96,13 +96,12 @@ def generate_replay(season, race_location, supabase_url, supabase_service_role_k
     t_min_secs = max(0, min(all_seconds))
     t_max_secs = max(all_seconds)
 
-    # Trim to race start: skip formation lap / pre-race telemetry.
-    # Formation laps have LapStartTime near 0; filter them out with a 5-min threshold.
+    # Trim to race start: use LapNumber == 1 to find lights-out time.
+    # This is robust to red flags, restarts, and formation laps with unusual LapStartTime values.
     try:
-        all_lap_starts = session.laps["LapStartTime"].dropna()
-        racing_starts = all_lap_starts[all_lap_starts > pd.Timedelta(minutes=5)]
-        if not racing_starts.empty:
-            race_start_secs = int(racing_starts.min().total_seconds()) - 30
+        lap1_starts = session.laps[session.laps["LapNumber"] == 1]["LapStartTime"].dropna()
+        if not lap1_starts.empty:
+            race_start_secs = int(lap1_starts.min().total_seconds()) - 30
             if race_start_secs > t_min_secs:
                 t_min_secs = max(0, race_start_secs)
                 print(f"Trimming replay to race start: t_min={t_min_secs}s")
