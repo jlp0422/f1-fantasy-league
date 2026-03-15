@@ -99,7 +99,9 @@ def generate_replay(season, race_location, supabase_url, supabase_service_role_k
         all_lap_starts = session.laps["LapStartTime"].dropna()
         racing_starts = all_lap_starts[all_lap_starts > pd.Timedelta(minutes=5)]
         if not racing_starts.empty:
-            race_start = racing_starts.min() - pd.Timedelta(seconds=30)
+            # Quantize to integer seconds to align with 1s resampled driver_series indices
+            race_start_secs = int(racing_starts.min().total_seconds()) - 30
+            race_start = pd.Timedelta(seconds=max(0, race_start_secs))
             if race_start > t_min:
                 t_min = race_start
                 print(f"Trimming replay to race start: t_min={t_min}")
