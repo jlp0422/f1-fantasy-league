@@ -69,50 +69,56 @@ def generate_replay(season, race_location, supabase_url, supabase_service_role_k
                 team = row.get("TeamName", row.get("Constructor", ""))
                 constructor_by_number[num] = str(team).lower().replace(" ", "-") if team else ""
 
+    # Build driver_series keyed by integer seconds to avoid Timedelta precision issues
     driver_series = {}
 
     for driver_number, df in driver_dfs.items():
         # FastF1 pos_data uses a TimedeltaIndex (relative to session start)
         if "Time" in df.columns and not isinstance(df.index, pd.TimedeltaIndex):
             df = df.set_index("Time")
-        # Drop negative times (before race start)
+        # Drop negative times (before session start)
         df = df[df.index >= pd.Timedelta(0)]
         if df.empty:
             continue
+        # Resample to 1Hz, then convert index to integer seconds for reliable alignment
         df_resampled = df[["X", "Y"]].resample("1s").mean().interpolate(method="linear")
+        df_resampled.index = [round(td.total_seconds()) for td in df_resampled.index]
         driver_series[driver_number] = df_resampled
 
     if not driver_series:
         print("Warning: No resampled data found. Exiting.")
         return
 
-    all_indices = []
+    all_seconds = []
     for df in driver_series.values():
-        all_indices.extend(df.index.tolist())
+        all_seconds.extend(df.index.tolist())
 
-    t_min = max(pd.Timedelta(0), min(all_indices))
-    t_max = max(all_indices)
+    t_min_secs = max(0, min(all_seconds))
+    t_max_secs = max(all_seconds)
 
-    # Trim to race start: skip pre-race telemetry (formation lap, grid assembly).
+    # Trim to race start: skip formation lap / pre-race telemetry.
     # Formation laps have LapStartTime near 0; filter them out with a 5-min threshold.
     try:
         all_lap_starts = session.laps["LapStartTime"].dropna()
         racing_starts = all_lap_starts[all_lap_starts > pd.Timedelta(minutes=5)]
         if not racing_starts.empty:
-            # Quantize to integer seconds to align with 1s resampled driver_series indices
             race_start_secs = int(racing_starts.min().total_seconds()) - 30
-            race_start = pd.Timedelta(seconds=max(0, race_start_secs))
-            if race_start > t_min:
-                t_min = race_start
-                print(f"Trimming replay to race start: t_min={t_min}")
+            if race_start_secs > t_min_secs:
+                t_min_secs = max(0, race_start_secs)
+                print(f"Trimming replay to race start: t_min={t_min_secs}s")
     except Exception as e:
         print(f"Warning: Could not determine race start for trimming: {e}")
 
-    time_index = pd.timedelta_range(start=t_min, end=t_max, freq="1s")
-    duration_seconds = len(time_index)
+    time_index_secs = list(range(t_min_secs, t_max_secs + 1))
+    duration_seconds = len(time_index_secs)
 
+    # Reindex each driver to the unified integer-second range
     for driver_number in driver_series:
-        driver_series[driver_number] = driver_series[driver_number].reindex(time_index).interpolate(method="linear")
+        driver_series[driver_number] = (
+            driver_series[driver_number]
+            .reindex(time_index_secs)
+            .interpolate(method="index")
+        )
 
     drivers_info = []
     for driver_number in driver_series:
@@ -123,7 +129,7 @@ def generate_replay(season, race_location, supabase_url, supabase_service_role_k
         })
 
     frames = []
-    for i in range(len(time_index)):
+    for i in range(len(time_index_secs)):
         positions = {}
         for driver_number, df in driver_series.items():
             row = df.iloc[i]
@@ -149,7 +155,7 @@ def generate_replay(season, race_location, supabase_url, supabase_service_role_k
                     continue
                 # Normalize to frame index: subtract t_min so lap event t
                 # is in the same coordinate space as frame.t (0-indexed from telemetry start)
-                t_sec = int(lap_start.total_seconds()) - int(t_min.total_seconds())
+                t_sec = int(lap_start.total_seconds()) - t_min_secs
                 lap_events.append({
                     "t": max(0, t_sec),
                     "driver": str(driver_number),
