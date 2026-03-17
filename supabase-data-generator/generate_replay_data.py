@@ -96,18 +96,6 @@ def generate_replay(season, race_location, supabase_url, supabase_service_role_k
     t_min_secs = max(0, min(all_seconds))
     t_max_secs = max(all_seconds)
 
-    # Trim to race start: use LapNumber == 1 to find lights-out time.
-    # This is robust to red flags, restarts, and formation laps with unusual LapStartTime values.
-    try:
-        lap1_starts = session.laps[session.laps["LapNumber"] == 1]["LapStartTime"].dropna()
-        if not lap1_starts.empty:
-            race_start_secs = int(lap1_starts.min().total_seconds()) - 30
-            if race_start_secs > t_min_secs:
-                t_min_secs = max(0, race_start_secs)
-                print(f"Trimming replay to race start: t_min={t_min_secs}s")
-    except Exception as e:
-        print(f"Warning: Could not determine race start for trimming: {e}")
-
     time_index_secs = list(range(t_min_secs, t_max_secs + 1))
     duration_seconds = len(time_index_secs)
 
