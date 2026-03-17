@@ -4,6 +4,7 @@ import pandas as pd
 import os
 from datetime import datetime, timezone
 import json
+from generate_replay_data import generate_replay
 
 points_map = {
     1: 20,
@@ -251,6 +252,17 @@ def do_the_update():
     )
 
     if insert_rows.status_code == 201:
+        try:
+            generate_replay(
+                season=season,
+                race_location=most_recent_event["Location"],
+                supabase_url=f"https://agvtgmdvbvjnmlooagll.supabase.co",
+                supabase_service_role_key=api_key,
+                race_id=most_recent_race_id,
+            )
+        except Exception as e:
+            print(f"Replay generation failed (non-fatal): {e}")
+
         driver_updates = format_for_email(driver_id_by_driver_number, update_row_data, df)
         if missing_grid_positions:
             driver_updates = "⚠️  Grid positions were unavailable (all -1) — grid difference points are 0 for all drivers. Backfill required once data is published.\n\n" + driver_updates

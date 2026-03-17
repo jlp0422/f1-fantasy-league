@@ -326,6 +326,11 @@ const RaceDetail = ({ race, teamStandings, driverStandings }: Props) => {
               {tab}
             </button>
           ))}
+          <Link href={`/${season}/races/${query.location}/replay`}>
+            <button className='px-4 py-2 text-lg sm:px-6 sm:py-2.5 sm:text-xl font-medium rounded-lg bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white font-tertiary'>
+              ▶ Replay
+            </button>
+          </Link>
         </div>
         <Toggle
           label='Detailed Points'
