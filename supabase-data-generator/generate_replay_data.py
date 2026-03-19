@@ -96,6 +96,22 @@ def generate_replay(season, race_location, supabase_url, supabase_service_role_k
     t_min_secs = max(0, min(all_seconds))
     t_max_secs = max(all_seconds)
 
+    # Trim to race start using Lap 1 LapStartTime, which robustly identifies
+    # lights-out regardless of red flags or formation lap structure.
+    # Safety guard: only trim if race start falls well within the pos_data range
+    # (at least 5 min of racing data remains after trim).
+    try:
+        lap1_starts = session.laps[session.laps["LapNumber"] == 1]["LapStartTime"].dropna()
+        if not lap1_starts.empty:
+            race_start_secs = int(lap1_starts.min().total_seconds()) - 30
+            if t_min_secs < race_start_secs < t_max_secs - 300:
+                t_min_secs = max(0, race_start_secs)
+                print(f"Trimming to race start: t_min={t_min_secs}s ({t_min_secs//60}m{t_min_secs%60}s)")
+            else:
+                print(f"Skipping trim: race_start={race_start_secs}s outside safe range [{t_min_secs}, {t_max_secs - 300}]")
+    except Exception as e:
+        print(f"Warning: Could not determine race start for trimming: {e}")
+
     time_index_secs = list(range(t_min_secs, t_max_secs + 1))
     duration_seconds = len(time_index_secs)
 
