@@ -6,7 +6,7 @@ import { RaceWithSeason } from '@/types/Unions'
 import { GetServerSidePropsContext } from 'next'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 interface DriverInfo {
   number: string
@@ -19,12 +19,28 @@ interface Frame {
   positions: Record<string, [number, number]>
 }
 
+interface LapEvent {
+  t: number
+  driver: string
+  lap: number
+  position: number | null
+}
+
+interface LeaderboardEntry {
+  position: number
+  abbrev: string
+  number: string
+  constructor: string
+  lap: number
+}
+
 interface ReplayData {
   race_name: string
   duration_seconds: number
   sample_rate_hz: number
   drivers: DriverInfo[]
   frames: Frame[]
+  lap_events?: LapEvent[]
 }
 
 interface Props {
@@ -106,6 +122,7 @@ const RaceReplay = ({ race, raceId }: Props) => {
   const [speed, setSpeed] = useState<Speed>(5)
 
   const driverColors = useRef<Record<string, string>>({})
+  const driverLapEvents = useRef<Map<string, LapEvent[]>>(new Map())
 
   useEffect(() => {
     fetch(`/api/races/${raceId}/replay`)
@@ -120,6 +137,16 @@ const RaceReplay = ({ race, raceId }: Props) => {
       .then((data: ReplayData | null) => {
         if (!data) return
         replayDataRef.current = data
+        const evts = data.lap_events ?? []
+        console.log('[replay] loaded:', {
+          race: data.race_name,
+          frames: data.frames.length,
+          lap_events: evts.length,
+          first_lap_event: evts[0],
+          last_lap_event: evts[evts.length - 1],
+          first_frame_t: data.frames[0]?.t,
+          last_frame_t: data.frames[data.frames.length - 1]?.t,
+        })
         setReplayData(data)
         setLoading(false)
       })
@@ -138,6 +165,14 @@ const RaceReplay = ({ race, raceId }: Props) => {
       colors[d.number] = getTeamColor(d.constructor)
     }
     driverColors.current = colors
+
+    // Per-driver lap event lookup
+    const map = new Map<string, LapEvent[]>()
+    for (const evt of replayData.lap_events ?? []) {
+      if (!map.has(evt.driver)) map.set(evt.driver, [])
+      map.get(evt.driver)!.push(evt)
+    }
+    driverLapEvents.current = map
 
     // Pre-render track outline
     const W = 900
@@ -202,6 +237,39 @@ const RaceReplay = ({ race, raceId }: Props) => {
       ctx.fillText(driver.abbrev, px + 9, py + 4)
     }
   }
+
+  // Binary search: last lap event for a driver with t <= frame
+  const getDriverLapState = (driverNum: string, frame: number) => {
+    const events = driverLapEvents.current.get(driverNum)
+    if (!events || events.length === 0) return null
+    let lo = 0,
+      hi = events.length - 1,
+      result = null
+    while (lo <= hi) {
+      const mid = (lo + hi) >> 1
+      if (events[mid].t <= frame) {
+        result = events[mid]
+        lo = mid + 1
+      } else hi = mid - 1
+    }
+    return result
+  }
+
+  const leaderboard = useMemo((): LeaderboardEntry[] => {
+    if (!replayData) return []
+    return replayData.drivers
+      .map((driver) => {
+        const state = getDriverLapState(driver.number, currentFrame)
+        return {
+          position: state?.position ?? 99,
+          abbrev: driver.abbrev,
+          number: driver.number,
+          constructor: driver.constructor,
+          lap: state?.lap ?? 0,
+        }
+      })
+      .sort((a, b) => a.position - b.position)
+  }, [currentFrame, replayData]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!playing || !replayData) return
@@ -319,14 +387,51 @@ const RaceReplay = ({ race, raceId }: Props) => {
 
         {replayData && (
           <>
-            <div className='rounded-lg overflow-hidden bg-gray-900 border border-gray-700'>
-              <canvas
-                ref={canvasRef}
-                width={900}
-                height={500}
-                className='w-full h-auto'
-                style={{ display: 'block' }}
-              />
+            <div className='flex flex-col lg:flex-row gap-3'>
+              <div className='flex-1 min-w-0 rounded-lg overflow-hidden bg-gray-900 border border-gray-700'>
+                <canvas
+                  ref={canvasRef}
+                  width={900}
+                  height={500}
+                  className='w-full h-auto'
+                  style={{ display: 'block' }}
+                />
+              </div>
+
+              {/* Live leaderboard */}
+              <div className='lg:w-44 rounded-lg bg-gray-900 border border-gray-700 overflow-hidden flex-shrink-0'>
+                <div className='px-3 py-2 bg-gray-800 border-b border-gray-700'>
+                  <span className='text-white text-sm font-bold font-secondary uppercase tracking-wide'>
+                    Leaderboard
+                  </span>
+                </div>
+                <div className='divide-y divide-gray-800'>
+                  {leaderboard.map((entry, idx) => (
+                    <div
+                      key={entry.number}
+                      className='flex items-center gap-2 px-3 py-1.5'
+                    >
+                      <span className='text-gray-400 text-xs font-secondary w-5 text-right flex-shrink-0'>
+                        {entry.position < 99 ? entry.position : idx + 1}
+                      </span>
+                      <div
+                        className='w-2.5 h-2.5 rounded-full flex-shrink-0'
+                        style={{
+                          backgroundColor: getTeamColor(entry.constructor),
+                        }}
+                      />
+                      <span className='text-white text-sm font-bold font-secondary flex-1'>
+                        {entry.abbrev}
+                      </span>
+                      {entry.lap > 0 && (
+                        <span className='text-gray-400 text-xs font-secondary'>
+                          L{entry.lap}
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
 
             {/* Controls */}

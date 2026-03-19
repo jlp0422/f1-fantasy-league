@@ -129,12 +129,38 @@ def generate_replay(season, race_location, supabase_url, supabase_service_role_k
             ]
         frames.append({"t": i, "positions": positions})
 
+    # Build sparse lap events aligned to integer-second frame indices
+    lap_events = []
+    for driver_number in session.drivers:
+        try:
+            drv_laps = session.laps.pick_drivers(driver_number)
+            for _, lap in drv_laps.iterlaps():
+                lap_start = lap["LapStartTime"]
+                lap_num = lap["LapNumber"]
+                position = lap.get("Position", None)
+                if pd.isna(lap_start) or pd.isna(lap_num):
+                    continue
+                # Offset by t_min_secs so t is in the same coordinate space as frame.t
+                t_sec = int(lap_start.total_seconds()) - t_min_secs
+                lap_events.append({
+                    "t": max(0, t_sec),
+                    "driver": str(driver_number),
+                    "lap": int(lap_num),
+                    "position": int(position) if position is not None and not pd.isna(position) else None,
+                })
+        except Exception as e:
+            print(f"Warning: Could not get lap events for driver {driver_number}: {e}")
+
+    lap_events.sort(key=lambda x: x["t"])
+    print(f"lap_events: {len(lap_events)}, first t={lap_events[0]['t'] if lap_events else 'n/a'}, last t={lap_events[-1]['t'] if lap_events else 'n/a'}")
+
     output = {
         "race_name": race_name,
         "duration_seconds": duration_seconds,
         "sample_rate_hz": 1,
         "drivers": drivers_info,
         "frames": frames,
+        "lap_events": lap_events,
     }
 
     # Resolve race_id from DB if not provided

@@ -26,6 +26,6 @@ export default async function handler(
   const text = await data.text()
   const json = JSON.parse(text)
 
-  res.setHeader('Cache-Control', 'public, max-age=86400')
+  res.setHeader('Cache-Control', 'no-store')
   return res.status(200).json(json)
 }
