@@ -73,8 +73,12 @@ def generate_replay(season, race_location, supabase_url, supabase_service_role_k
     driver_series = {}
 
     for driver_number, df in driver_dfs.items():
-        # FastF1 pos_data uses a TimedeltaIndex (relative to session start)
-        if "Time" in df.columns and not isinstance(df.index, pd.TimedeltaIndex):
+        # Use SessionTime as index — same reference frame as LapStartTime,
+        # so lap_events and frame indices align correctly.
+        # "Time" is relative to the first telemetry point and does NOT match LapStartTime.
+        if "SessionTime" in df.columns:
+            df = df.set_index("SessionTime")
+        elif "Time" in df.columns and not isinstance(df.index, pd.TimedeltaIndex):
             df = df.set_index("Time")
         # Drop negative times (before session start)
         df = df[df.index >= pd.Timedelta(0)]
