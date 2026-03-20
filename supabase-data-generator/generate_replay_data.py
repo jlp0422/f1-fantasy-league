@@ -73,8 +73,12 @@ def generate_replay(season, race_location, supabase_url, supabase_service_role_k
     driver_series = {}
 
     for driver_number, df in driver_dfs.items():
-        # FastF1 pos_data uses a TimedeltaIndex (relative to session start)
-        if "Time" in df.columns and not isinstance(df.index, pd.TimedeltaIndex):
+        # Use SessionTime as index — same reference frame as LapStartTime,
+        # so lap_events and frame indices align correctly.
+        # "Time" is relative to the first telemetry point and does NOT match LapStartTime.
+        if "SessionTime" in df.columns:
+            df = df.set_index("SessionTime")
+        elif "Time" in df.columns and not isinstance(df.index, pd.TimedeltaIndex):
             df = df.set_index("Time")
         # Drop negative times (before session start)
         df = df[df.index >= pd.Timedelta(0)]
@@ -95,6 +99,22 @@ def generate_replay(season, race_location, supabase_url, supabase_service_role_k
 
     t_min_secs = max(0, min(all_seconds))
     t_max_secs = max(all_seconds)
+
+    # Trim to race start using Lap 1 LapStartTime, which robustly identifies
+    # lights-out regardless of red flags or formation lap structure.
+    # Safety guard: only trim if race start falls well within the pos_data range
+    # (at least 5 min of racing data remains after trim).
+    try:
+        lap1_starts = session.laps[session.laps["LapNumber"] == 1]["LapStartTime"].dropna()
+        if not lap1_starts.empty:
+            race_start_secs = int(lap1_starts.min().total_seconds()) - 30
+            if t_min_secs < race_start_secs < t_max_secs - 300:
+                t_min_secs = max(0, race_start_secs)
+                print(f"Trimming to race start: t_min={t_min_secs}s ({t_min_secs//60}m{t_min_secs%60}s)")
+            else:
+                print(f"Skipping trim: race_start={race_start_secs}s outside safe range [{t_min_secs}, {t_max_secs - 300}]")
+    except Exception as e:
+        print(f"Warning: Could not determine race start for trimming: {e}")
 
     time_index_secs = list(range(t_min_secs, t_max_secs + 1))
     duration_seconds = len(time_index_secs)
@@ -129,12 +149,38 @@ def generate_replay(season, race_location, supabase_url, supabase_service_role_k
             ]
         frames.append({"t": i, "positions": positions})
 
+    # Build sparse lap events aligned to integer-second frame indices
+    lap_events = []
+    for driver_number in session.drivers:
+        try:
+            drv_laps = session.laps.pick_drivers(driver_number)
+            for _, lap in drv_laps.iterlaps():
+                lap_start = lap["LapStartTime"]
+                lap_num = lap["LapNumber"]
+                position = lap.get("Position", None)
+                if pd.isna(lap_start) or pd.isna(lap_num):
+                    continue
+                # Offset by t_min_secs so t is in the same coordinate space as frame.t
+                t_sec = int(lap_start.total_seconds()) - t_min_secs
+                lap_events.append({
+                    "t": max(0, t_sec),
+                    "driver": str(driver_number),
+                    "lap": int(lap_num),
+                    "position": int(position) if position is not None and not pd.isna(position) else None,
+                })
+        except Exception as e:
+            print(f"Warning: Could not get lap events for driver {driver_number}: {e}")
+
+    lap_events.sort(key=lambda x: x["t"])
+    print(f"lap_events: {len(lap_events)}, first t={lap_events[0]['t'] if lap_events else 'n/a'}, last t={lap_events[-1]['t'] if lap_events else 'n/a'}")
+
     output = {
         "race_name": race_name,
         "duration_seconds": duration_seconds,
         "sample_rate_hz": 1,
         "drivers": drivers_info,
         "frames": frames,
+        "lap_events": lap_events,
     }
 
     # Resolve race_id from DB if not provided
