@@ -137,32 +137,6 @@ const RaceReplay = ({ race, raceId }: Props) => {
       .then((data: ReplayData | null) => {
         if (!data) return
         replayDataRef.current = data
-        const evts = data.lap_events ?? []
-        const firstEvt = evts[0]
-        const lastEvt = evts[evts.length - 1]
-        const firstFrameT = data.frames[0]?.t ?? 0
-        const lastFrameT = data.frames[data.frames.length - 1]?.t ?? 0
-        console.log('[replay] POSITION DATA:', {
-          total_frames: data.frames.length,
-          frame_t_range: `${firstFrameT} → ${lastFrameT}`,
-          duration_min: (lastFrameT / 60).toFixed(1),
-        })
-        console.log('[replay] LAP EVENTS:', {
-          total_events: evts.length,
-          event_t_range:
-            firstEvt && lastEvt ? `${firstEvt.t} → ${lastEvt.t}` : 'none',
-          event_duration_min:
-            firstEvt && lastEvt
-              ? ((lastEvt.t - firstEvt.t) / 60).toFixed(1)
-              : 'n/a',
-          first_event: firstEvt,
-          last_event: lastEvt,
-        })
-        console.log('[replay] OVERLAP:', {
-          lap_events_within_frames: evts.filter((e) => e.t <= lastFrameT)
-            .length,
-          lap_events_beyond_frames: evts.filter((e) => e.t > lastFrameT).length,
-        })
         setReplayData(data)
         setLoading(false)
       })
