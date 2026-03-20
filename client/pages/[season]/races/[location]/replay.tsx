@@ -96,7 +96,7 @@ const SPEEDS = [2.5, 5, 10, 20] as const
 type Speed = (typeof SPEEDS)[number]
 const SPEED_LABELS: Record<Speed, string> = {
   2.5: 'Slower',
-  5: 'Base',
+  5: 'Normal',
   10: 'Faster',
   20: 'Fastest',
 }
@@ -138,14 +138,30 @@ const RaceReplay = ({ race, raceId }: Props) => {
         if (!data) return
         replayDataRef.current = data
         const evts = data.lap_events ?? []
-        console.log('[replay] loaded:', {
-          race: data.race_name,
-          frames: data.frames.length,
-          lap_events: evts.length,
-          first_lap_event: evts[0],
-          last_lap_event: evts[evts.length - 1],
-          first_frame_t: data.frames[0]?.t,
-          last_frame_t: data.frames[data.frames.length - 1]?.t,
+        const firstEvt = evts[0]
+        const lastEvt = evts[evts.length - 1]
+        const firstFrameT = data.frames[0]?.t ?? 0
+        const lastFrameT = data.frames[data.frames.length - 1]?.t ?? 0
+        console.log('[replay] POSITION DATA:', {
+          total_frames: data.frames.length,
+          frame_t_range: `${firstFrameT} → ${lastFrameT}`,
+          duration_min: (lastFrameT / 60).toFixed(1),
+        })
+        console.log('[replay] LAP EVENTS:', {
+          total_events: evts.length,
+          event_t_range:
+            firstEvt && lastEvt ? `${firstEvt.t} → ${lastEvt.t}` : 'none',
+          event_duration_min:
+            firstEvt && lastEvt
+              ? ((lastEvt.t - firstEvt.t) / 60).toFixed(1)
+              : 'n/a',
+          first_event: firstEvt,
+          last_event: lastEvt,
+        })
+        console.log('[replay] OVERLAP:', {
+          lap_events_within_frames: evts.filter((e) => e.t <= lastFrameT)
+            .length,
+          lap_events_beyond_frames: evts.filter((e) => e.t > lastFrameT).length,
         })
         setReplayData(data)
         setLoading(false)
@@ -350,15 +366,15 @@ const RaceReplay = ({ race, raceId }: Props) => {
       description={`Race replay for ${race.name}`}
     >
       <div
-        className='w-screen absolute h-48 sm:h-64 left-0 top-[64px] sm:top-[72px]'
+        className='w-screen absolute h-72 sm:h-96 left-0 top-[64px] sm:top-[72px]'
         style={{ background: getGradient(race.location) }}
       />
 
-      <div className='relative flex flex-col items-center justify-end text-center min-h-[5rem] pt-4 sm:min-h-[10rem] sm:pt-0'>
-        <h1 className='px-2 font-bold tracking-normal leading-tight text-gray-200 uppercase text-[clamp(1.25rem,6vw,2rem)] sm:text-5xl font-primary'>
+      <div className='relative flex flex-col items-center justify-end text-center min-h-[7rem] pt-4 sm:min-h-[14rem] sm:pt-0'>
+        <h1 className='px-2 font-bold tracking-normal leading-tight text-gray-200 uppercase text-[clamp(1.5rem,8vw,2.25rem)] sm:text-6xl sm:leading-normal lg:text-7xl xl:text-8xl font-primary'>
           {race.name}
         </h1>
-        <p className='mt-1 text-lg tracking-wide text-gray-300 sm:text-2xl font-tertiary'>
+        <p className='mt-1 text-xl tracking-wide text-gray-300 sm:mt-2 sm:text-3xl lg:text-4xl font-tertiary'>
           {race.location}, {race.country}
         </p>
       </div>
